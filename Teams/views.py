@@ -21,3 +21,11 @@ def team_detail(request, team_id):
 def request_join(request, team_id):
     # TODO: implements the POST request to join a specific team
     pass
+
+def manage(request, team_id):
+    # TODO: implements the page where we manage the specific team
+    pass
+
+def create(request):
+    # TODO: implements the page where we create a new team
+    pass

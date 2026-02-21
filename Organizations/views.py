@@ -16,3 +16,9 @@ def org_detail(request, org_id):
 def manage_org_dashboard(request, org_id):
     # TODO: implements the organization admin POV
     pass
+
+def org_create(request):
+    # TODO: implements the creation of the organization
+    pass
+
+

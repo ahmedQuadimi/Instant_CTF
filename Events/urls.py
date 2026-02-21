@@ -8,11 +8,13 @@ from . import views
 
 urlpatterns = [
     path("", views.event_list, name="event_list"),
+    path('create/', views.create_event, name='create_event'),
     path("<int:event_id>/", views.event, name="event_dashboard"),
     path("<int:event_id>/challenges/", views.event_challenges, name="event_challenges"),
     path("<int:event_id>/scoreboard/", event_scoreboard, name="event_scoreboard"),
     path("<int:event_id>/teams/", event_teams, name="event_teams"),
     path("<int:event_id>/users/", views.event_users, name="event_users"),
+    path('<int:event_id>/register/', views.register_for_event, name='register_for_event'),
     path(
         "<int:event_id>/challenges/<int:challenge_id>/submit/",
         submit_flag,

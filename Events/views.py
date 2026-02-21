@@ -26,3 +26,12 @@ def manage_event_dashboard(request, event_id):
 def event_challenges(request, event_id):
     # TODO: implement the pages that shows the challenges to the user
     pass
+
+
+def register_for_event(request, event_id):
+    # TODO: implements the registration of the Event Roaster 
+    pass
+
+def create_event(request):
+    # TODO: handles the event creation process
+    pass

@@ -66,7 +66,7 @@ ROOT_URLCONF = "Instant_CTF.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -136,3 +136,4 @@ ACCOUNT_USERNAME_REQUIRED = False
 
 STATIC_URL = "static/"
 AUTH_USER_MODEL = "Accounts.User"
+STATICFILES_DIRS = [BASE_DIR / "static"]

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Request to Join Team{% endblock %}
+{% block content %}
+  {% include 'events/_event_nav.html' %}
+
+  <h1>Request to Join {{ team.name }}</h1>
+  <p>Event: {{ event.title }}</p>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Confirm Request</button>
+  </form>
+{% endblock %}

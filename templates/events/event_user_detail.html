@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ profile_user.username }} — {{ event.title }}{% endblock %}
+{% block content %}
+  {% include 'events/_event_nav.html' %}
+
+  <h1>{{ profile_user.username }}</h1>
+
+  <section>
+    <h2>Event Profile</h2>
+    <table>
+      <tbody>
+        <tr>
+          <th>Username</th>
+          <td>{{ profile_user.username }}</td>
+        </tr>
+        <tr>
+          <th>ELO Rating</th>
+          <td>{{ profile_user.elo }}</td>
+        </tr>
+        <tr>
+          <th>Team</th>
+          <td>
+            {% if roster.team %}
+              <a href="{% url 'event_team_detail' event.id roster.team.id %}">
+                {{ roster.team.name }}
+              </a>
+            {% else %}
+              —
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th>Joined Event</th>
+          <td>{{ roster.joined_at }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Solved Challenges</h2>
+    <p>No solve data available yet.</p>
+    {# TODO: populate from Scoring app once available #}
+  </section>
+{% endblock %}

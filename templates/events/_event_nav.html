@@ -1,0 +1,7 @@
+<nav>
+  <a href="{% url 'event_dashboard' event.id %}">Event Home</a>
+  <a href="{% url 'event_challenges' event.id %}">Challenges</a>
+  <a href="{% url 'event_scoreboard' event.id %}">Scoreboard</a>
+  <a href="{% url 'event_teams' event.id %}">Teams</a>
+  <a href="{% url 'event_users' event.id %}">Users</a>
+</nav>

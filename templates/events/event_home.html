@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ event.title }}{% endblock %}
+{% block content %}
+  {% include 'events/_event_nav.html' %}
+
+  <h1>{{ event.title }}</h1>
+
+  <p>
+    <strong>Start:</strong> {{ event.start_time }}<br>
+    <strong>End:</strong> {{ event.end_time }}
+  </p>
+
+  <p>
+    <strong>Status:</strong>
+    {% if time_status == "upcoming" %}
+      <span>Upcoming</span>
+    {% elif time_status == "running" %}
+      <span>Running</span>
+    {% else %}
+      <span>Past</span>
+    {% endif %}
+  </p>
+
+  <section>
+    <h2>Rules</h2>
+    <p>No event-specific rules have been published yet.</p>
+  </section>
+
+  {% if time_status == "past" %}
+    <p>This event is over. Registration is closed.</p>
+  {% elif not user.is_authenticated %}
+    <p><a href="{% url 'account_login' %}">Log in</a> to register for this event.</p>
+  {% elif not is_participant %}
+    <p><a href="{% url 'register_for_event' event.id %}">Join Event</a></p>
+  {% else %}
+    <p>You are already registered for this event.</p>
+  {% endif %}
+{% endblock %}

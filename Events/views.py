@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError
+from django.db.models import Exists, OuterRef
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -15,7 +16,14 @@ from Teams.models import Team, TeamJoinRequest
 
 from .forms import CreateTeamForm, JoinEventForm, TeamJoinRequestForm
 from .models import EventRoster
-from .utils import get_event_or_404, get_event_time_window
+from .utils import (
+    event_has_started,
+    get_event_or_404,
+    get_event_time_window,
+)
+
+from Challenges.models import Challenge
+from Scoring.models import Solve
 
 # Create your views here.
 
@@ -298,7 +306,38 @@ def manage_event_dashboard(request, event_id):
 
 def event_challenges(request, event_id):
     event = get_event_or_404(event_id)
-    return render(request, "events/event_challenges.html", {"event": event})
+    now = timezone.now()
+
+    if not event_has_started(event, now):
+        return render(
+            request,
+            "event_not_started.html",
+            {"event": event, "message": "Event hasn't started yet"},
+        )
+
+    roster_or_response = get_roster_or_403(request, event_id, json=False)
+    if not isinstance(roster_or_response, EventRoster):
+        return roster_or_response
+    roster = roster_or_response
+
+    solved_subquery = Solve.objects.filter(
+        challenge_id=OuterRef("pk"),
+        team_id=roster.team_id,
+    )
+
+    challenges = Challenge.objects.filter(
+        event=event,
+        status="VISIBLE",
+        release_time__lte=now,
+    ).annotate(
+        is_solved=Exists(solved_subquery)
+    )
+
+    return render(
+        request,
+        "event_challenges.html",
+        {"event": event, "challenges": challenges},
+    )
 
 
 @login_required

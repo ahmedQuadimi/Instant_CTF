@@ -30,8 +30,8 @@ urlpatterns = [
     ),
     path(
         "<int:event_id>/register/", views.register_for_event, name="register_for_event"
-    ),
-    path(
+    )
+    ,path(
         "<int:event_id>/challenges/<int:challenge_id>/submit/",
         submit_flag,
         name="submit_flag",

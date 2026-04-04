@@ -1,9 +1,6 @@
 {% extends "events/base.html" %}
 {% block title %}Scoreboard{% endblock %}
 {% block extra_head %}
-  {% if not event_ended %}
-    <meta http-equiv="refresh" content="60">
-  {% endif %}
   <style>
     .rank-gold {
       background-color: #fff3cd;
@@ -21,60 +18,215 @@
 {% block content %}
   {% include "events/_event_nav.html" %}
 
-  <h1>{{ event.title }} Scoreboard</h1>
-  <p>
-    <strong>Status:</strong>
-    <span id="event-countdown" data-end-time="{{ event.end_time|date:'c' }}">
-      {% if event_ended %}Event ended{% else %}Loading countdown...{% endif %}
-    </span>
-  </p>
+  <div id="scoreboard-root" data-scoreboard-url="{% url 'event_scoreboard_data' event.id %}">
+    <h1>{{ event.title }} Scoreboard</h1>
+    <p>
+      <strong>Status:</strong>
+      <span id="event-countdown" data-end-time="{{ event.end_time|date:'c' }}">
+        {% if event_ended %}Event ended{% else %}Loading countdown...{% endif %}
+      </span>
+    </p>
 
-  {% if event_ended %}
-    <p><strong>Final standings</strong></p>
-  {% endif %}
+    <div id="final-standings-banner"{% if not event_ended %} hidden{% endif %}>
+      <p><strong>Final standings</strong></p>
+    </div>
 
-  {% if ranked_teams %}
-    <table>
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Team name</th>
-          <th>Score</th>
-          <th>Solves</th>
-          <th>Last solve time</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for team in ranked_teams %}
-          <tr class="{% if team.rank == 1 %}rank-gold{% elif team.rank == 2 %}rank-silver{% elif team.rank == 3 %}rank-bronze{% endif %}">
-            <td>{{ team.rank }}</td>
-            <td>{{ team.team_name }}</td>
-            <td>{{ team.score }}</td>
-            <td>{{ team.solve_count }}</td>
-            <td>
-              {% if team.last_solve_at %}
-                {{ team.last_solve_at }}
-              {% else %}
-                -
-              {% endif %}
-            </td>
+    {% if ranked_teams %}
+      <table id="scoreboard-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Team name</th>
+            <th>Score</th>
+            <th>Solves</th>
+            <th>Last solve time</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <p>No teams have joined this event yet.</p>
-  {% endif %}
+        </thead>
+        <tbody id="scoreboard-body">
+          {% for team in ranked_teams %}
+            <tr class="{% if team.rank == 1 %}rank-gold{% elif team.rank == 2 %}rank-silver{% elif team.rank == 3 %}rank-bronze{% endif %}">
+              <td>{{ team.rank }}</td>
+              <td>{{ team.team_name }}</td>
+              <td>{{ team.score }}</td>
+              <td>{{ team.solve_count }}</td>
+              <td>
+                {% if team.last_solve_at %}
+                  {{ team.last_solve_at }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p id="empty-scoreboard">No teams have joined this event yet.</p>
+    {% endif %}
+  </div>
 
   <script>
     (function () {
       var countdown = document.getElementById("event-countdown");
-      if (!countdown) {
+      var scoreboardRoot = document.getElementById("scoreboard-root");
+      var scoreboardTable = document.getElementById("scoreboard-table");
+      var scoreboardBody = document.getElementById("scoreboard-body");
+      var emptyScoreboard = document.getElementById("empty-scoreboard");
+      var finalStandingsBanner = document.getElementById("final-standings-banner");
+      if (!countdown || !scoreboardRoot) {
         return;
       }
 
       var endTimeRaw = countdown.dataset.endTime;
       var endTime = new Date(endTimeRaw);
+      var scoreboardUrl = scoreboardRoot.dataset.scoreboardUrl;
+      var pollIntervalMs = 5000;
+      var isRefreshing = false;
+      var pollTimerId = null;
+      var lastPayloadSignature = null;
+
+      function getRowClass(rank) {
+        if (rank === 1) {
+          return "rank-gold";
+        }
+        if (rank === 2) {
+          return "rank-silver";
+        }
+        if (rank === 3) {
+          return "rank-bronze";
+        }
+        return "";
+      }
+
+      function formatLastSolveAt(isoValue) {
+        if (!isoValue) {
+          return "-";
+        }
+        var date = new Date(isoValue);
+        if (isNaN(date.getTime())) {
+          return "-";
+        }
+        return date.toLocaleString();
+      }
+
+      function ensureScoreboardTable() {
+        if (scoreboardTable) {
+          return scoreboardTable;
+        }
+
+        if (!emptyScoreboard) {
+          return null;
+        }
+
+        var table = document.createElement("table");
+        table.id = "scoreboard-table";
+        table.innerHTML = [
+          "<thead>",
+          "<tr>",
+          "<th>Rank</th>",
+          "<th>Team name</th>",
+          "<th>Score</th>",
+          "<th>Solves</th>",
+          "<th>Last solve time</th>",
+          "</tr>",
+          "</thead>",
+          '<tbody id="scoreboard-body"></tbody>'
+        ].join("");
+        emptyScoreboard.replaceWith(table);
+        scoreboardTable = table;
+        scoreboardBody = document.getElementById("scoreboard-body");
+        emptyScoreboard = null;
+        return table;
+      }
+
+      function renderScoreboard(teams) {
+        if (!teams.length) {
+          if (scoreboardTable) {
+            scoreboardTable.remove();
+            scoreboardTable = null;
+            scoreboardBody = null;
+          }
+          if (!emptyScoreboard) {
+            emptyScoreboard = document.createElement("p");
+            emptyScoreboard.id = "empty-scoreboard";
+            emptyScoreboard.textContent = "No teams have joined this event yet.";
+            finalStandingsBanner.insertAdjacentElement("afterend", emptyScoreboard);
+          }
+          return;
+        }
+
+        ensureScoreboardTable();
+        if (!scoreboardBody) {
+          return;
+        }
+
+        scoreboardBody.innerHTML = teams.map(function (team) {
+          var rowClass = getRowClass(team.rank);
+          return [
+            '<tr class="' + rowClass + '">',
+            "<td>" + team.rank + "</td>",
+            "<td>" + team.team_name + "</td>",
+            "<td>" + team.score + "</td>",
+            "<td>" + team.solve_count + "</td>",
+            "<td>" + formatLastSolveAt(team.last_solve_at) + "</td>",
+            "</tr>"
+          ].join("");
+        }).join("");
+      }
+
+      function setEndedState(eventEnded) {
+        if (eventEnded) {
+          countdown.textContent = "Event ended";
+          finalStandingsBanner.hidden = false;
+          return;
+        }
+        finalStandingsBanner.hidden = true;
+      }
+
+      function scheduleNextRefresh(delayMs) {
+        if (pollTimerId) {
+          clearTimeout(pollTimerId);
+        }
+        pollTimerId = window.setTimeout(refreshScoreboard, delayMs);
+      }
+
+      async function refreshScoreboard() {
+        if (!scoreboardUrl || isRefreshing) {
+          scheduleNextRefresh(pollIntervalMs);
+          return;
+        }
+
+        if (document.hidden) {
+          scheduleNextRefresh(pollIntervalMs);
+          return;
+        }
+
+        isRefreshing = true;
+        try {
+          var response = await fetch(scoreboardUrl, {
+            headers: {
+              "X-Requested-With": "XMLHttpRequest"
+            },
+            credentials: "same-origin",
+            cache: "no-store"
+          });
+          if (!response.ok) {
+            return;
+          }
+          var payload = await response.json();
+          var payloadSignature = JSON.stringify(payload);
+          if (payloadSignature === lastPayloadSignature) {
+            return;
+          }
+          lastPayloadSignature = payloadSignature;
+          setEndedState(payload.event_ended);
+          renderScoreboard(payload.ranked_teams || []);
+        } catch (error) {
+        } finally {
+          isRefreshing = false;
+          scheduleNextRefresh(pollIntervalMs);
+        }
+      }
 
       function renderCountdown() {
         var now = new Date();
@@ -111,6 +263,14 @@
           clearInterval(intervalId);
         }
       }, 1000);
+
+      document.addEventListener("visibilitychange", function () {
+        if (!document.hidden) {
+          refreshScoreboard();
+        }
+      });
+
+      refreshScoreboard();
     })();
   </script>
 {% endblock %}

@@ -1,9 +1,16 @@
+import hashlib
+
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 
+from Challenges.models import Challenge
+from Organizations.models import OrganizationMembership
 from Teams.models import Team, TeamJoinRequest
 
 from .forms import CreateTeamForm, JoinEventForm, TeamJoinRequestForm
@@ -11,6 +18,53 @@ from .models import EventRoster
 from .utils import get_event_or_404, get_event_time_window
 
 # Create your views here.
+
+
+_CHALLENGE_FIELD_NAMES = {field.name for field in Challenge._meta.fields}
+_CHALLENGE_STATUS_FIELD = "status" if "status" in _CHALLENGE_FIELD_NAMES else "state"
+
+
+def _has_manage_access(user, event):
+    if not user.is_authenticated:
+        return False
+
+    return OrganizationMembership.objects.filter(
+        user=user,
+        organization=event.organization,
+        role__in=("OWNER", "ADMIN"),
+    ).exists()
+
+
+def _parse_optional_float(raw_value, field_name, errors):
+    if raw_value in (None, ""):
+        return None
+
+    try:
+        return float(raw_value)
+    except (TypeError, ValueError):
+        errors.append(f"{field_name} must be a number.")
+        return None
+
+
+def _parse_optional_datetime(raw_value, errors):
+    if raw_value in (None, ""):
+        return None
+
+    parsed = parse_datetime(raw_value)
+    if parsed is None:
+        errors.append("release_time must be a valid datetime.")
+        return None
+
+    if timezone.is_naive(parsed):
+        parsed = timezone.make_aware(parsed, timezone.get_current_timezone())
+
+    return parsed
+
+
+def _toggle_status_value(current_status):
+    if current_status == "VISIBLE":
+        return "HIDDEN"
+    return "VISIBLE"
 
 
 def event_list(request):
@@ -70,7 +124,176 @@ def event_user_detail(request, event_id, user_id):
 
 def manage_event_dashboard(request, event_id):
     event = get_event_or_404(event_id)
-    return render(request, "events/manage_event_dashboard.html", {"event": event})
+
+    if not _has_manage_access(request.user, event):
+        raise PermissionDenied
+
+    rosters = (
+        EventRoster.objects.filter(event=event)
+        .select_related("team", "user")
+        .order_by("team__name", "joined_at")
+    )
+
+    team_counts = {}
+    for roster in rosters:
+        team_counts[roster.team_id] = team_counts.get(roster.team_id, 0) + 1
+
+    team_panel_rows = [
+        {
+            "team_name": roster.team.name,
+            "member_count": team_counts.get(roster.team_id, 0),
+            "joined_at": roster.joined_at,
+        }
+        for roster in rosters
+    ]
+
+    challenges = event.challenges.all().order_by("category", "release_time", "name")
+
+    context = {
+        "event": event,
+        "team_panel_rows": team_panel_rows,
+        "challenges": challenges,
+        "status_field": _CHALLENGE_STATUS_FIELD,
+        "challenge_status_choices": Challenge._meta.get_field(
+            _CHALLENGE_STATUS_FIELD
+        ).choices,
+        "form_errors": [],
+        "saved": request.GET.get("saved") == "1",
+    }
+
+    if request.method == "POST":
+        action = (request.POST.get("action") or "create").lower()
+
+        if action == "toggle_status":
+            challenge_id = request.POST.get("challenge_id")
+            challenge = get_object_or_404(Challenge, pk=challenge_id, event=event)
+            valid_status_values = {
+                choice[0]
+                for choice in Challenge._meta.get_field(_CHALLENGE_STATUS_FIELD).choices
+            }
+
+            requested_status = (request.POST.get("new_status") or "").strip()
+            if not requested_status:
+                requested_status = _toggle_status_value(
+                    getattr(challenge, _CHALLENGE_STATUS_FIELD, "HIDDEN")
+                )
+
+            if requested_status in valid_status_values:
+                setattr(challenge, _CHALLENGE_STATUS_FIELD, requested_status)
+                challenge.save(update_fields=[_CHALLENGE_STATUS_FIELD])
+                return redirect(f"/events/{event.id}/manage/?saved=1")
+
+            context["form_errors"].append("Invalid status value.")
+
+        challenge_id = request.POST.get("challenge_id")
+        editing_challenge = None
+
+        if action == "edit":
+            if not challenge_id:
+                context["form_errors"].append("challenge_id is required for edit.")
+            else:
+                editing_challenge = get_object_or_404(
+                    Challenge,
+                    pk=challenge_id,
+                    event=event,
+                )
+        elif action != "create":
+            context["form_errors"].append("Invalid action.")
+
+        challenge = editing_challenge or Challenge(event=event)
+
+        name = (request.POST.get("name") or "").strip()
+        category = (request.POST.get("category") or "").strip()
+        description = (request.POST.get("description") or "").strip()
+        connection_info = (request.POST.get("connection_info") or "").strip()
+        status_value = (request.POST.get(_CHALLENGE_STATUS_FIELD) or "").strip()
+        raw_flag = (request.POST.get("raw_flag") or "").strip()
+        release_time_raw = request.POST.get("release_time")
+
+        min_points = _parse_optional_float(
+            request.POST.get("min_points"),
+            "min_points",
+            context["form_errors"],
+        )
+        max_points = _parse_optional_float(
+            request.POST.get("max_points"),
+            "max_points",
+            context["form_errors"],
+        )
+        decay_factor = _parse_optional_float(
+            request.POST.get("decay_factor"),
+            "decay_factor",
+            context["form_errors"],
+        )
+
+        if (
+            min_points is not None
+            and max_points is not None
+            and min_points >= max_points
+        ):
+            context["form_errors"].append(
+                "min_points must be strictly less than max_points."
+            )
+
+        if decay_factor is not None and decay_factor <= 0:
+            context["form_errors"].append("decay_factor must be greater than 0.")
+
+        release_time = _parse_optional_datetime(
+            release_time_raw, context["form_errors"]
+        )
+
+        if not name:
+            context["form_errors"].append("name is required.")
+        if not category:
+            context["form_errors"].append("category is required.")
+        if not description:
+            context["form_errors"].append("description is required.")
+
+        if action == "create" and not raw_flag:
+            context["form_errors"].append(
+                "raw_flag is required when creating a challenge."
+            )
+
+        valid_status_values = {
+            choice[0]
+            for choice in Challenge._meta.get_field(_CHALLENGE_STATUS_FIELD).choices
+        }
+        if status_value and status_value not in valid_status_values:
+            context["form_errors"].append("Invalid status value.")
+
+        if not context["form_errors"]:
+            challenge.name = name
+            challenge.category = category
+            challenge.description = description
+
+            if "connection_info" in _CHALLENGE_FIELD_NAMES:
+                challenge.connection_info = connection_info
+
+            if _CHALLENGE_STATUS_FIELD in _CHALLENGE_FIELD_NAMES and status_value:
+                setattr(challenge, _CHALLENGE_STATUS_FIELD, status_value)
+
+            if release_time_raw in (None, ""):
+                challenge.release_time = None
+            else:
+                challenge.release_time = release_time
+
+            for field_name, field_value in (
+                ("min_points", min_points),
+                ("max_points", max_points),
+                ("decay_factor", decay_factor),
+            ):
+                if field_name in _CHALLENGE_FIELD_NAMES and field_value is not None:
+                    setattr(challenge, field_name, field_value)
+
+            if raw_flag:
+                challenge.flag_hash = hashlib.sha256(
+                    raw_flag.strip().encode()
+                ).hexdigest()
+
+            challenge.save()
+            return redirect(f"/events/{event.id}/manage/?saved=1")
+
+    return render(request, "events/manage_event_dashboard.html", context)
 
 
 def event_challenges(request, event_id):

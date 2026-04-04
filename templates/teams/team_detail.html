@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Team Detail{% endblock %}
+{% block content %}
+  <h1>{{ team.name }}</h1>
+
+  <p><strong>Captain:</strong> {{ team.captain.username }}</p>
+
+  <section>
+    <h2>Members in this event</h2>
+    {% if members %}
+      <ul>
+        {% for roster in members %}
+          <li>{{ roster.user.username }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No members are registered for this team in this event.</p>
+    {% endif %}
+  </section>
+
+  <section>
+    <h2>Solved Challenges</h2>
+    {% if solves %}
+      <ul>
+        {% for solve in solves %}
+          <li>{{ solve }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No solve data available yet.</p>
+    {% endif %}
+  </section>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Event Teams{% endblock %}
+{% block content %}
+  <h1>Teams in {{ event.title }}</h1>
+
+  {% if teams %}
+    <ul>
+      {% for team in teams %}
+        <li>
+          <a href="{% url 'event_team_detail' event.id team.id %}">{{ team.name }}</a>
+          - Members in event: {{ team.member_count }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No teams are registered in this event yet.</p>
+  {% endif %}
+{% endblock %}

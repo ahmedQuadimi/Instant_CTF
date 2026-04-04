@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Register for {{ event.title }}{% endblock %}
+{% block content %}
+  {% include 'events/_event_nav.html' %}
+
+  <h1>Enter Access Code for {{ event.title }}</h1>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Verify Code</button>
+  </form>
+{% endblock %}

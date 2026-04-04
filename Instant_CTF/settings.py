@@ -10,26 +10,38 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import environ
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# ---------------------------------------------------------------------------
+# Environment Variables  (reads from .env in project root)
+# ---------------------------------------------------------------------------
+env = environ.Env(
+    DEBUG=(bool, True),
+    SECRET_KEY=(str, "django-insecure-change-me-in-production"),
+    GOOGLE_CLIENT_ID=(str, ""),
+    GOOGLE_CLIENT_SECRET=(str, ""),
+)
+environ.Env.read_env(BASE_DIR / ".env")
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
-
+# ---------------------------------------------------------------------------
+# Core Security
+# ---------------------------------------------------------------------------
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-74m63z4!nxfqmwr0%$xll#-71*rk##n%zwo+44f*z3%s5-_lj&"
+SECRET_KEY = env("SECRET_KEY", default="django-insecure-74m63z4!nxfqmwr0%$xll#-71*rk##n%zwo+44f*z3%s5-_lj&")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 
 
-# Application definition
-
+# ---------------------------------------------------------------------------
+# Application Definition
+# ---------------------------------------------------------------------------
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -37,13 +49,16 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Required by allauth
+    "django.contrib.sites",
+    # Project apps
     "Accounts",
     "Challenges",
     "Events",
     "Organizations",
     "Scoring",
     "Teams",
-    "django.contrib.sites",
+    # django-allauth
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -58,6 +73,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # allauth account middleware (required since allauth 0.56+)
     "allauth.account.middleware.AccountMiddleware",
 ]
 
@@ -81,9 +97,9 @@ TEMPLATES = [
 WSGI_APPLICATION = "Instant_CTF.wsgi.application"
 
 
+# ---------------------------------------------------------------------------
 # Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
+# ---------------------------------------------------------------------------
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -92,9 +108,9 @@ DATABASES = {
 }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
-
+# ---------------------------------------------------------------------------
+# Password Validation
+# ---------------------------------------------------------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -111,31 +127,96 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# ---------------------------------------------------------------------------
 # Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
-
+# ---------------------------------------------------------------------------
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_TZ = True
+
+
+# ---------------------------------------------------------------------------
+# Static Files
+# ---------------------------------------------------------------------------
+STATIC_URL = "static/"
+_STATIC_DIR = BASE_DIR / "static"
+STATICFILES_DIRS = [_STATIC_DIR] if _STATIC_DIR.exists() else []
+
+
+# ---------------------------------------------------------------------------
+# Custom User Model
+# ---------------------------------------------------------------------------
+AUTH_USER_MODEL = "Accounts.User"
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# ---------------------------------------------------------------------------
+# django-allauth – Authentication Backends
+# ---------------------------------------------------------------------------
+AUTHENTICATION_BACKENDS = [
+    # Standard Django auth (used for admin panel login)
+    "django.contrib.auth.backends.ModelBackend",
+    # allauth-specific authentication
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
 
 SITE_ID = 1
 
-AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
-    "allauth.account.auth_backends.AuthenticationBackend",
+# ---------------------------------------------------------------------------
+# django-allauth – Account Settings
+# ---------------------------------------------------------------------------
+
+# Users log in with their email address (not username)
+ACCOUNT_LOGIN_METHODS = {"email"}
+
+# Declare all signup fields and mark required ones with *.  The allauth 65+
+# ACCOUNT_SIGNUP_FIELDS replaces the old ACCOUNT_EMAIL_REQUIRED /
+# ACCOUNT_USERNAME_REQUIRED booleans.
+ACCOUNT_SIGNUP_FIELDS = [
+    "username*",   # required — shown on the public CTF scoreboard
+    "email*",      # required — used as login method
+    "password1*",  # required
+    "password2*",  # required
 ]
+
+# Require email verification before allowing login.
+# Set to "none" during development for frictionless testing;
+# switch to "mandatory" in production.
+ACCOUNT_EMAIL_VERIFICATION = "none"
+
+# Adapter that enforces username capture for Google OAuth sign-ups
+# (see Accounts/adapters.py – created below)
+SOCIALACCOUNT_ADAPTER = "Accounts.adapters.CTFSocialAccountAdapter"
+
+# Allow social signup without a separate confirmation step
+SOCIALACCOUNT_AUTO_SIGNUP = True
+
+# After login / signup, redirect to the dashboard root
 LOGIN_REDIRECT_URL = "/"
-ACCOUNT_AUTHENTICATION_METHOD = "email"
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_LOGOUT_REDIRECT_URL = "/accounts/login/"
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
+# Prevent allauth from hijacking session on every request (performance)
+ACCOUNT_SESSION_REMEMBER = True
 
-STATIC_URL = "static/"
-AUTH_USER_MODEL = "Accounts.User"
-STATICFILES_DIRS = [BASE_DIR / "static"]
+# ---------------------------------------------------------------------------
+# Google OAuth2 Provider
+# Credentials are read directly from the .env file – never hard-coded.
+# ---------------------------------------------------------------------------
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APP": {
+            "client_id": env("GOOGLE_CLIENT_ID"),
+            "secret": env("GOOGLE_CLIENT_SECRET"),
+            "key": "",
+        },
+        "SCOPE": [
+            "profile",
+            "email",
+        ],
+        "AUTH_PARAMS": {
+            # Forces Google to show the account chooser every time
+            "access_type": "online",
+        },
+    }
+}

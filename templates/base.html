@@ -12,6 +12,12 @@
     <a href="/events/">Events</a>
     <a href="/teams/">Teams</a>
     <a href="/orgs/">Organizations</a>
+    {% if user.is_authenticated %}
+    <form method="POST" action="{% url 'account_logout' %}" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit">Log out</button>
+    </form>
+    {% endif %}
   </nav>
 
   <main>

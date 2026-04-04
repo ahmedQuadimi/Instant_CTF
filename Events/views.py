@@ -22,6 +22,7 @@ from .utils import (
     get_event_time_window,
 )
 
+from .access import get_roster_or_403
 from Challenges.models import Challenge
 from Scoring.models import Solve
 
@@ -327,7 +328,7 @@ def event_challenges(request, event_id):
 
     challenges = Challenge.objects.filter(
         event=event,
-        status="VISIBLE",
+        state="VISIBLE",
         release_time__lte=now,
     ).annotate(
         is_solved=Exists(solved_subquery)

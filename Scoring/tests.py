@@ -5,11 +5,13 @@ from django.core.cache import cache
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
 from django.utils import timezone
+from unittest.mock import patch
 
 from Challenges.models import Challenge
 from Events.models import Event, EventRoster
 from Organizations.models import Organization
 from Scoring.models import Solve, Submission
+from Scoring.services import get_cached_ranked_teams
 from Scoring.utils import calculate_event_points, calculate_linear_points, calculate_points
 from Teams.models import Team
 
@@ -114,7 +116,7 @@ class EventScoreboardViewTests(TestCase):
             solves_count=5,
         )
 
-    def _create_solve(self, team, challenge, timestamp, suffix):
+    def _create_solve(self, team, challenge, timestamp, suffix, awarded_points):
         submission = Submission.objects.create(
             user=team.captain,
             team=team,
@@ -127,7 +129,7 @@ class EventScoreboardViewTests(TestCase):
             submission=submission,
             team=team,
             challenge=challenge,
-            awarded_points=0,
+            awarded_points=awarded_points,
             timestamp=timestamp,
         )
 
@@ -139,16 +141,32 @@ class EventScoreboardViewTests(TestCase):
     def test_ranks_teams_uses_zero_solve_rows_and_refreshes_while_event_is_live(self):
         now = timezone.now()
         self._create_solve(
-            self.team_alpha, self.challenge_one, now - timedelta(minutes=40), "a1"
+            self.team_alpha,
+            self.challenge_one,
+            now - timedelta(minutes=40),
+            "a1",
+            500,
         )
         self._create_solve(
-            self.team_alpha, self.challenge_two, now - timedelta(minutes=15), "a2"
+            self.team_alpha,
+            self.challenge_two,
+            now - timedelta(minutes=15),
+            "a2",
+            389,
         )
         self._create_solve(
-            self.team_beta, self.challenge_one, now - timedelta(minutes=25), "b1"
+            self.team_beta,
+            self.challenge_one,
+            now - timedelta(minutes=25),
+            "b1",
+            500,
         )
         self._create_solve(
-            self.team_beta, self.challenge_two, now - timedelta(minutes=5), "b2"
+            self.team_beta,
+            self.challenge_two,
+            now - timedelta(minutes=5),
+            "b2",
+            389,
         )
 
         self.client.force_login(self.user)
@@ -156,7 +174,12 @@ class EventScoreboardViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.context["event_ended"])
-        self.assertContains(response, 'http-equiv="refresh" content="60"', html=False)
+        self.assertNotContains(response, 'http-equiv="refresh"', html=False)
+        self.assertContains(
+            response,
+            reverse("event_scoreboard_data", args=[self.event.id]),
+            html=False,
+        )
 
         ranked_teams = response.context["ranked_teams"]
         self.assertEqual(
@@ -181,4 +204,65 @@ class EventScoreboardViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context["event_ended"])
         self.assertContains(response, "Final standings")
-        self.assertNotContains(response, 'http-equiv="refresh" content="60"', html=False)
+        self.assertNotContains(response, 'http-equiv="refresh"', html=False)
+
+    def test_scoreboard_data_returns_live_json_payload(self):
+        now = timezone.now()
+        self._create_solve(
+            self.team_alpha,
+            self.challenge_one,
+            now - timedelta(minutes=10),
+            "a1",
+            500,
+        )
+
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("event_scoreboard_data", args=[self.event.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/json")
+
+        payload = response.json()
+        self.assertFalse(payload["event_ended"])
+        self.assertEqual(payload["ranked_teams"][0]["rank"], 1)
+        self.assertEqual(payload["ranked_teams"][0]["team_name"], "Alpha")
+        self.assertEqual(payload["ranked_teams"][0]["score"], 500)
+        self.assertEqual(payload["ranked_teams"][0]["solve_count"], 1)
+        self.assertIsNotNone(payload["ranked_teams"][0]["last_solve_at"])
+
+    def test_scoreboard_data_only_allows_get(self):
+        self.client.force_login(self.user)
+        response = self.client.post(reverse("event_scoreboard_data", args=[self.event.id]))
+        self.assertEqual(response.status_code, 405)
+
+    def test_ranked_teams_are_cached_until_score_affecting_data_changes(self):
+        now = timezone.now()
+        self._create_solve(
+            self.team_alpha,
+            self.challenge_one,
+            now - timedelta(minutes=10),
+            "a1",
+            500,
+        )
+
+        first_ranked_teams = get_cached_ranked_teams(self.event)
+        second_ranked_teams = get_cached_ranked_teams(self.event)
+
+        self.assertEqual(first_ranked_teams, second_ranked_teams)
+
+        with patch("Scoring.services._compute_ranked_teams") as mocked_compute:
+            cached_ranked_teams = get_cached_ranked_teams(self.event)
+            self.assertEqual(cached_ranked_teams, first_ranked_teams)
+            mocked_compute.assert_not_called()
+
+        alpha_solve = Solve.objects.get(team=self.team_alpha, challenge=self.challenge_one)
+        alpha_solve.awarded_points = 430
+        alpha_solve.save(update_fields=["awarded_points"])
+
+        with patch(
+            "Scoring.services._compute_ranked_teams",
+            wraps=get_cached_ranked_teams.__globals__["_compute_ranked_teams"],
+        ) as mocked_compute:
+            refreshed_ranked_teams = get_cached_ranked_teams(self.event)
+            self.assertEqual(refreshed_ranked_teams[0]["score"], 430)
+            mocked_compute.assert_called_once()

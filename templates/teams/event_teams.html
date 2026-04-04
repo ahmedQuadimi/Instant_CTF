@@ -7,7 +7,7 @@
     <ul>
       {% for team in teams %}
         <li>
-          <a href="{% url 'event_team_detail' event.id team.id %}">{{ team.name }}</a>
+          <a href="{% url 'event_team_details' event.id team.id %}">{{ team.name }}</a>
           - Members in event: {{ team.member_count }}
         </li>
       {% endfor %}

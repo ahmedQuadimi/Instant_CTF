@@ -21,7 +21,7 @@
           <th>Team</th>
           <td>
             {% if roster.team %}
-              <a href="{% url 'event_team_detail' event.id roster.team.id %}">
+              <a href="{% url 'event_team_details' event.id roster.team.id %}">
                 {{ roster.team.name }}
               </a>
             {% else %}

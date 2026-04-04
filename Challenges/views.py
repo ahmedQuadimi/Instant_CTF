@@ -109,7 +109,7 @@ def submit_flag(request, event_id, challenge_id):
     )
 
 
-def challenge_detail_json(request, event_id, challenge_id):
+def challenge_details_json(request, event_id, challenge_id):
     challenge = Challenge.objects.select_related("event").filter(pk=challenge_id).first()
     if challenge is None:
         return JsonResponse({"status": "not_found", "code": 404}, status=404)

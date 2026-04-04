@@ -12,11 +12,6 @@ class Challenge(models.Model):
     category = models.CharField(max_length=50)
     description = models.TextField()
     connection_info = models.TextField(blank=True)
-    status = models.CharField(
-        max_length=10,
-        choices=[("VISIBLE", "Visible"), ("HIDDEN", "Hidden")],
-        default="HIDDEN",
-    )
     state = models.CharField(
         max_length=20,
         choices=[("HIDDEN", "Hidden"), ("VISIBLE", "Visible")],

@@ -34,7 +34,7 @@ def event_is_active(event, now=None):
 
 def challenge_is_available(challenge, now=None):
     now = now or timezone.now()
-    visibility = getattr(challenge, "status", getattr(challenge, "state", None))
+    visibility = getattr(challenge, "status", None)
     return (
         visibility == "VISIBLE"
         and getattr(challenge, "release_time", None) is not None

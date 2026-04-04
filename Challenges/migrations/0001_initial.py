@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=100)),
                 ('category', models.CharField(max_length=50)),
                 ('description', models.TextField()),
-                ('state', models.CharField(choices=[('HIDDEN', 'Hidden'), ('VISIBLE', 'Visible')], default='HIDDEN', max_length=20)),
+                ('status', models.CharField(choices=[('HIDDEN', 'Hidden'), ('VISIBLE', 'Visible')], default='HIDDEN', max_length=20)),
                 ('flag_hash', models.CharField(max_length=128)),
                 ('release_time', models.DateTimeField(blank=True, db_index=True, help_text='Date from when the problem is going to be available .', null=True)),
                 ('solves_count', models.IntegerField(db_index=True, default=0)),

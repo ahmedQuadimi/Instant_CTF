@@ -174,7 +174,7 @@
         }).join("");
       }
 
-      function setEndedState(eventEnded) {
+      function setEndedstatus(eventEnded) {
         if (eventEnded) {
           countdown.textContent = "Event ended";
           finalStandingsBanner.hidden = false;
@@ -219,7 +219,7 @@
             return;
           }
           lastPayloadSignature = payloadSignature;
-          setEndedState(payload.event_ended);
+          setEndedstatus(payload.event_ended);
           renderScoreboard(payload.ranked_teams || []);
         } catch (error) {
         } finally {

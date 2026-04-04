@@ -12,10 +12,11 @@ class Challenge(models.Model):
     category = models.CharField(max_length=50)
     description = models.TextField()
     connection_info = models.TextField(blank=True)
-    state = models.CharField(
+    status = models.CharField(
         max_length=20,
         choices=[("HIDDEN", "Hidden"), ("VISIBLE", "Visible")],
         default="HIDDEN",
+        db_index=True,
     )
     flag_hash = models.CharField(max_length=128)
 

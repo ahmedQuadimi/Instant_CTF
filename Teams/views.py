@@ -30,14 +30,14 @@ def teams(request):
     pass
 
 
-def team_detail(request, team_id, event_id=None):
+def team_details(request, team_id, event_id=None):
     team = get_object_or_404(Team, pk=team_id)
     event = get_event_or_404(event_id) if event_id is not None else None
 
     if event is None:
         return render(
             request,
-            "teams/team_detail.html",
+            "teams/team_details.html",
             {
                 "event": event,
                 "team": team,
@@ -55,7 +55,7 @@ def team_detail(request, team_id, event_id=None):
 
     return render(
         request,
-        "teams/team_detail.html",
+        "teams/team_details.html",
         {
             "event": event,
             "team": team,

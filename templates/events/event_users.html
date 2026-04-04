@@ -18,9 +18,9 @@
         {% for roster in rosters %}
           <tr>
             <td>
-              {% url 'event_user_detail' event.id roster.user.id as user_detail_url %}
-              {% if user_detail_url %}
-                <a href="{{ user_detail_url }}">{{ roster.user.username }}</a>
+              {% url 'event_user_details' event.id roster.user.id as user_details_url %}
+              {% if user_details_url %}
+                <a href="{{ user_details_url }}">{{ roster.user.username }}</a>
               {% else %}
                 {{ roster.user.username }}
               {% endif %}

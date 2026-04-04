@@ -1,0 +1,116 @@
+{% extends "events/base.html" %}
+{% block title %}Scoreboard{% endblock %}
+{% block extra_head %}
+  {% if not event_ended %}
+    <meta http-equiv="refresh" content="60">
+  {% endif %}
+  <style>
+    .rank-gold {
+      background-color: #fff3cd;
+    }
+
+    .rank-silver {
+      background-color: #e9ecef;
+    }
+
+    .rank-bronze {
+      background-color: #f3d2c1;
+    }
+  </style>
+{% endblock %}
+{% block content %}
+  {% include "events/_event_nav.html" %}
+
+  <h1>{{ event.title }} Scoreboard</h1>
+  <p>
+    <strong>Status:</strong>
+    <span id="event-countdown" data-end-time="{{ event.end_time|date:'c' }}">
+      {% if event_ended %}Event ended{% else %}Loading countdown...{% endif %}
+    </span>
+  </p>
+
+  {% if event_ended %}
+    <p><strong>Final standings</strong></p>
+  {% endif %}
+
+  {% if ranked_teams %}
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Team name</th>
+          <th>Score</th>
+          <th>Solves</th>
+          <th>Last solve time</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for team in ranked_teams %}
+          <tr class="{% if team.rank == 1 %}rank-gold{% elif team.rank == 2 %}rank-silver{% elif team.rank == 3 %}rank-bronze{% endif %}">
+            <td>{{ team.rank }}</td>
+            <td>{{ team.team_name }}</td>
+            <td>{{ team.score }}</td>
+            <td>{{ team.solve_count }}</td>
+            <td>
+              {% if team.last_solve_at %}
+                {{ team.last_solve_at }}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No teams have joined this event yet.</p>
+  {% endif %}
+
+  <script>
+    (function () {
+      var countdown = document.getElementById("event-countdown");
+      if (!countdown) {
+        return;
+      }
+
+      var endTimeRaw = countdown.dataset.endTime;
+      var endTime = new Date(endTimeRaw);
+
+      function renderCountdown() {
+        var now = new Date();
+        var diff = endTime - now;
+
+        if (isNaN(endTime.getTime()) || diff <= 0) {
+          countdown.textContent = "Event ended";
+          return false;
+        }
+
+        var totalSeconds = Math.floor(diff / 1000);
+        var days = Math.floor(totalSeconds / 86400);
+        var hours = Math.floor((totalSeconds % 86400) / 3600);
+        var minutes = Math.floor((totalSeconds % 3600) / 60);
+        var seconds = totalSeconds % 60;
+
+        var parts = [];
+        if (days > 0) {
+          parts.push(days + "d");
+        }
+        parts.push(String(hours).padStart(2, "0") + "h");
+        parts.push(String(minutes).padStart(2, "0") + "m");
+        parts.push(String(seconds).padStart(2, "0") + "s");
+        countdown.textContent = parts.join(" ");
+        return true;
+      }
+
+      if (!renderCountdown()) {
+        return;
+      }
+
+      var intervalId = setInterval(function () {
+        if (!renderCountdown()) {
+          clearInterval(intervalId);
+        }
+      }, 1000);
+    })();
+  </script>
+{% endblock %}

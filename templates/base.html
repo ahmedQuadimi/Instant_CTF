@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Instant CTF{% endblock %}</title>
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
   <nav>
@@ -11,6 +12,12 @@
     <a href="/events/">Events</a>
     <a href="/teams/">Teams</a>
     <a href="/orgs/">Organizations</a>
+    {% if user.is_authenticated %}
+    <form method="POST" action="{% url 'account_logout' %}" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit">Log out</button>
+    </form>
+    {% endif %}
   </nav>
 
   <main>

@@ -15,9 +15,7 @@ def calculate_linear_points(max_points, min_points, decay_factor, solves_count) 
     )
 
 
-def calculate_event_points(
-    scoring_strategy, max_points, min_points, decay_factor, solves_count
-) -> int:
+def calculate_event_points(scoring_strategy, max_points, min_points, decay_factor, solves_count) -> int:
     if scoring_strategy == "STATIC":
         return max_points
     if scoring_strategy == "LINEAR":

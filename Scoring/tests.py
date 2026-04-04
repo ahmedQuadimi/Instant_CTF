@@ -60,6 +60,7 @@ class EventScoreboardViewTests(TestCase):
             organization=self.organization,
             start_time=now - timedelta(hours=1),
             end_time=now + timedelta(hours=1),
+            scoring_strategy="EXPONENTIAL",
             base_points=500,
             minimum_points=100,
             decay_parameter=0.05,
@@ -155,7 +156,7 @@ class EventScoreboardViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.context["event_ended"])
-        self.assertContains(response, 'http-equiv="refresh" content="30"', html=False)
+        self.assertContains(response, 'http-equiv="refresh" content="60"', html=False)
 
         ranked_teams = response.context["ranked_teams"]
         self.assertEqual(
@@ -180,4 +181,4 @@ class EventScoreboardViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context["event_ended"])
         self.assertContains(response, "Final standings")
-        self.assertNotContains(response, 'http-equiv="refresh" content="30"', html=False)
+        self.assertNotContains(response, 'http-equiv="refresh" content="60"', html=False)

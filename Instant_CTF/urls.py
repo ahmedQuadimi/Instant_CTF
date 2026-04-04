@@ -25,6 +25,9 @@ urlpatterns = [
     # Django Allauth (Handles /login/, /signup/, /logout/, and Google OAuth)
     path("accounts/", include("allauth.urls")),
     path("", views.home, name="home"),
+    path("dev/", views.dev_index, name="dev_index"),
+    path("dev/components/", views.dev_components, name="dev_components"),
+    path("dev/auth/", views.dev_auth, name="dev_auth"),
     path("orgs/", include("Organizations.urls")),
     path("teams/", include("Teams.urls")),
     path("events/", include("Events.urls")),

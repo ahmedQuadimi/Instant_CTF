@@ -3,18 +3,378 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <title>{% block title %}Instant CTF{% endblock %}</title>
+  <style>
+    :root {
+      --bg-base: #05071a;
+      --bg-surface: #0a0e2e;
+      --bg-elevated: #0f1440;
+      --accent-cyan: #00e5ff;
+      --accent-magenta: #d400ff;
+      --accent-gold: #ffc300;
+      --text-primary: #e8eaf6;
+      --text-secondary: #7986cb;
+      --border: 1px solid color-mix(in srgb, var(--accent-cyan) 30%, transparent);
+      --font-mono: 'IBM Plex Mono', monospace;
+      --radius: 4px;
+      --nav-height: 60px;
+      --arc-height: 60px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      background: var(--bg-base);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+    }
+
+    a {
+      color: var(--accent-cyan);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+    }
+
+    *:focus-visible {
+      outline: 2px solid var(--accent-cyan);
+      outline-offset: 2px;
+    }
+
+    .site-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--nav-height);
+      border-bottom: var(--border);
+      background: var(--bg-surface);
+      z-index: 1000;
+    }
+
+    .nav-inner {
+      width: min(1200px, 100%);
+      height: 100%;
+      margin: 0 auto;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .wordmark {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--accent-cyan);
+      white-space: nowrap;
+    }
+
+    .menu-toggle {
+      display: none;
+      min-height: 44px;
+      min-width: 44px;
+      padding: 10px 12px;
+      border: var(--border);
+      border-radius: var(--radius);
+      color: var(--text-primary);
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      background: var(--bg-elevated);
+    }
+
+    .nav-toggle-input {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      margin: -1px;
+      border: 0;
+      padding: 0;
+      clip: rect(0 0 0 0);
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .nav-center,
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-link {
+      min-height: 44px;
+      padding: 11px 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 2px solid transparent;
+      color: var(--text-primary);
+      transition: border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .nav-link:hover {
+      color: var(--accent-cyan);
+      text-decoration: none;
+    }
+
+    .nav-link.active {
+      border-bottom-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .username {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 8px;
+      color: var(--text-secondary);
+    }
+
+    .arc-divider {
+      margin-top: var(--nav-height);
+      height: var(--arc-height);
+      line-height: 0;
+      background: linear-gradient(to bottom, var(--bg-surface), var(--bg-base));
+    }
+
+    .arc-divider svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .messages-container {
+      width: min(1200px, 100%);
+      margin: 0 auto;
+      padding: 16px 24px 0;
+      display: grid;
+      gap: 12px;
+    }
+
+    .message {
+      padding: 12px 20px;
+      border-left: 4px solid;
+      border-radius: var(--radius);
+      background: var(--bg-elevated);
+      font-family: var(--font-mono);
+    }
+
+    .message-success {
+      border-left-color: var(--accent-cyan);
+      color: color-mix(in srgb, var(--accent-cyan) 75%, var(--text-primary));
+    }
+
+    .message-error {
+      border-left-color: var(--accent-magenta);
+      color: color-mix(in srgb, var(--accent-magenta) 75%, var(--text-primary));
+    }
+
+    .message-warning {
+      border-left-color: var(--accent-gold);
+      color: color-mix(in srgb, var(--accent-gold) 75%, var(--text-primary));
+    }
+
+    .message-info {
+      border-left-color: var(--accent-cyan);
+      color: color-mix(in srgb, var(--accent-cyan) 70%, var(--text-primary));
+    }
+
+    .content-wrap {
+      width: min(1200px, 100%);
+      margin: 0 auto;
+      padding: 40px 24px;
+      flex: 1 0 auto;
+    }
+
+    .site-footer {
+      margin-top: 48px;
+      background: var(--bg-surface);
+      border-top: var(--border);
+      color: var(--text-secondary);
+    }
+
+    .footer-inner {
+      width: min(1200px, 100%);
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .footer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .footer-brand {
+      display: grid;
+      gap: 6px;
+    }
+
+    .footer-wordmark {
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--accent-cyan);
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .footer-links a {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 10px;
+      color: var(--text-secondary);
+    }
+
+    .footer-links a:hover {
+      color: var(--accent-cyan);
+    }
+
+    .footer-bottom {
+      border-top: var(--border);
+      padding-top: 16px;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 767px) {
+      .nav-inner {
+        position: relative;
+        align-items: flex-start;
+        gap: 0;
+      }
+
+      .menu-toggle {
+        display: inline-flex;
+        margin-left: auto;
+      }
+
+      .nav-center,
+      .nav-right {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: max-height 0.25s ease, opacity 0.25s ease;
+        background: var(--bg-surface);
+      }
+
+      .nav-toggle-input:checked ~ .nav-center,
+      .nav-toggle-input:checked ~ .nav-right {
+        max-height: 320px;
+        opacity: 1;
+      }
+
+      .nav-link,
+      .username {
+        width: 100%;
+        justify-content: flex-start;
+        border-bottom: var(--border);
+      }
+
+      .arc-divider {
+        margin-top: calc(var(--nav-height) + 4px);
+      }
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
 </head>
 <body>
-  <nav>
-    <a href="/">Home</a>
-    <a href="/events/">Events</a>
-    <a href="/teams/">Teams</a>
-    <a href="/orgs/">Organizations</a>
+  <nav class="site-nav" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a class="wordmark" href="{% url 'home' %}">INSTANT_CTF</a>
+      <label class="menu-toggle" for="nav-toggle">Menu</label>
+      <input id="nav-toggle" class="nav-toggle-input" type="checkbox" aria-label="Toggle navigation">
+
+      <div class="nav-center">
+        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}">Home</a>
+        <a class="nav-link {% if request.path|slice:':7' == '/events' %}active{% endif %}" href="{% url 'event_list' %}">Events</a>
+        <a class="nav-link {% if request.path|slice:':6' == '/teams' %}active{% endif %}" href="{% url 'teams' %}">Teams</a>
+        <a class="nav-link {% if request.path|slice:':14' == '/organizations' %}active{% endif %}" href="{% url 'organization_home' %}">Organizations</a>
+      </div>
+
+      <div class="nav-right">
+        {% if request.user.is_authenticated %}
+          <span class="username">{{ request.user.username }}</span>
+          <a class="nav-link" href="#">Profile</a>
+          <a class="nav-link" href="{% url 'account_logout' %}">Logout</a>
+        {% else %}
+          <a class="nav-link" href="{% url 'account_login' %}">Login</a>
+          <a class="nav-link" href="{% url 'account_signup' %}">Register</a>
+        {% endif %}
+      </div>
+    </div>
   </nav>
 
-  <main>
+  <div class="arc-divider" aria-hidden="true">
+    <svg viewBox="0 0 1440 120" preserveAspectRatio="none" role="presentation">
+      <path fill="var(--bg-surface)" d="M0,0 L0,76 C240,118 520,122 720,96 C930,69 1180,30 1440,50 L1440,0 Z"></path>
+    </svg>
+  </div>
+
+  {% if messages %}
+    <div class="messages-container">
+      {% for message in messages %}
+        <div class="message message-{{ message.tags }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <main class="content-wrap">
     {% block content %}{% endblock %}
   </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <span class="footer-wordmark">INSTANT_CTF</span>
+          <span>The one platform for everything CTF.</span>
+        </div>
+        <div class="footer-links">
+          <a href="#">GitHub</a>
+          <a href="#">About</a>
+        </div>
+      </div>
+      <div class="footer-bottom">© 2025 Instant CTF. Built for hackers.</div>
+    </div>
+  </footer>
 </body>
 </html>

@@ -1,5 +1,9 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Event Challenges (Placeholder){% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'challenges.css' %}">
+{% endblock %}
 {% block content %}
   {% include 'events/_event_nav.html' %}
 

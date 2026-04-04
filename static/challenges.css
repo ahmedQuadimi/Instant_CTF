@@ -1,0 +1,5 @@
+.challenge-list,
+.challenge-detail {
+  display: grid;
+  gap: 16px;
+}

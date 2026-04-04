@@ -21,21 +21,11 @@ class SubmissionAdmin(admin.ModelAdmin):
         "challenge__name",
     )
     date_hierarchy = "timestamp"
-    readonly_fields = _SUBMISSION_READONLY_FIELDS
     list_select_related = ("user", "team", "challenge")
 
     @admin.display(description="submitted_at", ordering="timestamp")
     def submitted_at(self, obj):
         return obj.timestamp
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
 
 
 @admin.register(Solve)
@@ -49,7 +39,6 @@ class SolveAdmin(admin.ModelAdmin):
         "submission__user__email",
     )
     date_hierarchy = "timestamp"
-    readonly_fields = _SOLVE_READONLY_FIELDS
     list_select_related = (
         "team",
         "challenge",
@@ -75,12 +64,3 @@ class SolveAdmin(admin.ModelAdmin):
     @admin.display(description="created_at", ordering="timestamp")
     def created_at(self, obj):
         return obj.timestamp
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False

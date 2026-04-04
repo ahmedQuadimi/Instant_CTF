@@ -1,8 +1,236 @@
 {% extends "base.html" %}
-{% block title %}Manage Event Dashboard (Placeholder){% endblock %}
+{% block title %}Manage Event Dashboard{% endblock %}
 {% block content %}
   {% include 'events/_event_nav.html' %}
 
   <h1>Manage Event Dashboard</h1>
-  <p>This is a placeholder. Real content will go here.</p>
+
+  {% if saved %}
+    <p>Challenge saved successfully.</p>
+  {% endif %}
+
+  {% if form_errors %}
+    <div>
+      <h2>Validation Errors</h2>
+      <ul>
+        {% for error in form_errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <section>
+    <h2>Challenges</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Release Time</th>
+          <th>Solves</th>
+          <th>Status</th>
+          <th>Toggle</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for challenge in challenges %}
+          <tr>
+            <td>{{ challenge.name }}</td>
+            <td>
+              {% if challenge.release_time %}
+                {{ challenge.release_time }}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td>{{ challenge.solves_count }}</td>
+            <td>{{ challenge.status|default:challenge.state }}</td>
+            <td>
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="toggle_status" />
+                <input type="hidden" name="challenge_id" value="{{ challenge.id }}" />
+                {% if challenge.status == "VISIBLE" or challenge.state == "VISIBLE" %}
+                  <input type="hidden" name="new_status" value="HIDDEN" />
+                  <button type="submit">Set Hidden</button>
+                {% else %}
+                  <input type="hidden" name="new_status" value="VISIBLE" />
+                  <button type="submit">Set Visible</button>
+                {% endif %}
+              </form>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5">No challenges yet.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Teams Panel (Read-Only)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Team</th>
+          <th>Member Count</th>
+          <th>Joined At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in team_panel_rows %}
+          <tr>
+            <td>{{ row.team_name }}</td>
+            <td>{{ row.member_count }}</td>
+            <td>{{ row.joined_at }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="3">No teams are registered yet.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Create Challenge</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="create" />
+
+      <label for="create-name">Name</label>
+      <input id="create-name" name="name" type="text" required />
+
+      <label for="create-category">Category</label>
+      <input id="create-category" name="category" type="text" required />
+
+      <label for="create-description">Description</label>
+      <textarea id="create-description" name="description" required></textarea>
+
+      <label for="create-connection-info">Connection Info</label>
+      <textarea id="create-connection-info" name="connection_info"></textarea>
+
+      <label for="create-status">Status</label>
+      <select id="create-status" name="{{ status_field }}">
+        {% for value, label in challenge_status_choices %}
+          <option value="{{ value }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+
+      <label for="create-raw-flag">Flag (plaintext input, hashed server-side)</label>
+      <input id="create-raw-flag" name="raw_flag" type="text" required />
+
+      <label for="create-release-time">Release Time</label>
+      <input id="create-release-time" name="release_time" type="datetime-local" />
+
+      <label for="create-min-points">Min Points</label>
+      <input id="create-min-points" name="min_points" type="number" step="any" placeholder="Must be less than max points" />
+
+      <label for="create-max-points">Max Points</label>
+      <input id="create-max-points" name="max_points" type="number" step="any" placeholder="Must be greater than min points" />
+
+      <label for="create-decay-factor">Decay Factor</label>
+      <input id="create-decay-factor" name="decay_factor" type="number" step="any" min="0.0000001" placeholder="Must be > 0" />
+
+      <button type="submit">Create Challenge</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Edit Existing Challenges</h2>
+    {% for challenge in challenges %}
+      <article>
+        <h3>{{ challenge.name }}</h3>
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="edit" />
+          <input type="hidden" name="challenge_id" value="{{ challenge.id }}" />
+
+          <label for="edit-name-{{ challenge.id }}">Name</label>
+          <input
+            id="edit-name-{{ challenge.id }}"
+            name="name"
+            type="text"
+            value="{{ challenge.name }}"
+            required
+          />
+
+          <label for="edit-category-{{ challenge.id }}">Category</label>
+          <input
+            id="edit-category-{{ challenge.id }}"
+            name="category"
+            type="text"
+            value="{{ challenge.category }}"
+            required
+          />
+
+          <label for="edit-description-{{ challenge.id }}">Description</label>
+          <textarea id="edit-description-{{ challenge.id }}" name="description" required>{{ challenge.description }}</textarea>
+
+          <label for="edit-connection-info-{{ challenge.id }}">Connection Info</label>
+          <textarea id="edit-connection-info-{{ challenge.id }}" name="connection_info">{{ challenge.connection_info }}</textarea>
+
+          <label for="edit-status-{{ challenge.id }}">Status</label>
+          <select id="edit-status-{{ challenge.id }}" name="{{ status_field }}">
+            {% for value, label in challenge_status_choices %}
+              {% if value == challenge.status or value == challenge.state %}
+                <option value="{{ value }}" selected>{{ label }}</option>
+              {% else %}
+                <option value="{{ value }}">{{ label }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+
+          <label for="edit-raw-flag-{{ challenge.id }}">New Flag (optional, plaintext input)</label>
+          <input id="edit-raw-flag-{{ challenge.id }}" name="raw_flag" type="text" />
+
+          <label for="edit-release-time-{{ challenge.id }}">Release Time</label>
+          <input
+            id="edit-release-time-{{ challenge.id }}"
+            name="release_time"
+            type="datetime-local"
+            value="{% if challenge.release_time %}{{ challenge.release_time|date:'Y-m-d\\TH:i' }}{% endif %}"
+          />
+
+          <label for="edit-min-points-{{ challenge.id }}">Min Points</label>
+          <input
+            id="edit-min-points-{{ challenge.id }}"
+            name="min_points"
+            type="number"
+            step="any"
+            placeholder="Must be less than max points"
+            value="{{ challenge.min_points|default:'' }}"
+          />
+
+          <label for="edit-max-points-{{ challenge.id }}">Max Points</label>
+          <input
+            id="edit-max-points-{{ challenge.id }}"
+            name="max_points"
+            type="number"
+            step="any"
+            placeholder="Must be greater than min points"
+            value="{{ challenge.max_points|default:'' }}"
+          />
+
+          <label for="edit-decay-factor-{{ challenge.id }}">Decay Factor</label>
+          <input
+            id="edit-decay-factor-{{ challenge.id }}"
+            name="decay_factor"
+            type="number"
+            step="any"
+            min="0.0000001"
+            placeholder="Must be > 0"
+            value="{{ challenge.decay_factor|default:'' }}"
+          />
+
+          <button type="submit">Save Challenge</button>
+        </form>
+      </article>
+    {% empty %}
+      <p>No challenges yet.</p>
+    {% endfor %}
+  </section>
 {% endblock %}

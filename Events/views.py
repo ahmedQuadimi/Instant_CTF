@@ -30,7 +30,7 @@ from Scoring.models import Solve
 
 
 _CHALLENGE_FIELD_NAMES = {field.name for field in Challenge._meta.fields}
-_CHALLENGE_STATUS_FIELD = "status" if "status" in _CHALLENGE_FIELD_NAMES else "state"
+_CHALLENGE_STATUS_FIELD = "status"
 
 
 def _has_manage_access(user, event):
@@ -115,14 +115,14 @@ def event_users(request, event_id):
     )
 
 
-def event_user_detail(request, event_id, user_id):
+def event_user_details(request, event_id, user_id):
     event = get_event_or_404(event_id)
     User = get_user_model()
     profile_user = get_object_or_404(User, pk=user_id)
     roster = get_object_or_404(EventRoster, user=profile_user, event=event)
     return render(
         request,
-        "events/event_user_detail.html",
+        "events/event_user_details.html",
         {
             "event": event,
             "profile_user": profile_user,
@@ -328,7 +328,7 @@ def event_challenges(request, event_id):
 
     challenges = Challenge.objects.filter(
         event=event,
-        state="VISIBLE",
+        status="VISIBLE",
         release_time__lte=now,
     ).annotate(
         is_solved=Exists(solved_subquery)

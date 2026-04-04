@@ -44,13 +44,13 @@
               {% endif %}
             </td>
             <td>{{ challenge.solves_count }}</td>
-            <td>{{ challenge.status|default:challenge.state }}</td>
+            <td>{{ challenge.status|default:challenge.status }}</td>
             <td>
               <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="toggle_status" />
                 <input type="hidden" name="challenge_id" value="{{ challenge.id }}" />
-                {% if challenge.status == "VISIBLE" or challenge.state == "VISIBLE" %}
+                {% if challenge.status == "VISIBLE" or challenge.status == "VISIBLE" %}
                   <input type="hidden" name="new_status" value="HIDDEN" />
                   <button type="submit">Set Hidden</button>
                 {% else %}
@@ -176,7 +176,7 @@
           <label for="edit-status-{{ challenge.id }}">Status</label>
           <select id="edit-status-{{ challenge.id }}" name="{{ status_field }}">
             {% for value, label in challenge_status_choices %}
-              {% if value == challenge.status or value == challenge.state %}
+              {% if value == challenge.status or value == challenge.status %}
                 <option value="{{ value }}" selected>{{ label }}</option>
               {% else %}
                 <option value="{{ value }}">{{ label }}</option>

@@ -8,7 +8,7 @@ def org_home(request):
     pass
 
 
-def org_detail(request, org_id):
+def org_details(request, org_id):
     # TODO: implements the organization specific page
     pass
 

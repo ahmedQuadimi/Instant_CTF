@@ -24,6 +24,9 @@ class Event(models.Model):
     start_time = models.DateTimeField(db_index=True)
     end_time = models.DateTimeField(db_index=True)
     max_team_size = models.IntegerField(default=0, help_text="0 if not limit is applicable")
+    creator = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="created_events"
+    )
 
 
     scoring_strategy = models.CharField(

@@ -27,6 +27,11 @@ class Challenge(models.Model):
         help_text="Date from when the problem is going to be available .",
     )
     solves_count = models.IntegerField(default=0, db_index=True)
+    current_worth = models.IntegerField(
+        default=0,
+        db_index=True,
+        help_text="Current points value of this challenge. Updated based on solves.",
+    )
 
     class Meta:
         ordering = ["category", "release_time", "name"]

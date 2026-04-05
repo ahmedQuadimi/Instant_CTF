@@ -132,7 +132,7 @@ def submit_flag(request, event_id, challenge_id):
                 challenge_id=challenge.id,
                 defaults={
                     "submission": submission,
-                    "awarded_points": getattr(challenge, "points", 0),
+                    "awarded_points": challenge.current_worth,
                     "timestamp": now,
                 },
             )

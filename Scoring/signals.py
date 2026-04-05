@@ -4,7 +4,35 @@ from django.dispatch import receiver
 from Challenges.models import Challenge
 from Events.models import Event, EventRoster
 from Scoring.models import Solve
-from Scoring.services import invalidate_event_scoreboard_cache
+from Scoring.services import invalidate_event_scoreboard_cache, _dynamic_points
+
+
+@receiver(post_save, sender=Challenge)
+def initialize_challenge_current_worth(sender, instance, created, **kwargs):
+    """Initialize current_worth to event's base_points when challenge is created."""
+    if created and instance.current_worth == 0:
+        instance.current_worth = instance.event.base_points
+        instance.save(update_fields=["current_worth"])
+
+
+@receiver(post_save, sender=Solve)
+def update_challenge_current_worth(sender, instance, created, **kwargs):
+    """Update the current_worth of a challenge when a new solve is recorded."""
+    if created:
+        challenge = instance.challenge
+        event = challenge.event
+        
+        # Get scoring parameters from the event
+        base_points = event.base_points
+        min_points = event.minimum_points
+        decay_factor = event.decay_parameter
+        
+        # Calculate new current_worth based on current solves count
+        new_worth = _dynamic_points(
+            base_points, min_points, decay_factor, challenge.solves_count
+        )
+        challenge.current_worth = new_worth
+        challenge.save(update_fields=["current_worth"])
 
 
 @receiver(post_save, sender=Solve)

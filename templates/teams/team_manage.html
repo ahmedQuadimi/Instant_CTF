@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}Manage {{ team.name }} — Instant CTF{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/platform.css">
+<style>
+  .manage-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .manage-header h1 { margin: 0; font-size: 1.4rem; }
+  .section-title {
+    font-size: 1.1rem;
+    color: var(--accent-secondary);
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: var(--border);
+  }
+  .request-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-elevated);
+    border: var(--border);
+    border-radius: var(--radius);
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .request-user {
+    flex: 1;
+    min-width: 120px;
+  }
+  .request-user strong { color: var(--text-primary); }
+  .request-user small { color: var(--text-secondary); display: block; font-size: 0.8rem; }
+  .request-actions { display: flex; gap: 8px; }
+  .btn-accept, .btn-reject {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    font-size: 0.85rem;
+  }
+  .btn-accept {
+    background: color-mix(in srgb, var(--accent-primary) 25%, transparent);
+    color: var(--accent-primary);
+    border: 1px solid color-mix(in srgb, var(--accent-primary) 40%, transparent);
+  }
+  .btn-accept:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 12px color-mix(in srgb, var(--accent-primary) 30%, transparent);
+  }
+  .btn-reject {
+    background: color-mix(in srgb, var(--accent-magenta) 20%, transparent);
+    color: var(--accent-magenta);
+    border: 1px solid color-mix(in srgb, var(--accent-magenta) 35%, transparent);
+  }
+  .btn-reject:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 12px color-mix(in srgb, var(--accent-magenta) 25%, transparent);
+  }
+  .pending-count {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    background: color-mix(in srgb, var(--accent-gold) 20%, transparent);
+    color: var(--accent-gold);
+    border-radius: var(--radius);
+    font-size: 0.8rem;
+    margin-left: 8px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="platform-stack">
+  <div class="manage-header">
+    <h1>Manage: {{ team.name }}</h1>
+    <a class="btn-secondary" href="{% url 'team_detail' team.id %}" style="min-height:44px;padding:10px 14px;border-radius:var(--radius);border:var(--border);background:var(--bg-surface);color:var(--text-primary);font-family:var(--font-mono);text-decoration:none;display:inline-flex;align-items:center;">← Back to Team</a>
+  </div>
+  <p class="meta-line">Captain: {{ team.captain.username }}</p>
+
+  {% if pending_requests %}
+  <div style="margin-top:16px;">
+    <h2 class="section-title">Pending Join Requests <span class="pending-count"><span>{{ pending_requests|length }}</span></span></h2>
+    {% for jr in pending_requests %}
+      <div class="request-card">
+        <div class="request-user">
+          <strong>{{ jr.user.username }}</strong>
+          <small>Requested {{ jr.requested_at|date:"M d, Y H:i" }}</small>
+        </div>
+        <div class="request-actions">
+          <form method="POST" class="form" style="display:inline;max-width:100%;padding:10px;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="accept" />
+            <input type="hidden" name="join_request_id" value="{{ jr.id }}" />
+            <button type="submit" class="oauthButton">✓ Accept</button>
+          </form>
+          <form method="POST" class="form" style="display:inline;max-width:100%;padding:10px;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="reject" />
+            <input type="hidden" name="join_request_id" value="{{ jr.id }}" />
+            <button type="submit" class="oauthButton">✕ Reject</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div style="margin-top:16px;">
+    <h2 class="section-title">Members</h2>
+    {% if members %}
+    <table class="platform-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Event</th>
+          <th>Joined</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for roster in members %}
+          <tr>
+            <td>{{ roster.user.username }}</td>
+            <td>{{ roster.event.title }}</td>
+            <td>{{ roster.joined_at|date:"M d, Y" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <div class="empty-state"><p>No members registered in events yet.</p></div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

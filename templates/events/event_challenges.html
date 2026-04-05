@@ -1,12 +1,31 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Event Challenges (Placeholder){% endblock %}
+{% block title %}Event Challenges{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="{% static 'challenges.css' %}">
+  <link rel="stylesheet" href="/static/css/platform.css">
 {% endblock %}
 {% block content %}
   {% include 'events/_event_nav.html' %}
 
-  <h1>Event Challenges</h1>
-  <p>This is a placeholder. Real content will go here.</p>
+  <section class="platform-stack challenge-list">
+    <h1 class="gradient-heading">{{ event.title }} Challenges</h1>
+    {% if challenges %}
+      <div class="challenge-grid">
+        {% for challenge in challenges %}
+          <article class="challenge-card {% if challenge.is_solved %}solved{% else %}unsolved{% endif %}">
+            <h2>{{ challenge.name }}</h2>
+            <p class="meta-line">Category: {{ challenge.category }}</p>
+            <p class="meta-line">Solves: {{ challenge.solves_count }}</p>
+            {% if challenge.is_solved %}
+              <div class="already-solved-banner">Solved</div>
+            {% endif %}
+            <a class="btn-secondary" href="{% url 'challenge_details' event.id challenge.id %}">Open Challenge</a>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state"><p>No visible challenges yet.</p></div>
+    {% endif %}
+  </section>
 {% endblock %}

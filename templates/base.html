@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,14 +7,19 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/platform.css' %}">
   <title>{% block title %}Instant CTF{% endblock %}</title>
+  {% block extra_head %}{% endblock %}
   <style>
     :root {
       --bg-base: #05071a;
       --bg-surface: #0a0e2e;
       --bg-elevated: #0f1440;
+      --accent-primary: #ff6b2b;
+      --accent-secondary: #ffc300;
       --accent-cyan: #00e5ff;
       --accent-magenta: #d400ff;
+      --accent-lilac-soft: #b39dff;
       --accent-gold: #ffc300;
       --text-primary: #e8eaf6;
       --text-secondary: #7986cb;
@@ -35,16 +41,136 @@
     }
 
     body {
-      background: var(--bg-base);
+      background-color: var(--bg-base);
       color: var(--text-primary);
       font-family: var(--font-mono);
       line-height: 1.5;
       display: flex;
       flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .background-paths-container {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .paths-wrapper {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .path-svg {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      color: var(--text-primary);
+    }
+
+    .animated-path {
+      stroke: currentColor;
+      stroke-dasharray: 2000;
+      stroke-dashoffset: 2000;
+      animation-name: drawPath;
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+    }
+
+    .boxes-wrapper {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .boxes-core {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%)
+                 skewX(-48deg) skewY(14deg)
+                 scale(0.675) translateZ(0);
+      display: flex;
+      width: max-content;
+      height: max-content;
+      padding: 1rem;
+    }
+
+    .site-nav .boxes-core {
+      left: 50%;
+    }
+
+    .site-footer .boxes-core {
+      left: 50%;
+    }
+
+    .box-column {
+      width: 4rem;
+      position: relative;
+      border-left: 1px solid var(--bg-elevated);
+    }
+
+    .box-cell {
+      width: 4rem;
+      height: 2rem;
+      position: relative;
+      border-right: 1px solid var(--bg-elevated);
+      border-top: 1px solid var(--bg-elevated);
+      transition: background-color 2s ease;
+    }
+
+    .boxes-wrapper .box-cell {
+      pointer-events: all;
+    }
+
+    .box-cell:nth-child(4n + 1):hover {
+      background-color: color-mix(in srgb, var(--accent-lilac-soft) 70%, var(--bg-elevated));
+      transition-duration: 0s;
+    }
+
+    .box-cell:nth-child(4n + 2):hover {
+      background-color: color-mix(in srgb, var(--accent-lilac-soft) 62%, var(--bg-elevated));
+      transition-duration: 0s;
+    }
+
+    .box-cell:nth-child(4n + 3):hover {
+      background-color: color-mix(in srgb, var(--accent-lilac-soft) 68%, var(--bg-elevated));
+      transition-duration: 0s;
+    }
+
+    .box-cell:nth-child(4n + 4):hover {
+      background-color: color-mix(in srgb, var(--accent-lilac-soft) 60%, var(--bg-elevated));
+      transition-duration: 0s;
+    }
+
+    .box-plus {
+      position: absolute;
+      height: 1.5rem;
+      width: 2.5rem;
+      top: -14px;
+      left: -22px;
+      color: var(--bg-elevated);
+      stroke-width: 1px;
+      pointer-events: none;
+    }
+
+    @keyframes drawPath {
+      0%   { stroke-dashoffset: 2000;  opacity: 0.3; }
+      50%  { stroke-dashoffset: 0;     opacity: 0.6; }
+      100% { stroke-dashoffset: -2000; opacity: 0.3; }
     }
 
     a {
-      color: var(--accent-cyan);
+      color: var(--accent-primary);
       text-decoration: none;
     }
 
@@ -65,12 +191,34 @@
       left: 0;
       right: 0;
       height: var(--nav-height);
-      border-bottom: var(--border);
-      background: var(--bg-surface);
+      border-bottom: none;
+      background: color-mix(in srgb, var(--bg-surface) 75%, transparent);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       z-index: 1000;
+      box-shadow: 0 1px 12px color-mix(in srgb, var(--accent-primary) 8%, transparent);
+    }
+
+    .site-nav::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        var(--accent-primary),
+        var(--accent-secondary),
+        var(--accent-primary),
+        transparent
+      );
     }
 
     .nav-inner {
+      position: relative;
+      z-index: 1;
       width: min(1200px, 100%);
       height: 100%;
       margin: 0 auto;
@@ -80,6 +228,7 @@
       justify-content: space-between;
       gap: 16px;
       flex-wrap: wrap;
+      pointer-events: none;
     }
 
     .wordmark {
@@ -88,8 +237,8 @@
       min-height: 44px;
       font-weight: 700;
       letter-spacing: 0.06em;
-      color: var(--accent-cyan);
       white-space: nowrap;
+      pointer-events: auto;
     }
 
     .menu-toggle {
@@ -105,6 +254,7 @@
       justify-content: center;
       font-weight: 500;
       background: var(--bg-elevated);
+      pointer-events: auto;
     }
 
     .nav-toggle-input {
@@ -135,16 +285,17 @@
       border-bottom: 2px solid transparent;
       color: var(--text-primary);
       transition: border-color 0.2s ease, color 0.2s ease;
+      pointer-events: auto;
     }
 
     .nav-link:hover {
-      color: var(--accent-cyan);
+      color: var(--accent-primary);
       text-decoration: none;
     }
 
     .nav-link.active {
-      border-bottom-color: var(--accent-cyan);
-      color: var(--accent-cyan);
+      border-bottom-color: var(--accent-primary);
+      color: var(--accent-primary);
     }
 
     .username {
@@ -153,6 +304,7 @@
       align-items: center;
       padding: 0 8px;
       color: var(--text-secondary);
+      pointer-events: auto;
     }
 
     .arc-divider {
@@ -160,12 +312,15 @@
       height: var(--arc-height);
       line-height: 0;
       background: linear-gradient(to bottom, var(--bg-surface), var(--bg-base));
+      position: relative;
+      z-index: 2;
     }
 
     .arc-divider svg {
       width: 100%;
       height: 100%;
       display: block;
+      animation: arcFloat 6s ease-in-out infinite;
     }
 
     .messages-container {
@@ -174,6 +329,8 @@
       padding: 16px 24px 0;
       display: grid;
       gap: 12px;
+      position: relative;
+      z-index: 2;
     }
 
     .message {
@@ -182,11 +339,12 @@
       border-radius: var(--radius);
       background: var(--bg-elevated);
       font-family: var(--font-mono);
+      animation: slideDown 0.3s ease-out both;
     }
 
     .message-success {
-      border-left-color: var(--accent-cyan);
-      color: color-mix(in srgb, var(--accent-cyan) 75%, var(--text-primary));
+      border-left-color: var(--accent-primary);
+      color: color-mix(in srgb, var(--accent-primary) 75%, var(--text-primary));
     }
 
     .message-error {
@@ -208,7 +366,10 @@
       width: min(1200px, 100%);
       margin: 0 auto;
       padding: 40px 24px;
-      flex: 1 0 auto;
+      flex: 1;
+      animation: pageFadeIn 0.4s ease-out both;
+      position: relative;
+      z-index: 2;
     }
 
     .site-footer {
@@ -216,14 +377,20 @@
       background: var(--bg-surface);
       border-top: var(--border);
       color: var(--text-secondary);
+      position: relative;
+      overflow: hidden;
+      z-index: 2;
     }
 
     .footer-inner {
+      position: relative;
+      z-index: 1;
       width: min(1200px, 100%);
       margin: 0 auto;
       padding: 24px;
       display: grid;
       gap: 20px;
+      pointer-events: none;
     }
 
     .footer-top {
@@ -242,7 +409,8 @@
     .footer-wordmark {
       font-weight: 700;
       letter-spacing: 0.06em;
-      color: var(--accent-cyan);
+      color: var(--accent-secondary);
+      pointer-events: auto;
     }
 
     .footer-links {
@@ -257,10 +425,11 @@
       align-items: center;
       padding: 0 10px;
       color: var(--text-secondary);
+      pointer-events: auto;
     }
 
     .footer-links a:hover {
-      color: var(--accent-cyan);
+      color: var(--accent-primary);
     }
 
     .footer-bottom {
@@ -315,9 +484,69 @@
   {% block extra_css %}{% endblock %}
 </head>
 <body>
+  <div class="background-paths-container" aria-hidden="true">
+    <div class="paths-wrapper">
+      <svg class="path-svg" viewBox="0 0 1920 1080" preserveAspectRatio="none" role="presentation" aria-hidden="true">
+        <path
+          class="animated-path"
+          d="M-120 840 C 180 620, 360 980, 680 760 C 980 560, 1180 920, 1480 720 C 1720 560, 1880 700, 2060 620"
+          fill="none"
+          stroke-width="1.2"
+          stroke-linecap="round"
+          style="animation-duration: 18s; animation-delay: -2s;"
+        ></path>
+        <path
+          class="animated-path"
+          d="M-160 330 C 220 180, 460 520, 820 360 C 1160 210, 1380 500, 1760 340 C 1900 280, 2020 310, 2140 260"
+          fill="none"
+          stroke-width="0.9"
+          stroke-linecap="round"
+          style="animation-duration: 24s; animation-delay: -9s;"
+        ></path>
+      </svg>
+
+      <svg class="path-svg" viewBox="0 0 1920 1080" preserveAspectRatio="none" role="presentation" aria-hidden="true">
+        <path
+          class="animated-path"
+          d="M-100 1020 C 200 860, 520 1040, 860 900 C 1180 760, 1450 960, 1780 820 C 1940 750, 2060 780, 2200 720"
+          fill="none"
+          stroke-width="1"
+          stroke-linecap="round"
+          style="animation-duration: 30s; animation-delay: -5s;"
+        ></path>
+        <path
+          class="animated-path"
+          d="M-140 120 C 140 260, 420 -20, 760 170 C 1060 340, 1330 80, 1650 240 C 1880 360, 2040 310, 2180 390"
+          fill="none"
+          stroke-width="1.1"
+          stroke-linecap="round"
+          style="animation-duration: 22s; animation-delay: -12s;"
+        ></path>
+      </svg>
+    </div>
+  </div>
+
   <nav class="site-nav" aria-label="Main navigation">
+    <div class="boxes-wrapper" aria-hidden="true">
+      <div class="boxes-core">
+        {% for i in "x"|ljust:"200" %}
+        <div class="box-column">
+          {% for j in "x"|ljust:"60" %}
+          <div class="box-cell">
+            {% if forloop.counter|divisibleby:2 %}
+            <svg class="box-plus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
+            </svg>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
     <div class="nav-inner">
-      <a class="wordmark" href="{% url 'home' %}">INSTANT_CTF</a>
+      <a class="wordmark shiny-text" href="{% url 'home' %}">INSTANT_CTF</a>
       <label class="menu-toggle" for="nav-toggle">Menu</label>
       <input id="nav-toggle" class="nav-toggle-input" type="checkbox" aria-label="Toggle navigation">
 
@@ -325,13 +554,13 @@
         <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}">Home</a>
         <a class="nav-link {% if request.path|slice:':7' == '/events' %}active{% endif %}" href="{% url 'event_list' %}">Events</a>
         <a class="nav-link {% if request.path|slice:':6' == '/teams' %}active{% endif %}" href="{% url 'teams' %}">Teams</a>
-        <a class="nav-link {% if request.path|slice:':14' == '/organizations' %}active{% endif %}" href="{% url 'organization_home' %}">Organizations</a>
+        <a class="nav-link {% if request.path|slice:':5' == '/orgs' %}active{% endif %}" href="{% url 'organization_home' %}">Organizations</a>
       </div>
 
       <div class="nav-right">
         {% if request.user.is_authenticated %}
           <span class="username">{{ request.user.username }}</span>
-          <a class="nav-link" href="#">Profile</a>
+          <a class="nav-link" href="{% url 'profile' user_id=request.user.id %}">Profile</a>
           <a class="nav-link" href="{% url 'account_logout' %}">Logout</a>
         {% else %}
           <a class="nav-link" href="{% url 'account_login' %}">Login</a>
@@ -362,6 +591,24 @@
   </main>
 
   <footer class="site-footer">
+    <div class="boxes-wrapper" aria-hidden="true">
+      <div class="boxes-core">
+        {% for i in "x"|ljust:"200" %}
+        <div class="box-column">
+          {% for j in "x"|ljust:"60" %}
+          <div class="box-cell">
+            {% if forloop.counter|divisibleby:2 %}
+            <svg class="box-plus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
+            </svg>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
     <div class="footer-inner">
       <div class="footer-top">
         <div class="footer-brand">

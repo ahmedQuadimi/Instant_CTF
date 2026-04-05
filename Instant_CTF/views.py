@@ -15,3 +15,19 @@ def dev_components(request):
 
 def dev_auth(request):
     return render(request, "dev/auth.html")
+
+
+def dev_challenges(request):
+    return render(request, "dev/challenges.html")
+
+
+def dev_scoreboard(request):
+    return render(request, "dev/scoreboard.html")
+
+
+def dev_events(request):
+    return render(request, "dev/events.html")
+
+
+def dev_forms(request):
+    return render(request, "dev/forms.html")

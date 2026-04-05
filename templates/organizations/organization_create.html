@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Organization{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
+
+{% block content %}
+  <section class="platform-stack">
+    <h1>Create Organization</h1>
+
+    {% if saved %}
+      <div class="message-card success">Organization created successfully.</div>
+    {% endif %}
+
+    {% if errors %}
+      <div class="message-card error">
+        <ul>
+          {% for error in errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <form class="form" method="post">
+      {% csrf_token %}
+      <label for="name">Name</label>
+      <input id="name" name="name" type="text" required>
+
+      <label for="description">Description</label>
+      <textarea id="description" name="description" rows="4"></textarea>
+
+      <button class="oauthButton" type="submit">Create Organization</button>
+    </form>
+  </section>
+{% endblock %}

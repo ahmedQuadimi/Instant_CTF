@@ -339,7 +339,7 @@ else:
 
     <section aria-labelledby="forms-heading">
       <h2 id="forms-heading">Form Elements</h2>
-      <form class="form-demo" method="post" action="#">
+      <form class="form" method="post" action="#">
         {% csrf_token %}
         <label>
           Challenge title
@@ -349,7 +349,7 @@ else:
           Description
           <textarea name="description" placeholder="Write challenge description"></textarea>
         </label>
-        <button class="btn btn-primary" type="submit">Submit</button>
+        <button class="oauthButton" type="submit">Submit</button>
       </form>
     </section>
 

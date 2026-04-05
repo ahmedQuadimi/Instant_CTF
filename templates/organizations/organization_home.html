@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Organizations{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
+
+{% block content %}
+  <section class="platform-stack">
+    <div class="platform-header-row">
+      <h1>Organizations</h1>
+      {% if request.user.is_authenticated %}
+        <a class="btn-primary" href="{% url 'organization_create' %}">Create Organization</a>
+      {% endif %}
+    </div>
+
+    {% if organizations %}
+      <div class="card-grid">
+        {% for organization in organizations %}
+          <article class="platform-card">
+            <h2><a href="{% url 'organization_details' organization.id %}">{{ organization.name }}</a></h2>
+            <p>{{ organization.description|default:"No description provided." }}</p>
+            <p class="meta-line">Members: {{ organization.member_count|default:"-" }}</p>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state"><p>No organizations yet.</p></div>
+    {% endif %}
+  </section>
+{% endblock %}

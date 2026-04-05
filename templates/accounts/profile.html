@@ -80,7 +80,7 @@
 {% endblock %}
 
 {% block content %}
-<section class="platform-stack">
+<section class="platform-stack content-single">
   <div class="profile-header">
     <div class="profile-avatar">{{ profile_user.username|first|upper }}</div>
     <div class="profile-info">
@@ -92,16 +92,16 @@
     {% endif %}
   </div>
 
-  <div class="stats-grid">
-    <div class="stat-card">
+  <div class="stat-row">
+    <div class="stat-item">
+      <span class="stat-label">ELO</span>
+      <span class="stat-value">{{ profile_user.elo }}</span>
+    </div>
+    <div class="stat-item">
       <span class="stat-label">Teams</span>
       <span class="stat-value">{{ teams|length }}</span>
     </div>
-    <div class="stat-card">
-      <span class="stat-label">Events</span>
-      <span class="stat-value">{{ event_rosters|length }}</span>
-    </div>
-    <div class="stat-card">
+    <div class="stat-item">
       <span class="stat-label">Solves</span>
       <span class="stat-value">{{ solve_count }}</span>
     </div>

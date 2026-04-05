@@ -6,7 +6,7 @@
 {% block content %}
   {% include 'events/_event_nav.html' %}
 
-  <section class="platform-stack">
+  <section class="platform-stack content-wide">
     <h1 class="gradient-heading">Manage Event Dashboard</h1>
     <p class="meta-line">Event: {{ event.title }}</p>
     <a class="btn-secondary" href="{% url 'create_challenge' event.id %}">Create Challenge</a>
@@ -26,84 +26,86 @@
       </div>
     {% endif %}
 
-    <section>
-      <h2>Challenges Panel</h2>
-      <table class="platform-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Release Time</th>
-          <th>Solves</th>
-          <th>Status</th>
-          <th>Toggle</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for challenge in challenges %}
+    <div class="dashboard-panels">
+      <section>
+        <h2>Challenges Panel</h2>
+        <table class="platform-table">
+        <thead>
           <tr>
-            <td>{{ challenge.name }}</td>
-            <td>
-              {% if challenge.release_time %}
-                {{ challenge.release_time }}
-              {% else %}
-                -
-              {% endif %}
-            </td>
-            <td>{{ challenge.solves_count }}</td>
-            <td><span class="status-badge"><span>{{ challenge.status|default:challenge.status }}</span></span></td>
-            <td>
-              <form method="post" class="form" style="max-width: 100%; padding: 10px;">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="toggle_status" />
-                <input type="hidden" name="challenge_id" value="{{ challenge.id }}" />
-                {% if challenge.status == "VISIBLE" or challenge.status == "VISIBLE" %}
-                  <input type="hidden" name="new_status" value="HIDDEN" />
-                  <button type="submit" class="oauthButton">Set Hidden</button>
+            <th>Name</th>
+            <th>Release Time</th>
+            <th>Solves</th>
+            <th>Status</th>
+            <th>Toggle</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for challenge in challenges %}
+            <tr>
+              <td>{{ challenge.name }}</td>
+              <td>
+                {% if challenge.release_time %}
+                  {{ challenge.release_time }}
                 {% else %}
-                  <input type="hidden" name="new_status" value="VISIBLE" />
-                  <button type="submit" class="oauthButton">Set Visible</button>
+                  -
                 {% endif %}
-              </form>
-            </td>
-          </tr>
-        {% empty %}
-          <tr>
-            <td colspan="5">No challenges yet.</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-      </table>
-    </section>
+              </td>
+              <td>{{ challenge.solves_count }}</td>
+              <td><span class="status-badge"><span>{{ challenge.status|default:challenge.status }}</span></span></td>
+              <td>
+                <form method="post" style="max-width:100%;">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="toggle_status" />
+                  <input type="hidden" name="challenge_id" value="{{ challenge.id }}" />
+                  {% if challenge.status == "VISIBLE" or challenge.status == "VISIBLE" %}
+                    <input type="hidden" name="new_status" value="HIDDEN" />
+                    <button type="submit" class="oauthButton oauthButton--small">Set Hidden</button>
+                  {% else %}
+                    <input type="hidden" name="new_status" value="VISIBLE" />
+                    <button type="submit" class="oauthButton oauthButton--small">Set Visible</button>
+                  {% endif %}
+                </form>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="5"><div class="empty-state">No challenges yet.</div></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        </table>
+      </section>
 
-    <section>
-      <h2>Teams Panel (Read-Only)</h2>
-      <table class="platform-table">
-      <thead>
-        <tr>
-          <th>Team</th>
-          <th>Member Count</th>
-          <th>Joined At</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in team_panel_rows %}
+      <section>
+        <h2>Teams Panel (Read-Only)</h2>
+        <table class="platform-table">
+        <thead>
           <tr>
-            <td>{{ row.team_name }}</td>
-            <td>{{ row.member_count }}</td>
-            <td>{{ row.joined_at }}</td>
+            <th>Team</th>
+            <th>Member Count</th>
+            <th>Joined At</th>
           </tr>
-        {% empty %}
-          <tr>
-            <td colspan="3">No teams are registered yet.</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-      </table>
-    </section>
+        </thead>
+        <tbody>
+          {% for row in team_panel_rows %}
+            <tr>
+              <td>{{ row.team_name }}</td>
+              <td>{{ row.member_count }}</td>
+              <td>{{ row.joined_at }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="3"><div class="empty-state">No teams are registered yet.</div></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        </table>
+      </section>
+    </div>
 
   <section>
     <h2>Create Challenge</h2>
-    <form method="post" class="form">
+    <form method="post" class="form content-form">
       {% csrf_token %}
       <input type="hidden" name="action" value="create" />
 
@@ -150,7 +152,7 @@
     {% for challenge in challenges %}
       <article>
         <h3>{{ challenge.name }}</h3>
-        <form method="post" class="form">
+        <form method="post" class="form content-form">
           {% csrf_token %}
           <input type="hidden" name="action" value="edit" />
           <input type="hidden" name="challenge_id" value="{{ challenge.id }}" />
@@ -236,7 +238,7 @@
         </form>
       </article>
     {% empty %}
-      <p>No challenges yet.</p>
+      <div class="empty-state">No challenges yet.</div>
     {% endfor %}
   </section>
   </section>

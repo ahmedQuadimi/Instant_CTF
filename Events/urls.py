@@ -1,6 +1,6 @@
 from django.urls import path
 
-from Challenges.views import add_challenge, challenge_details, submit_flag, challenge_details_json
+from Challenges.views import add_challenge, submit_flag, challenge_details_json
 from Scoring.views import event_scoreboard, event_scoreboard_data
 from Teams.views import event_teams, team_details
 
@@ -43,11 +43,6 @@ urlpatterns = [
         "<int:event_id>/register/",
         views.register_for_event,
         name="register_for_event",
-    ),
-    path(
-        "<int:event_id>/challenges/<int:challenge_id>/",
-        challenge_details,
-        name="challenge_details",
     ),
     path(
         "<int:event_id>/challenges/<int:challenge_id>/submit/",

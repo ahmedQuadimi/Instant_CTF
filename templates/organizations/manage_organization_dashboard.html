@@ -69,7 +69,7 @@
 {% endblock %}
 
 {% block content %}
-  <section class="platform-stack">
+  <section class="platform-stack content-wide">
     <div class="platform-header-row">
       <h1>Manage {{ organization.name }}</h1>
       <div class="button-row">
@@ -94,7 +94,7 @@
         <span class="role-badge role-{{ membership.role }}"><span>{{ membership.role }}</span></span>
         {% if membership.role != "OWNER" %}
           <div class="member-actions">
-            <form method="POST" class="form" style="display:inline-flex;gap:6px;align-items:center;max-width:100%;padding:10px;">
+            <form method="POST" style="display:inline-flex;gap:6px;align-items:center;max-width:100%;">
               {% csrf_token %}
               <input type="hidden" name="action" value="role_change" />
               <input type="hidden" name="member_id" value="{{ membership.id }}" />
@@ -102,13 +102,13 @@
                 <option value="ADMIN" {% if membership.role == "ADMIN" %}selected{% endif %}>Admin</option>
                 <option value="MEMBER" {% if membership.role == "MEMBER" %}selected{% endif %}>Member</option>
               </select>
-              <button type="submit" class="oauthButton">Update</button>
+              <button type="submit" class="oauthButton oauthButton--small">Update</button>
             </form>
-            <form method="POST" class="form" style="display:inline;max-width:100%;padding:10px;">
+            <form method="POST" style="display:inline;max-width:100%;">
               {% csrf_token %}
               <input type="hidden" name="action" value="remove_member" />
               <input type="hidden" name="member_id" value="{{ membership.id }}" />
-              <button type="submit" class="oauthButton">✕ Remove</button>
+              <button type="submit" class="oauthButton oauthButton--small">✕ Remove</button>
             </form>
           </div>
         {% endif %}

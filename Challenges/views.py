@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.db.models import F
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -21,41 +21,6 @@ from Scoring.models import Solve, Submission
 from .models import Challenge
 
 # Create your views here.
-
-
-@login_required
-def challenge_details(request, event_id, challenge_id):
-    event = get_event_or_404(event_id)
-    roster_or_response = get_roster_or_403(request, event_id, json=False, with_team=True)
-    if not isinstance(roster_or_response, EventRoster):
-        return roster_or_response
-    roster = roster_or_response
-
-    challenge = get_object_or_404(Challenge, pk=challenge_id, event_id=event_id)
-
-    already_solved = Solve.objects.filter(
-        team_id=roster.team_id,
-        challenge_id=challenge.id,
-    ).exists()
-
-    window_start = timezone.now() - timedelta(seconds=60)
-    recent_fail_count = Submission.objects.filter(
-        user=request.user,
-        challenge_id=challenge.id,
-        is_correct=False,
-        timestamp__gte=window_start,
-    ).count()
-
-    return render(
-        request,
-        "challenges/challenge_detail.html",
-        {
-            "event": event,
-            "challenge": challenge,
-            "already_solved": already_solved,
-            "recent_fail_count": recent_fail_count,
-        },
-    )
 
 
 @login_required

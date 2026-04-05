@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Social Login — Instant CTF{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
+
+{% block content %}
+  <section class="auth-page">
+    <div class="form">
+      <h1>Connecting your account</h1>
+      <p class="meta-line">{{ account.get_provider.name }}</p>
+
+      <form method="post" action="{{ action_url }}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="oauthButton">Continue →</button>
+      </form>
+    </div>
+  </section>
+{% endblock %}

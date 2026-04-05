@@ -1,4 +1,5 @@
 import hashlib
+from itertools import groupby
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -351,12 +352,20 @@ def event_challenges(request, event_id):
         release_time__lte=now,
     ).annotate(
         is_solved=Exists(solved_subquery)
-    )
+    ).order_by("category", "release_time", "name")
+
+    grouped = []
+    for category, group in groupby(challenges, key=lambda c: c.category):
+        grouped.append((category, list(group)))
 
     return render(
         request,
         "events/event_challenges.html",
-        {"event": event, "challenges": challenges},
+        {
+            "event": event,
+            "challenges": challenges,
+            "challenges_by_category": grouped,
+        },
     )
 
 
@@ -565,6 +574,7 @@ def create_event(request):
                 start_time=start_time,
                 end_time=end_time,
                 max_team_size=max_team_size,
+                creator=request.user,
             )
             messages.success(request, f'Event "{new_event.title}" created successfully.')
             return redirect("event_dashboard", event_id=new_event.id)

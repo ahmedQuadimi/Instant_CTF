@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Complete Registration — Instant CTF{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
+
+{% block content %}
+  <section class="auth-page">
+    <div class="form">
+      <h1>Almost there,</h1>
+      <p class="meta-line">complete your profile</p>
+
+      <form method="post" action="{% url 'socialaccount_signup' %}">
+        {% csrf_token %}
+        {% for hidden in form.hidden_fields %}
+          {{ hidden }}
+        {% endfor %}
+
+        {% if form.email %}
+          <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+          {{ form.email }}
+          {% if form.email.errors %}<span class="field-error">{{ form.email.errors }}</span>{% endif %}
+        {% endif %}
+
+        {% if form.username %}
+          <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+          {{ form.username }}
+          {% if form.username.errors %}<span class="field-error">{{ form.username.errors }}</span>{% endif %}
+        {% endif %}
+
+        {% for field in form.visible_fields %}
+          {% if field.name != 'email' and field.name != 'username' %}
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<span class="field-error">{{ field.errors }}</span>{% endif %}
+          {% endif %}
+        {% endfor %}
+
+        <button type="submit" class="oauthButton">Finish Registration →</button>
+      </form>
+    </div>
+  </section>
+{% endblock %}

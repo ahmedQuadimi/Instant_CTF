@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block content %}
-  <section class="platform-stack">
+  <section class="platform-stack content-single">
     <h1 class="gradient-heading">{{ organization.name }}</h1>
     <p>{{ organization.description|default:"No description provided." }}</p>
 
@@ -41,18 +41,20 @@
       </table>
     </section>
 
-    {% if events %}
     <section>
       <h2 style="color:var(--accent-secondary);font-size:1.1rem;margin:0 0 12px;">Events Hosted</h2>
-      <div class="card-grid">
-        {% for event in events %}
-          <article class="platform-card">
-            <h2><a href="{% url 'event_dashboard' event.id %}">{{ event.title }}</a></h2>
-            <p class="meta-line">{{ event.start_time|date:"M d, Y" }} – {{ event.end_time|date:"M d, Y" }}</p>
-          </article>
-        {% endfor %}
-      </div>
+      {% if events %}
+        <div class="card-grid">
+          {% for event in events %}
+            <article class="platform-card">
+              <h2><a href="{% url 'event_dashboard' event.id %}">{{ event.title }}</a></h2>
+              <p class="meta-line">{{ event.start_time|date:"M d, Y" }} – {{ event.end_time|date:"M d, Y" }}</p>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">No hosted events yet.</div>
+      {% endif %}
     </section>
-    {% endif %}
   </section>
 {% endblock %}

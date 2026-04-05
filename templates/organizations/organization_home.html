@@ -7,9 +7,9 @@
 {% endblock %}
 
 {% block content %}
-  <section class="platform-stack">
+  <section class="platform-stack content-wide">
     <div class="platform-header-row">
-      <h1>Organizations</h1>
+      <h1 class="gradient-heading">Organizations</h1>
       {% if request.user.is_authenticated %}
         <a class="btn-primary" href="{% url 'organization_create' %}">Create Organization</a>
       {% endif %}

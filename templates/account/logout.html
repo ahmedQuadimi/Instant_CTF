@@ -2,81 +2,19 @@
 {% block title %}Sign Out — Instant CTF{% endblock %}
 
 {% block extra_css %}
-<style>
-  .logout-card {
-    max-width: 440px;
-    margin: 40px auto;
-    background: var(--bg-surface);
-    border: var(--border);
-    border-radius: var(--radius);
-    padding: clamp(28px, 5vw, 48px);
-    display: grid;
-    gap: 18px;
-    text-align: center;
-  }
-  .logout-card h1 {
-    font-size: 1.6rem;
-    margin: 0;
-  }
-  .logout-card p {
-    color: var(--text-secondary);
-    margin: 0;
-  }
-  .logout-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
-    margin-top: 8px;
-  }
-  .logout-btn {
-    min-height: 44px;
-    min-width: 44px;
-    padding: 10px 24px;
-    border-radius: var(--radius);
-    border: none;
-    font-family: var(--font-mono);
-    font-weight: 500;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .logout-btn:hover {
-    transform: translateY(-1px);
-  }
-  .logout-confirm {
-    background: var(--accent-magenta);
-    color: var(--text-primary);
-  }
-  .logout-confirm:hover {
-    box-shadow: 0 4px 20px color-mix(in srgb, var(--accent-magenta) 40%, transparent);
-  }
-  .logout-cancel {
-    background: var(--bg-elevated);
-    color: var(--text-primary);
-    border: var(--border);
-  }
-  .logout-cancel:hover {
-    border-color: var(--accent-cyan);
-    color: var(--text-primary);
-    text-decoration: none;
-  }
-</style>
+  <link rel="stylesheet" href="/static/css/platform.css">
 {% endblock %}
 
 {% block content %}
-<div class="logout-card">
-  <h1>Sign Out</h1>
-  <p>Are you sure you want to sign out of Instant CTF?</p>
-  <form method="POST" action="{% url 'account_logout' %}" class="form">
-    {% csrf_token %}
-    <div class="logout-actions">
-      <button type="submit" class="oauthButton">→ SIGN OUT</button>
-      <a href="{% url 'home' %}" class="logout-btn logout-cancel">Cancel</a>
+  <section class="auth-page">
+    <div class="form content-form">
+      <h1>Sign Out</h1>
+      <p class="meta-line">Are you sure you want to sign out of Instant CTF?</p>
+      <form method="POST" action="{% url 'account_logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="oauthButton">→ SIGN OUT</button>
+      </form>
+      <a href="{% url 'home' %}" class="oauthButton">Cancel</a>
     </div>
-  </form>
-</div>
+  </section>
 {% endblock %}

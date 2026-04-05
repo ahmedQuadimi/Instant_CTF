@@ -39,7 +39,7 @@
 {% block content %}
   {% include 'events/_event_nav.html' %}
 
-  <section class="platform-stack">
+  <section class="platform-stack content-wide">
     <div class="scoreboard-header">
       <h1 class="gradient-heading">Scoreboard</h1>
       {% if event_ended %}
@@ -48,14 +48,14 @@
     </div>
 
     {% if ranked_teams %}
-      <table class="platform-table">
+      <table class="platform-table scoreboard-table">
         <thead>
           <tr>
             <th class="rank-col">#</th>
             <th>Team</th>
-            <th>Score</th>
+            <th class="score-col">Score</th>
             <th>Solves</th>
-            <th>Last Solve</th>
+            <th class="last-solve-col">Last Solve</th>
           </tr>
         </thead>
         <tbody>
@@ -69,9 +69,9 @@
                 {% endif %}
               </td>
               <td>{{ team.team_name }}</td>
-              <td><span class="score-value">{{ team.score }}</span></td>
+              <td class="score-col"><span class="score-value">{{ team.score }}</span></td>
               <td>{{ team.solve_count }}</td>
-              <td>{% if team.last_solve_at %}{{ team.last_solve_at|date:"M d, H:i" }}{% else %}—{% endif %}</td>
+              <td class="last-solve-col">{% if team.last_solve_at %}{{ team.last_solve_at|date:"M d, H:i" }}{% else %}—{% endif %}</td>
             </tr>
           {% endfor %}
         </tbody>

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Auth Error — Instant CTF{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
+
+{% block content %}
+  <section class="auth-page">
+    <div class="form">
+      <h1>Auth Error</h1>
+      <div class="message message-error">Something went wrong during login.</div>
+      <p class="meta-line">This can happen if you cancelled the login or your session expired.</p>
+      <a href="{% url 'account_login' %}" class="oauthButton">Try again →</a>
+    </div>
+  </section>
+{% endblock %}

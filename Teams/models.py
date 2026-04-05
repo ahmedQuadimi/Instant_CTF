@@ -36,3 +36,29 @@ class TeamJoinRequest(models.Model):
                 fields=["user", "team", "status"], name="unique_team_join_request"
             )
         ]
+
+
+class TeamMembership(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name="team_memberships"
+    )
+    team = models.ForeignKey(
+        Team, 
+        on_delete=models.CASCADE, 
+        related_name="members"
+    )
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            # A user can only be in a specific team once
+            models.UniqueConstraint(
+                fields=["user", "team"], 
+                name="unique_team_membership"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} in {self.team.name}"

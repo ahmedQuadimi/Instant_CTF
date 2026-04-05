@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block content %}
-  <section class="platform-stack" aria-labelledby="event-list-title">
+  <section class="platform-stack content-wide" aria-labelledby="event-list-title">
     <div class="platform-header-row">
       <h1 id="event-list-title" class="gradient-heading">Events</h1>
       {% if request.user.is_authenticated %}
@@ -16,7 +16,7 @@
     </div>
 
     {% if event_data %}
-      <div class="card-grid">
+      <div class="event-card-grid">
         {% for item in event_data %}
           <article class="platform-card">
             <h2><a href="{% url 'event_dashboard' item.event.id %}">{{ item.event.title }}</a></h2>
@@ -24,11 +24,11 @@
             <p class="meta-line">Start: {{ item.event.start_time|date:"M d, Y H:i" }}</p>
             <p class="meta-line">End: {{ item.event.end_time|date:"M d, Y H:i" }}</p>
             <div class="badge-row">
-              <span class="status-badge"><span>{{ item.event.visibility }}</span></span>
+              <span class="status-badge {{ item.event.visibility }}">{{ item.event.visibility }}</span>
               <span class="status-badge {{ item.time_status }}">
-                <span>{% if item.time_status == "upcoming" %}Upcoming
+                {% if item.time_status == "upcoming" %}Upcoming
                 {% elif item.time_status == "active" %}Active
-                {% else %}Ended{% endif %}</span>
+                {% else %}Ended{% endif %}
               </span>
             </div>
             <a class="btn-secondary" href="{% url 'event_dashboard' item.event.id %}">Open Dashboard</a>

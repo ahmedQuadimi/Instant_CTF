@@ -51,7 +51,7 @@
   max-width: 560px;
   padding: 20px;
   background: var(--background);
-  border: 1px solid color-mix(in srgb, var(--main-color) 45%, transparent);
+  border: var(--border);
   border-radius: var(--radius);
   font-family: var(--font-mono);
 }
@@ -75,9 +75,8 @@
   padding: 10px 12px;
   color: var(--font-color);
   background: var(--bg-color);
-  border: 1px solid var(--main-color);
+  border: var(--border);
   border-radius: var(--radius);
-  box-shadow: 4px 4px var(--main-color);
   font-family: var(--font-mono);
   outline: none;
 }
@@ -90,7 +89,8 @@
 .form input:focus,
 .form textarea:focus,
 .form select:focus {
-  border-color: var(--input-focus);
+  border-color: var(--accent-primary);
+  box-shadow: 4px 4px var(--accent-primary);
 }
 
 .form input:focus-visible,
@@ -234,7 +234,7 @@
 
 .platform-card {
   background: var(--bg-elevated);
-  border: 1px solid color-mix(in srgb, var(--accent-cyan) 22%, transparent);
+  border: var(--border);
   border-radius: var(--radius);
   padding: 16px;
   display: grid;
@@ -341,23 +341,24 @@ button.btn-primary:hover::after {
   position: relative;
 }
 
-.status-badge.active {
-  background: color-mix(in srgb, var(--accent-primary) 16%, var(--bg-elevated));
+.status-badge.active,
+.status-badge.visible,
+.status-badge.correct {
+  background: color-mix(in srgb, var(--accent-primary) 18%, var(--bg-elevated));
   color: var(--accent-primary);
-  border-color: color-mix(in srgb, var(--accent-primary) 50%, transparent);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--accent-primary) 15%, transparent);
 }
 
-.status-badge.upcoming {
-  background: color-mix(in srgb, var(--accent-secondary) 16%, var(--bg-elevated));
+.status-badge.upcoming,
+.status-badge.pending {
+  background: color-mix(in srgb, var(--accent-secondary) 18%, var(--bg-elevated));
   color: var(--accent-secondary);
-  border-color: color-mix(in srgb, var(--accent-secondary) 50%, transparent);
 }
 
-.status-badge.ended {
-  background: color-mix(in srgb, var(--accent-magenta) 16%, var(--bg-elevated));
+.status-badge.ended,
+.status-badge.hidden,
+.status-badge.error {
+  background: color-mix(in srgb, var(--accent-magenta) 18%, var(--bg-elevated));
   color: var(--accent-magenta);
-  border-color: color-mix(in srgb, var(--accent-magenta) 50%, transparent);
 }
 
 /* ─── 7. GLOW INPUT FOCUS ───────────────────────────────────── */
@@ -718,9 +719,7 @@ button[type="submit"]:hover {
 .challenge-card,
 .feature-card,
 .stat-item {
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--accent-primary) 8%, transparent),
-    inset 0 1px 0 color-mix(in srgb, var(--text-primary) 4%, transparent);
+  border: var(--border);
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
@@ -753,22 +752,12 @@ button[type="submit"]:hover {
   position: relative;
   display: inline-flex;
   align-items: center;
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-  padding: 2px;
-  border-radius: var(--radius);
-  border: none;
-  min-height: 28px;
-}
-
-.status-badge span,
-.role-badge span,
-.elo-badge span,
-.pending-count span {
-  display: block;
-  background: var(--bg-elevated);
-  border-radius: calc(var(--radius) - 2px);
-  padding: 2px 10px;
-  color: var(--text-primary);
+  font-size: 0.7rem;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
 /* =====================================================================
@@ -911,4 +900,332 @@ button[type="submit"]:hover {
     var(--accent-primary),
     transparent
   );
+}
+
+/* =====================================================================
+   2026 UI POLISH PASS
+   ===================================================================== */
+
+.auth-page {
+  min-height: calc(100vh - var(--nav-height));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.content-form,
+.content-single,
+.content-wide {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.content-form {
+  max-width: 440px;
+}
+
+.content-single {
+  max-width: 720px;
+}
+
+.content-wide {
+  max-width: 1100px;
+}
+
+.platform-stack > h1,
+.platform-stack > h2,
+.platform-stack > h3 {
+  margin: 0 0 24px;
+}
+
+.form {
+  gap: 16px;
+  max-width: 440px;
+  padding: 28px 32px;
+  border-radius: 8px;
+}
+
+.form label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  display: block;
+}
+
+.form input,
+.form select,
+.form textarea {
+  width: 100%;
+  padding: 10px 14px;
+  min-height: 0;
+  height: auto;
+  font-size: 0.95rem;
+}
+
+.form .oauthButton,
+.oauthButton {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+.oauthButton--small {
+  width: auto;
+  min-height: 32px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+}
+
+.field-error {
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: var(--accent-magenta);
+}
+
+.empty-state {
+  text-align: center;
+  border: var(--border);
+  border-radius: 8px;
+  padding: 48px 24px;
+  color: var(--text-secondary);
+}
+
+.site-nav .nav-link.active {
+  border-bottom: 2px solid var(--accent-primary);
+}
+
+.site-nav .username {
+  max-width: 16ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+table,
+.platform-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+.platform-table th {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  padding: 10px 16px;
+  border-bottom: var(--border);
+}
+
+td,
+.platform-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid color-mix(in srgb, var(--text-primary) 4%, transparent);
+  font-size: 0.9rem;
+}
+
+tr:last-child td,
+.platform-table tr:last-child td {
+  border-bottom: 0;
+}
+
+tr:hover,
+.platform-table tbody tr:hover {
+  background: var(--bg-elevated);
+}
+
+.status-badge,
+.badge,
+.chip,
+.role-badge,
+.elo-badge,
+.pending-count {
+  font-size: 0.7rem;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.status-badge.active,
+.status-badge.visible,
+.status-badge.correct {
+  background: color-mix(in srgb, var(--accent-primary) 18%, var(--bg-elevated));
+  color: var(--accent-primary);
+}
+
+.status-badge.ended,
+.status-badge.hidden,
+.status-badge.error {
+  background: color-mix(in srgb, var(--accent-magenta) 18%, var(--bg-elevated));
+  color: var(--accent-magenta);
+}
+
+.status-badge.upcoming,
+.status-badge.pending {
+  background: color-mix(in srgb, var(--accent-secondary) 18%, var(--bg-elevated));
+  color: var(--accent-secondary);
+}
+
+.status-badge.info,
+.status-badge.admin,
+.role-badge.role-ADMIN {
+  background: color-mix(in srgb, var(--accent-cyan) 18%, var(--bg-elevated));
+  color: var(--accent-cyan);
+}
+
+/* ─── CUSTOM CHECKBOXES ────────────────────────────────────── */
+
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius);
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+input[type="checkbox"]:hover {
+  transform: scale(1.1);
+}
+
+input[type="checkbox"]:checked {
+  background: var(--accent-primary);
+}
+
+input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.form .checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.form .checkbox-row label {
+  margin-bottom: 0;
+  cursor: pointer;
+}
+
+.event-card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .event-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .event-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.dashboard-panels {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-panels {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.scoreboard-table .rank-col {
+  width: 60px;
+}
+
+.scoreboard-table .score-col,
+.scoreboard-table td.score-col {
+  text-align: right;
+}
+
+@media (max-width: 767px) {
+  .scoreboard-table .last-solve-col,
+  .scoreboard-table th.last-solve-col,
+  .scoreboard-table td.last-solve-col {
+    display: none;
+  }
+}
+
+.challenge-flag-form {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.stat-item {
+  background: var(--bg-elevated);
+  border: var(--border);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  display: grid;
+  gap: 6px;
+}
+
+.stat-item .stat-label {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.stat-item .stat-value {
+  color: var(--text-primary);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.connection-list {
+  display: grid;
+  gap: 10px;
+}
+
+.connection-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: var(--border);
+}
+
+.connection-row:last-child {
+  border-bottom: 0;
 }

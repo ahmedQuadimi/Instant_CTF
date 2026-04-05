@@ -19,7 +19,7 @@
       --accent-secondary: #ffc300;
       --accent-cyan: #00e5ff;
       --accent-magenta: #d400ff;
-      --accent-lilac-soft: #b39dff;
+      --grid-muted: #0d1035;
       --accent-gold: #ffc300;
       --text-primary: #e8eaf6;
       --text-secondary: #7986cb;
@@ -116,15 +116,15 @@
     .box-column {
       width: 4rem;
       position: relative;
-      border-left: 1px solid var(--bg-elevated);
+      border-left: 1px solid var(--grid-muted);
     }
 
     .box-cell {
       width: 4rem;
       height: 2rem;
       position: relative;
-      border-right: 1px solid var(--bg-elevated);
-      border-top: 1px solid var(--bg-elevated);
+      border-right: 1px solid var(--grid-muted);
+      border-top: 1px solid var(--grid-muted);
       transition: background-color 2s ease;
     }
 
@@ -133,22 +133,22 @@
     }
 
     .box-cell:nth-child(4n + 1):hover {
-      background-color: color-mix(in srgb, var(--accent-lilac-soft) 70%, var(--bg-elevated));
+      background-color: color-mix(in srgb, var(--accent-magenta) 40%, var(--bg-base) 60%);
       transition-duration: 0s;
     }
 
     .box-cell:nth-child(4n + 2):hover {
-      background-color: color-mix(in srgb, var(--accent-lilac-soft) 62%, var(--bg-elevated));
+      background-color: color-mix(in srgb, var(--accent-magenta) 40%, var(--bg-base) 60%);
       transition-duration: 0s;
     }
 
     .box-cell:nth-child(4n + 3):hover {
-      background-color: color-mix(in srgb, var(--accent-lilac-soft) 68%, var(--bg-elevated));
+      background-color: color-mix(in srgb, var(--accent-magenta) 40%, var(--bg-base) 60%);
       transition-duration: 0s;
     }
 
     .box-cell:nth-child(4n + 4):hover {
-      background-color: color-mix(in srgb, var(--accent-lilac-soft) 60%, var(--bg-elevated));
+      background-color: color-mix(in srgb, var(--accent-magenta) 40%, var(--bg-base) 60%);
       transition-duration: 0s;
     }
 
@@ -158,7 +158,8 @@
       width: 2.5rem;
       top: -14px;
       left: -22px;
-      color: var(--bg-elevated);
+      color: var(--grid-muted);
+      stroke: var(--grid-muted);
       stroke-width: 1px;
       pointer-events: none;
     }
@@ -304,6 +305,10 @@
       align-items: center;
       padding: 0 8px;
       color: var(--text-secondary);
+      max-width: 16ch;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       pointer-events: auto;
     }
 

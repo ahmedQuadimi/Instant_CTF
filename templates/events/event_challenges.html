@@ -8,24 +8,75 @@
 {% block content %}
   {% include 'events/_event_nav.html' %}
 
-  <section class="platform-stack challenge-list">
+  <section class="platform-stack challenge-list content-wide">
     <h1 class="gradient-heading">{{ event.title }} Challenges</h1>
-    {% if challenges %}
-      <div class="challenge-grid">
-        {% for challenge in challenges %}
-          <article class="challenge-card {% if challenge.is_solved %}solved{% else %}unsolved{% endif %}">
-            <h2>{{ challenge.name }}</h2>
-            <p class="meta-line">Category: {{ challenge.category }}</p>
-            <p class="meta-line">Solves: {{ challenge.solves_count }}</p>
-            {% if challenge.is_solved %}
-              <div class="already-solved-banner">Solved</div>
-            {% endif %}
-            <a class="btn-secondary" href="{% url 'challenge_details' event.id challenge.id %}">Open Challenge</a>
-          </article>
-        {% endfor %}
-      </div>
+    {% if challenges_by_category %}
+      {% for category, category_challenges in challenges_by_category %}
+        <section class="challenge-category">
+          <div class="category-header">
+            <h2 class="category-title">{{ category }}</h2>
+            <span class="category-count">
+              {{ category_challenges|length }} challenge{{ category_challenges|pluralize }}
+            </span>
+          </div>
+
+          <div class="challenge-grid">
+            {% for challenge in category_challenges %}
+              <a href="#challenge-{{ challenge.pk }}" class="challenge-card {% if challenge.is_solved %}solved{% else %}unsolved{% endif %}">
+                <h3>{{ challenge.name }}</h3>
+                <p class="meta-line">Solves: {{ challenge.solves_count }}</p>
+                {% if challenge.is_solved %}
+                  <div class="already-solved-banner">Solved</div>
+                {% endif %}
+              </a>
+
+              <div class="challenge-modal" id="challenge-{{ challenge.pk }}">
+                <div class="challenge-modal-backdrop">
+                  <a href="#" class="modal-close-area" aria-label="Close"></a>
+                </div>
+                <div class="challenge-modal-box">
+                  <div class="modal-header">
+                    <span class="category-chip">{{ challenge.category }}</span>
+                    <a href="#" class="modal-close-btn" aria-label="Close">✕</a>
+                  </div>
+                  <h2 class="modal-title">{{ challenge.name }}</h2>
+                  <div class="modal-description">
+                    {{ challenge.description|linebreaks }}
+                  </div>
+                  {% if challenge.connection_info %}
+                  <div class="modal-connection">
+                    <span class="connection-label">Connection</span>
+                    <pre><code>{{ challenge.connection_info }}</code></pre>
+                  </div>
+                  {% endif %}
+                  {% if challenge.is_solved %}
+                  <div class="message message-success">
+                    Your team has solved this challenge.
+                  </div>
+                  {% else %}
+                  <form method="POST"
+                        action="{% url 'submit_flag' event.pk challenge.pk %}"
+                        class="flag-form">
+                    {% csrf_token %}
+                    <input type="text" name="flag"
+                           placeholder="CTF{...}"
+                           autocomplete="off"
+                           required>
+                    <button type="submit" class="oauthButton">
+                      Submit Flag →
+                    </button>
+                  </form>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </section>
+      {% endfor %}
     {% else %}
-      <div class="empty-state"><p>No visible challenges yet.</p></div>
+      <div class="empty-state">
+        No challenges released yet.
+      </div>
     {% endif %}
   </section>
 {% endblock %}

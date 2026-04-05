@@ -2,148 +2,56 @@
 {% block title %}Manage Email — Instant CTF{% endblock %}
 
 {% block extra_css %}
-<style>
-  .email-card {
-    max-width: 540px;
-    margin: 40px auto;
-    background: var(--bg-surface);
-    border: var(--border);
-    border-radius: var(--radius);
-    padding: clamp(24px, 5vw, 40px);
-    display: grid;
-    gap: 20px;
-  }
-  .email-card h1 { font-size: 1.5rem; margin: 0; }
-  .email-card p { color: var(--text-secondary); margin: 0; }
-  .email-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
-  .email-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    background: var(--bg-elevated);
-    border: var(--border);
-    border-radius: var(--radius);
-    flex-wrap: wrap;
-  }
-  .email-item input[type="radio"] { accent-color: var(--accent-primary); }
-  .email-addr { flex: 1; min-width: 0; word-break: break-all; }
-  .badge-verified {
-    font-size: 0.75rem;
-    padding: 2px 8px;
-    border-radius: var(--radius);
-    background: color-mix(in srgb, var(--accent-primary) 20%, transparent);
-    color: var(--accent-primary);
-  }
-  .badge-unverified {
-    font-size: 0.75rem;
-    padding: 2px 8px;
-    border-radius: var(--radius);
-    background: color-mix(in srgb, var(--accent-gold) 20%, transparent);
-    color: var(--accent-gold);
-  }
-  .badge-primary {
-    font-size: 0.75rem;
-    padding: 2px 8px;
-    border-radius: var(--radius);
-    background: color-mix(in srgb, var(--accent-magenta) 20%, transparent);
-    color: var(--accent-magenta);
-  }
-  .email-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .email-btn {
-    min-height: 44px;
-    padding: 10px 16px;
-    border-radius: var(--radius);
-    border: var(--border);
-    background: var(--bg-elevated);
-    color: var(--text-primary);
-    font-family: var(--font-mono);
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: border-color 0.15s ease;
-  }
-  .email-btn:hover { border-color: var(--accent-primary); }
-  .add-email { display: grid; gap: 10px; }
-  .add-email label {
-    font-size: 0.8rem;
-    color: var(--accent-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-  .add-email input[type="email"] {
-    width: 100%;
-    min-height: 44px;
-    background: var(--bg-elevated);
-    border: var(--border);
-    border-radius: var(--radius);
-    padding: 10px 14px;
-    color: var(--text-primary);
-    font-family: var(--font-mono);
-  }
-  .add-email input:focus { outline: 2px solid var(--accent-cyan); outline-offset: 2px; }
-  .auth-btn {
-    min-height: 44px;
-    padding: 10px 20px;
-    background: var(--accent-primary);
-    color: var(--bg-base);
-    border: none;
-    border-radius: var(--radius);
-    font-family: var(--font-mono);
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.15s ease;
-  }
-  .auth-btn:hover { transform: translateY(-1px); }
-</style>
+  <link rel="stylesheet" href="/static/css/platform.css">
 {% endblock %}
 
 {% block content %}
-<div class="email-card">
-  <h1>Email Addresses</h1>
-  <p>Manage email addresses associated with your account.</p>
+  <section class="auth-page">
+    <div class="form content-form" style="max-width: 720px;">
+      <h1>Email Addresses</h1>
+      <p class="meta-line">Manage email addresses associated with your account.</p>
 
-  {% if emailaddresses %}
-    <form method="POST" action="{% url 'account_email' %}" class="form">
-      {% csrf_token %}
-      <ul class="email-list">
-        {% for emailaddress in emailaddresses %}
-          <li class="email-item">
-            <input type="radio" name="email" value="{{ emailaddress.email }}"
-                   id="email_radio_{{ forloop.counter }}"
-                   {% if emailaddress.primary %}checked{% endif %} />
-            <label for="email_radio_{{ forloop.counter }}" class="email-addr">{{ emailaddress.email }}</label>
-            {% if emailaddress.verified %}
-              <span class="badge-verified">Verified</span>
-            {% else %}
-              <span class="badge-unverified">Unverified</span>
-            {% endif %}
-            {% if emailaddress.primary %}
-              <span class="badge-primary">Primary</span>
-            {% endif %}
-          </li>
-        {% endfor %}
-      </ul>
-      <div class="email-actions" style="margin-top:12px;">
-        <button type="submit" name="action_primary" class="oauthButton">Make Primary</button>
-        <button type="submit" name="action_send" class="oauthButton">Re-send Verification</button>
-        <button type="submit" name="action_remove" class="oauthButton">Remove</button>
-      </div>
-    </form>
-  {% else %}
-    <p>No email addresses on file.</p>
-  {% endif %}
+      {% if emailaddresses %}
+        <form method="POST" action="{% url 'account_email' %}">
+          {% csrf_token %}
+          <div class="connection-list">
+            {% for emailaddress in emailaddresses %}
+              <div class="connection-row">
+                <div>
+                  <input type="radio" name="email" value="{{ emailaddress.email }}" id="email_radio_{{ forloop.counter }}" {% if emailaddress.primary %}checked{% endif %} />
+                  <label for="email_radio_{{ forloop.counter }}">{{ emailaddress.email }}</label>
+                </div>
+                <div class="badge-row">
+                  {% if emailaddress.verified %}
+                    <span class="status-badge active"><span>Verified</span></span>
+                  {% else %}
+                    <span class="status-badge pending"><span>Unverified</span></span>
+                  {% endif %}
+                  {% if emailaddress.primary %}
+                    <span class="status-badge info"><span>Primary</span></span>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+          <div class="button-row">
+            <button type="submit" name="action_primary" class="oauthButton">Make Primary</button>
+            <button type="submit" name="action_send" class="oauthButton">Re-send Verification</button>
+            <button type="submit" name="action_remove" class="oauthButton">Remove</button>
+          </div>
+        </form>
+      {% else %}
+        <div class="empty-state">No email addresses on file.</div>
+      {% endif %}
 
-  <hr style="border:none;border-top:var(--border);margin:8px 0;">
+      <hr style="border:none;border-top:var(--border);margin:8px 0;">
 
-  <form method="POST" action="{% url 'account_email' %}" class="form add-email">
-    {% csrf_token %}
-    <label for="id_email">Add Email Address</label>
-    <input type="email" id="id_email" name="email" placeholder="another@example.com" required />
-    <button type="submit" name="action_add" class="oauthButton">→ ADD EMAIL</button>
-  </form>
-</div>
+      <form method="POST" action="{% url 'account_email' %}">
+        {% csrf_token %}
+        <label for="id_email">Add Email Address</label>
+        <input type="email" id="id_email" name="email" placeholder="another@example.com" required />
+        <button type="submit" name="action_add" class="oauthButton">→ ADD EMAIL</button>
+      </form>
+    </div>
+  </section>
 {% endblock %}

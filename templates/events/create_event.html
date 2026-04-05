@@ -1,6 +1,67 @@
 {% extends "base.html" %}
-{% block title %}Create Event (Placeholder){% endblock %}
+
+{% block title %}Create Event{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
+
 {% block content %}
-  <h1>Create Event</h1>
-  <p>This is a placeholder. Real content will go here.</p>
+  <section class="platform-stack" aria-labelledby="create-event-title">
+    <h1 id="create-event-title">Create Event</h1>
+
+    {% if saved %}
+      <div class="message-card success">Event created successfully.</div>
+    {% endif %}
+
+    {% if errors %}
+      <div class="message-card error">
+        <strong>Fix the following:</strong>
+        <ul>
+          {% for error in errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <form method="post" class="form">
+      {% csrf_token %}
+
+      <label for="title">Title</label>
+      <input id="title" name="title" type="text" required>
+
+      <label for="organization_id">Organization</label>
+      <select id="organization_id" name="organization_id" required>
+        <option value="">Select organization</option>
+        {% for organization in organizations %}
+          <option value="{{ organization.id }}">{{ organization.name }}</option>
+        {% endfor %}
+      </select>
+
+      <label for="visibility">Visibility</label>
+      <select id="visibility" name="visibility" required>
+        <option value="PUBLIC">PUBLIC</option>
+        <option value="CODE">CODE</option>
+        <option value="INVITE">INVITE</option>
+      </select>
+
+      <label for="access_code">Access code (for CODE events)</label>
+      <input id="access_code" name="access_code" type="text">
+
+      <label for="start_time">Start time</label>
+      <input id="start_time" name="start_time" type="datetime-local" required>
+
+      <label for="end_time">End time</label>
+      <input id="end_time" name="end_time" type="datetime-local" required>
+
+      <label for="max_team_size">Max team size (0 = unlimited)</label>
+      <input id="max_team_size" name="max_team_size" type="number" min="0" value="0" required>
+
+      <div class="button-row">
+        <button class="oauthButton" type="submit">Create Event</button>
+        <a class="btn-secondary" href="{% url 'event_list' %}">Back to Events</a>
+      </div>
+    </form>
+  </section>
 {% endblock %}

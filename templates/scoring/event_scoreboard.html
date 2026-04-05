@@ -1,276 +1,85 @@
-{% extends "events/base.html" %}
-{% block title %}Scoreboard{% endblock %}
-{% block extra_head %}
+{% extends "base.html" %}
+{% block title %}Scoreboard — {{ event.title }}{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
   <style>
-    .rank-gold {
-      background-color: #fff3cd;
+    .scoreboard-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
     }
-
-    .rank-silver {
-      background-color: #e9ecef;
+    .scoreboard-header h1 { margin: 0; font-size: 1.4rem; }
+    .ended-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      background: color-mix(in srgb, var(--accent-magenta) 20%, transparent);
+      color: var(--accent-magenta);
+      border-radius: var(--radius);
+      font-size: 0.85rem;
     }
-
-    .rank-bronze {
-      background-color: #f3d2c1;
+    .rank-col { width: 60px; text-align: center; }
+    .rank-number { font-weight: 700; font-size: 1.1rem; }
+    .rank-gold .rank-number { color: var(--accent-gold); }
+    .rank-silver .rank-number { color: var(--text-secondary); }
+    .rank-bronze .rank-number { color: var(--accent-magenta); }
+    .rank-gold { background: color-mix(in srgb, var(--accent-gold) 12%, transparent); }
+    .rank-silver { background: color-mix(in srgb, var(--text-secondary) 10%, transparent); }
+    .rank-bronze { background: color-mix(in srgb, var(--accent-magenta) 10%, transparent); }
+    .score-value {
+      font-weight: 700;
+      color: var(--accent-secondary);
     }
   </style>
 {% endblock %}
+
 {% block content %}
-  {% include "events/_event_nav.html" %}
+  {% include 'events/_event_nav.html' %}
 
-  <div id="scoreboard-root" data-scoreboard-url="{% url 'event_scoreboard_data' event.id %}">
-    <h1>{{ event.title }} Scoreboard</h1>
-    <p>
-      <strong>Status:</strong>
-      <span id="event-countdown" data-end-time="{{ event.end_time|date:'c' }}">
-        {% if event_ended %}Event ended{% else %}Loading countdown...{% endif %}
-      </span>
-    </p>
-
-    <div id="final-standings-banner"{% if not event_ended %} hidden{% endif %}>
-      <p><strong>Final standings</strong></p>
+  <section class="platform-stack">
+    <div class="scoreboard-header">
+      <h1 class="gradient-heading">Scoreboard</h1>
+      {% if event_ended %}
+        <span class="ended-badge">Final Results</span>
+      {% endif %}
     </div>
 
     {% if ranked_teams %}
-      <table id="scoreboard-table">
+      <table class="platform-table">
         <thead>
           <tr>
-            <th>Rank</th>
-            <th>Team name</th>
+            <th class="rank-col">#</th>
+            <th>Team</th>
             <th>Score</th>
             <th>Solves</th>
-            <th>Last solve time</th>
+            <th>Last Solve</th>
           </tr>
         </thead>
-        <tbody id="scoreboard-body">
+        <tbody>
           {% for team in ranked_teams %}
-            <tr class="{% if team.rank == 1 %}rank-gold{% elif team.rank == 2 %}rank-silver{% elif team.rank == 3 %}rank-bronze{% endif %}">
-              <td>{{ team.rank }}</td>
-              <td>{{ team.team_name }}</td>
-              <td>{{ team.score }}</td>
-              <td>{{ team.solve_count }}</td>
-              <td>
-                {% if team.last_solve_at %}
-                  {{ team.last_solve_at }}
+            <tr style="--row-index: {{ forloop.counter }}" class="{% if team.rank == 1 %}rank-gold{% elif team.rank == 2 %}rank-silver{% elif team.rank == 3 %}rank-bronze{% endif %}">
+              <td class="rank-col">
+                {% if team.rank == 1 or team.rank == 2 or team.rank == 3 %}
+                  <span class="status-badge rank-badge"><span class="shiny-text">{% if team.rank == 1 %}1st{% elif team.rank == 2 %}2nd{% else %}3rd{% endif %}</span></span>
                 {% else %}
-                  -
+                  <span class="rank-number">{{ team.rank }}</span>
                 {% endif %}
               </td>
+              <td>{{ team.team_name }}</td>
+              <td><span class="score-value">{{ team.score }}</span></td>
+              <td>{{ team.solve_count }}</td>
+              <td>{% if team.last_solve_at %}{{ team.last_solve_at|date:"M d, H:i" }}{% else %}—{% endif %}</td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
     {% else %}
-      <p id="empty-scoreboard">No teams have joined this event yet.</p>
+      <div class="empty-state">
+        <p>No teams registered yet. The scoreboard will populate once teams participate.</p>
+      </div>
     {% endif %}
-  </div>
-
-  <script>
-    (function () {
-      var countdown = document.getElementById("event-countdown");
-      var scoreboardRoot = document.getElementById("scoreboard-root");
-      var scoreboardTable = document.getElementById("scoreboard-table");
-      var scoreboardBody = document.getElementById("scoreboard-body");
-      var emptyScoreboard = document.getElementById("empty-scoreboard");
-      var finalStandingsBanner = document.getElementById("final-standings-banner");
-      if (!countdown || !scoreboardRoot) {
-        return;
-      }
-
-      var endTimeRaw = countdown.dataset.endTime;
-      var endTime = new Date(endTimeRaw);
-      var scoreboardUrl = scoreboardRoot.dataset.scoreboardUrl;
-      var pollIntervalMs = 5000;
-      var isRefreshing = false;
-      var pollTimerId = null;
-      var lastPayloadSignature = null;
-
-      function getRowClass(rank) {
-        if (rank === 1) {
-          return "rank-gold";
-        }
-        if (rank === 2) {
-          return "rank-silver";
-        }
-        if (rank === 3) {
-          return "rank-bronze";
-        }
-        return "";
-      }
-
-      function formatLastSolveAt(isoValue) {
-        if (!isoValue) {
-          return "-";
-        }
-        var date = new Date(isoValue);
-        if (isNaN(date.getTime())) {
-          return "-";
-        }
-        return date.toLocaleString();
-      }
-
-      function ensureScoreboardTable() {
-        if (scoreboardTable) {
-          return scoreboardTable;
-        }
-
-        if (!emptyScoreboard) {
-          return null;
-        }
-
-        var table = document.createElement("table");
-        table.id = "scoreboard-table";
-        table.innerHTML = [
-          "<thead>",
-          "<tr>",
-          "<th>Rank</th>",
-          "<th>Team name</th>",
-          "<th>Score</th>",
-          "<th>Solves</th>",
-          "<th>Last solve time</th>",
-          "</tr>",
-          "</thead>",
-          '<tbody id="scoreboard-body"></tbody>'
-        ].join("");
-        emptyScoreboard.replaceWith(table);
-        scoreboardTable = table;
-        scoreboardBody = document.getElementById("scoreboard-body");
-        emptyScoreboard = null;
-        return table;
-      }
-
-      function renderScoreboard(teams) {
-        if (!teams.length) {
-          if (scoreboardTable) {
-            scoreboardTable.remove();
-            scoreboardTable = null;
-            scoreboardBody = null;
-          }
-          if (!emptyScoreboard) {
-            emptyScoreboard = document.createElement("p");
-            emptyScoreboard.id = "empty-scoreboard";
-            emptyScoreboard.textContent = "No teams have joined this event yet.";
-            finalStandingsBanner.insertAdjacentElement("afterend", emptyScoreboard);
-          }
-          return;
-        }
-
-        ensureScoreboardTable();
-        if (!scoreboardBody) {
-          return;
-        }
-
-        scoreboardBody.innerHTML = teams.map(function (team) {
-          var rowClass = getRowClass(team.rank);
-          return [
-            '<tr class="' + rowClass + '">',
-            "<td>" + team.rank + "</td>",
-            "<td>" + team.team_name + "</td>",
-            "<td>" + team.score + "</td>",
-            "<td>" + team.solve_count + "</td>",
-            "<td>" + formatLastSolveAt(team.last_solve_at) + "</td>",
-            "</tr>"
-          ].join("");
-        }).join("");
-      }
-
-      function setEndedState(eventEnded) {
-        if (eventEnded) {
-          countdown.textContent = "Event ended";
-          finalStandingsBanner.hidden = false;
-          return;
-        }
-        finalStandingsBanner.hidden = true;
-      }
-
-      function scheduleNextRefresh(delayMs) {
-        if (pollTimerId) {
-          clearTimeout(pollTimerId);
-        }
-        pollTimerId = window.setTimeout(refreshScoreboard, delayMs);
-      }
-
-      async function refreshScoreboard() {
-        if (!scoreboardUrl || isRefreshing) {
-          scheduleNextRefresh(pollIntervalMs);
-          return;
-        }
-
-        if (document.hidden) {
-          scheduleNextRefresh(pollIntervalMs);
-          return;
-        }
-
-        isRefreshing = true;
-        try {
-          var response = await fetch(scoreboardUrl, {
-            headers: {
-              "X-Requested-With": "XMLHttpRequest"
-            },
-            credentials: "same-origin",
-            cache: "no-store"
-          });
-          if (!response.ok) {
-            return;
-          }
-          var payload = await response.json();
-          var payloadSignature = JSON.stringify(payload);
-          if (payloadSignature === lastPayloadSignature) {
-            return;
-          }
-          lastPayloadSignature = payloadSignature;
-          setEndedState(payload.event_ended);
-          renderScoreboard(payload.ranked_teams || []);
-        } catch (error) {
-        } finally {
-          isRefreshing = false;
-          scheduleNextRefresh(pollIntervalMs);
-        }
-      }
-
-      function renderCountdown() {
-        var now = new Date();
-        var diff = endTime - now;
-
-        if (isNaN(endTime.getTime()) || diff <= 0) {
-          countdown.textContent = "Event ended";
-          return false;
-        }
-
-        var totalSeconds = Math.floor(diff / 1000);
-        var days = Math.floor(totalSeconds / 86400);
-        var hours = Math.floor((totalSeconds % 86400) / 3600);
-        var minutes = Math.floor((totalSeconds % 3600) / 60);
-        var seconds = totalSeconds % 60;
-
-        var parts = [];
-        if (days > 0) {
-          parts.push(days + "d");
-        }
-        parts.push(String(hours).padStart(2, "0") + "h");
-        parts.push(String(minutes).padStart(2, "0") + "m");
-        parts.push(String(seconds).padStart(2, "0") + "s");
-        countdown.textContent = parts.join(" ");
-        return true;
-      }
-
-      if (!renderCountdown()) {
-        return;
-      }
-
-      var intervalId = setInterval(function () {
-        if (!renderCountdown()) {
-          clearInterval(intervalId);
-        }
-      }, 1000);
-
-      document.addEventListener("visibilitychange", function () {
-        if (!document.hidden) {
-          refreshScoreboard();
-        }
-      });
-
-      refreshScoreboard();
-    })();
-  </script>
+  </section>
 {% endblock %}

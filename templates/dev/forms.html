@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Dev — Forms{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
+
+{% block content %}
+  <section class="platform-stack">
+    <h1>Form Patterns Preview</h1>
+
+    <form class="form" method="post" action="#">
+      {% csrf_token %}
+      <label for="text-input">Text input</label>
+      <input id="text-input" name="text_input" type="text" placeholder="Event title">
+
+      <label for="textarea-input">Textarea</label>
+      <textarea id="textarea-input" name="textarea_input" rows="4" placeholder="Description"></textarea>
+
+      <button class="oauthButton" type="submit">Submit</button>
+    </form>
+
+    <div class="message-card error">
+      <strong>Error state:</strong> Team name is required.
+    </div>
+
+    <div class="message-card success">
+      <strong>Success state:</strong> Changes saved successfully.
+    </div>
+  </section>
+{% endblock %}

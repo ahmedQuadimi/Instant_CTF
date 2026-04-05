@@ -15,7 +15,7 @@ from Organizations.models import OrganizationMembership
 from Teams.models import Team, TeamJoinRequest
 
 from .forms import CreateTeamForm, JoinEventForm, TeamJoinRequestForm
-from .models import EventRoster
+from .models import Event, EventRoster
 from .utils import (
     event_has_started,
     get_event_or_404,
@@ -23,14 +23,13 @@ from .utils import (
 )
 
 from .access import get_roster_or_403
-from Challenges.models import Challenge
 from Scoring.models import Solve
 
 # Create your views here.
 
 
 _CHALLENGE_FIELD_NAMES = {field.name for field in Challenge._meta.fields}
-_CHALLENGE_STATUS_FIELD = "status" if "status" in _CHALLENGE_FIELD_NAMES else "state"
+_CHALLENGE_STATUS_FIELD = "status"
 
 
 def _has_manage_access(user, event):
@@ -77,7 +76,20 @@ def _toggle_status_value(current_status):
 
 
 def event_list(request):
-    return render(request, "events/event_list.html")
+    events = Event.objects.select_related("organization").order_by("-start_time")
+
+    now = timezone.now()
+    event_data = []
+    for evt in events:
+        if now < evt.start_time:
+            time_status = "upcoming"
+        elif now > evt.end_time:
+            time_status = "ended"
+        else:
+            time_status = "active"
+        event_data.append({"event": evt, "time_status": time_status})
+
+    return render(request, "events/event_list.html", {"event_data": event_data})
 
 
 def event(request, event_id):
@@ -91,6 +103,10 @@ def event(request, event_id):
             event=event,
         ).exists()
 
+    participant_count = EventRoster.objects.filter(event=event).count()
+    challenge_count = Challenge.objects.filter(event=event).count()
+    can_manage = _has_manage_access(request.user, event)
+
     return render(
         request,
         "events/event_home.html",
@@ -98,6 +114,9 @@ def event(request, event_id):
             "event": event,
             "time_status": time_status,
             "is_participant": is_participant,
+            "participant_count": participant_count,
+            "challenge_count": challenge_count,
+            "can_manage": can_manage,
         },
     )
 
@@ -115,7 +134,7 @@ def event_users(request, event_id):
     )
 
 
-def event_user_detail(request, event_id, user_id):
+def event_user_details(request, event_id, user_id):
     event = get_event_or_404(event_id)
     User = get_user_model()
     profile_user = get_object_or_404(User, pk=user_id)
@@ -312,7 +331,7 @@ def event_challenges(request, event_id):
     if not event_has_started(event, now):
         return render(
             request,
-            "event_not_started.html",
+            "events/event_not_started.html",
             {"event": event, "message": "Event hasn't started yet"},
         )
 
@@ -328,7 +347,7 @@ def event_challenges(request, event_id):
 
     challenges = Challenge.objects.filter(
         event=event,
-        state="VISIBLE",
+        status="VISIBLE",
         release_time__lte=now,
     ).annotate(
         is_solved=Exists(solved_subquery)
@@ -336,7 +355,7 @@ def event_challenges(request, event_id):
 
     return render(
         request,
-        "event_challenges.html",
+        "events/event_challenges.html",
         {"event": event, "challenges": challenges},
     )
 
@@ -477,5 +496,85 @@ def my_join_requests(request, event_id):
     )
 
 
+@login_required
 def create_event(request):
-    return render(request, "events/create_event.html")
+    errors = []
+    saved = False
+
+    memberships = OrganizationMembership.objects.filter(
+        user=request.user,
+        role__in=("OWNER", "ADMIN"),
+    ).select_related("organization")
+
+    manageable_orgs = [membership.organization for membership in memberships]
+    organizations_by_id = {organization.id: organization for organization in manageable_orgs}
+
+    if request.method == "POST":
+        title = (request.POST.get("title") or "").strip()
+        visibility = (request.POST.get("visibility") or "PUBLIC").strip()
+        access_code = (request.POST.get("access_code") or "").strip()
+        organization_id_raw = (request.POST.get("organization_id") or "").strip()
+        start_raw = request.POST.get("start_time")
+        end_raw = request.POST.get("end_time")
+        max_team_size_raw = (request.POST.get("max_team_size") or "0").strip()
+
+        if not title:
+            errors.append("Title is required.")
+
+        try:
+            organization_id = int(organization_id_raw)
+        except (TypeError, ValueError):
+            organization_id = None
+            errors.append("A valid organization is required.")
+
+        organization = organizations_by_id.get(organization_id)
+        if organization is None:
+            errors.append("You do not have permission to create events for this organization.")
+
+        valid_visibility = {choice[0] for choice in Event.VISIBILITY_CHOICES}
+        if visibility not in valid_visibility:
+            errors.append("Invalid visibility.")
+
+        start_time = _parse_optional_datetime(start_raw, errors)
+        end_time = _parse_optional_datetime(end_raw, errors)
+
+        if start_time is None:
+            errors.append("start_time is required.")
+        if end_time is None:
+            errors.append("end_time is required.")
+        if start_time is not None and end_time is not None and start_time >= end_time:
+            errors.append("end_time must be after start_time.")
+
+        try:
+            max_team_size = int(max_team_size_raw)
+            if max_team_size < 0:
+                raise ValueError
+        except (TypeError, ValueError):
+            max_team_size = 0
+            errors.append("max_team_size must be a non-negative integer.")
+
+        if visibility != "CODE":
+            access_code = ""
+
+        if not errors and organization is not None and start_time is not None and end_time is not None:
+            new_event = Event.objects.create(
+                title=title,
+                organization=organization,
+                visibility=visibility,
+                access_code=access_code,
+                start_time=start_time,
+                end_time=end_time,
+                max_team_size=max_team_size,
+            )
+            messages.success(request, f'Event "{new_event.title}" created successfully.')
+            return redirect("event_dashboard", event_id=new_event.id)
+
+    return render(
+        request,
+        "events/create_event.html",
+        {
+            "organizations": manageable_orgs,
+            "errors": errors,
+            "saved": saved,
+        },
+    )

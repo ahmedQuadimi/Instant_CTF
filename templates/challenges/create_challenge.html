@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Challenge{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
+
+{% block content %}
+  <section class="platform-stack">
+    <h1>Create Challenge</h1>
+    <p class="meta-line">Event: {{ event.title }}</p>
+    <div class="message-card info">{{ message }}</div>
+    <a class="btn-primary" href="{% url 'manage_event_dashboard' event.id %}">Go to Manage Dashboard</a>
+  </section>
+{% endblock %}

@@ -1,14 +1,26 @@
 {% extends "base.html" %}
 {% block title %}Request to Join Team{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
 {% block content %}
   {% include 'events/_event_nav.html' %}
 
-  <h1>Request to Join {{ team.name }}</h1>
-  <p>Event: {{ event.title }}</p>
+  <section class="platform-stack">
+    <h1>Request to Join {{ team.name }}</h1>
+    <p class="meta-line">Event: {{ event.title }}</p>
+    <p>Confirm that you want to send a join request to this team.</p>
 
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Confirm Request</button>
-  </form>
+    <form method="post" class="form">
+      {% csrf_token %}
+      {% for field in form %}
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.errors %}
+          <span class="field-error">{{ field.errors }}</span>
+        {% endif %}
+      {% endfor %}
+      <button class="oauthButton" type="submit">Confirm Request</button>
+    </form>
+  </section>
 {% endblock %}

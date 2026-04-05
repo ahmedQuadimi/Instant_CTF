@@ -1,6 +1,44 @@
 {% extends "base.html" %}
-{% block title %}Event List (Placeholder){% endblock %}
+
+{% block title %}Events{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
+
 {% block content %}
-  <h1>Event List</h1>
-  <p>This is a placeholder. Real content will go here.</p>
+  <section class="platform-stack" aria-labelledby="event-list-title">
+    <div class="platform-header-row">
+      <h1 id="event-list-title" class="gradient-heading">Events</h1>
+      {% if request.user.is_authenticated %}
+        <a class="btn-primary" href="{% url 'create_event' %}">Create Event</a>
+      {% endif %}
+    </div>
+
+    {% if event_data %}
+      <div class="card-grid">
+        {% for item in event_data %}
+          <article class="platform-card">
+            <h2><a href="{% url 'event_dashboard' item.event.id %}">{{ item.event.title }}</a></h2>
+            <p class="meta-line">Organization: {{ item.event.organization.name }}</p>
+            <p class="meta-line">Start: {{ item.event.start_time|date:"M d, Y H:i" }}</p>
+            <p class="meta-line">End: {{ item.event.end_time|date:"M d, Y H:i" }}</p>
+            <div class="badge-row">
+              <span class="status-badge"><span>{{ item.event.visibility }}</span></span>
+              <span class="status-badge {{ item.time_status }}">
+                <span>{% if item.time_status == "upcoming" %}Upcoming
+                {% elif item.time_status == "active" %}Active
+                {% else %}Ended{% endif %}</span>
+              </span>
+            </div>
+            <a class="btn-secondary" href="{% url 'event_dashboard' item.event.id %}">Open Dashboard</a>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <p>No events available yet.</p>
+      </div>
+    {% endif %}
+  </section>
 {% endblock %}

@@ -1,37 +1,37 @@
 {% extends "base.html" %}
 {% block title %}Event Users{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
 {% block content %}
   {% include 'events/_event_nav.html' %}
 
-  <h1>Participants for {{ event.title }}</h1>
+  <section class="platform-stack">
+    <h1>Participants for {{ event.title }}</h1>
 
-  {% if rosters %}
-    <table>
-      <thead>
-        <tr>
-          <th>Username</th>
-          <th>Team Name</th>
-          <th>Joined Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for roster in rosters %}
+    {% if rosters %}
+      <table class="platform-table">
+        <thead>
           <tr>
-            <td>
-              {% url 'event_user_detail' event.id roster.user.id as user_detail_url %}
-              {% if user_detail_url %}
-                <a href="{{ user_detail_url }}">{{ roster.user.username }}</a>
-              {% else %}
-                {{ roster.user.username }}
-              {% endif %}
-            </td>
-            <td>{{ roster.team.name }}</td>
-            <td>{{ roster.joined_at }}</td>
+            <th>Username</th>
+            <th>Team Name</th>
+            <th>Joined At</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <p>No participants have joined this event yet.</p>
-  {% endif %}
+        </thead>
+        <tbody>
+          {% for roster in rosters %}
+            <tr>
+              <td>
+                <a href="{% url 'event_user_details' event.id roster.user.id %}">{{ roster.user.username }}</a>
+              </td>
+              <td>{{ roster.team.name }}</td>
+              <td>{{ roster.joined_at }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state"><p>No participants have joined this event yet.</p></div>
+    {% endif %}
+  </section>
 {% endblock %}

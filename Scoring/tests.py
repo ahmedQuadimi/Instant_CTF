@@ -102,7 +102,7 @@ class EventScoreboardViewTests(TestCase):
             name="Warmup",
             category="web",
             description="desc",
-            state="VISIBLE",
+            status="VISIBLE",
             flag_hash="hash1",
             solves_count=0,
         )
@@ -111,7 +111,7 @@ class EventScoreboardViewTests(TestCase):
             name="Crypto",
             category="crypto",
             description="desc",
-            state="VISIBLE",
+            status="VISIBLE",
             flag_hash="hash2",
             solves_count=5,
         )

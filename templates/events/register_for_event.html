@@ -1,13 +1,25 @@
 {% extends "base.html" %}
 {% block title %}Register for {{ event.title }}{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
 {% block content %}
   {% include 'events/_event_nav.html' %}
 
-  <h1>Enter Access Code for {{ event.title }}</h1>
+  <section class="platform-stack">
+    <h1>Register for {{ event.title }}</h1>
+    <p class="meta-line">This event requires an access code. Enter it below to continue registration.</p>
 
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Verify Code</button>
-  </form>
+    <form method="post" class="form">
+      {% csrf_token %}
+      {% for field in form %}
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.errors %}
+          <span class="field-error">{{ field.errors }}</span>
+        {% endif %}
+      {% endfor %}
+      <button class="oauthButton" type="submit">Verify Access Code</button>
+    </form>
+  </section>
 {% endblock %}

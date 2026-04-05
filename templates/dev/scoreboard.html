@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Dev — Scoreboard{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
+
+{% block content %}
+  <section class="platform-stack">
+    <h1>Scoreboard Preview</h1>
+    <table class="platform-table">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Team</th>
+          <th>Score</th>
+          <th>Solves</th>
+          <th>Last Solve</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="rank-gold"><td>1</td><td>NullByte Ninjas</td><td>1550</td><td>11</td><td>2026-04-04 14:33</td></tr>
+        <tr class="rank-silver"><td>2</td><td>Packet Pirates</td><td>1480</td><td>10</td><td>2026-04-04 14:31</td></tr>
+        <tr class="rank-bronze"><td>3</td><td>Root Raiders</td><td>1390</td><td>9</td><td>2026-04-04 14:20</td></tr>
+        <tr><td>4</td><td>Hex Hunters</td><td>1270</td><td>8</td><td>2026-04-04 14:10</td></tr>
+        <tr><td>5</td><td>Stack Smashers</td><td>1150</td><td>7</td><td>2026-04-04 13:56</td></tr>
+      </tbody>
+    </table>
+  </section>
+{% endblock %}

@@ -1,0 +1,93 @@
+.challenge-list,
+.challenge-detail {
+  display: grid;
+  gap: 16px;
+}
+
+.challenge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.challenge-card {
+  background: var(--bg-elevated);
+  border: var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.challenge-card h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.challenge-card.unsolved {
+  border-color: color-mix(in srgb, var(--accent-cyan) 45%, transparent);
+}
+
+.challenge-card.solved {
+  border-color: color-mix(in srgb, var(--accent-gold) 55%, transparent);
+}
+
+.challenge-card.locked {
+  border-color: color-mix(in srgb, var(--accent-magenta) 55%, transparent);
+  opacity: 0.85;
+}
+
+.flag-form {
+  display: grid;
+  gap: 10px;
+}
+
+.flag-form input {
+  min-height: 44px;
+  border: var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+.already-solved-banner,
+.rate-limited-banner {
+  border-radius: var(--radius);
+  border: var(--border);
+  padding: 10px 12px;
+}
+
+.already-solved-banner {
+  background: color-mix(in srgb, var(--accent-primary) 20%, transparent);
+}
+
+.rate-limited-banner {
+  background: color-mix(in srgb, var(--accent-magenta) 20%, transparent);
+}
+
+.message-variant-success,
+.message-variant-error,
+.message-variant-warning,
+.message-variant-info {
+  border-radius: var(--radius);
+  border: var(--border);
+  padding: 10px 12px;
+}
+
+.message-variant-success {
+  border-color: color-mix(in srgb, var(--accent-primary) 70%, transparent);
+}
+
+.message-variant-error {
+  border-color: color-mix(in srgb, var(--accent-magenta) 70%, transparent);
+}
+
+.message-variant-warning {
+  border-color: color-mix(in srgb, var(--accent-gold) 70%, transparent);
+}
+
+.message-variant-info {
+  border-color: color-mix(in srgb, var(--accent-cyan) 50%, transparent);
+}

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Teams{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
+
+{% block content %}
+  <section class="platform-stack">
+    <div class="platform-header-row">
+      <h1>Teams</h1>
+      {% if request.user.is_authenticated %}
+        <a class="btn-primary" href="{% url 'team_create' %}">Create Team</a>
+      {% endif %}
+    </div>
+
+    {% if teams %}
+      <div class="card-grid">
+        {% for team in teams %}
+          <article class="platform-card">
+            <h2><a href="{% url 'team_details' team.id %}">{{ team.name }}</a></h2>
+            <p class="meta-line">Captain: {{ team.captain.username }}</p>
+            <p class="meta-line">Members: {{ team.member_count }}</p>
+            {% if request.user.is_authenticated %}
+              <a class="btn-secondary" href="{% url 'request_join' team.id %}">Request Join</a>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state"><p>No teams created yet.</p></div>
+    {% endif %}
+  </section>
+{% endblock %}

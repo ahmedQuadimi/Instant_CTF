@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile — Instant CTF{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/platform.css">
+<style>
+  .edit-card {
+    max-width: 480px;
+    margin: 40px auto;
+    background: var(--bg-surface);
+    border: var(--border);
+    border-radius: var(--radius);
+    padding: clamp(24px, 5vw, 40px);
+    display: grid;
+    gap: 16px;
+  }
+  .edit-card h1 { font-size: 1.4rem; margin: 0; }
+  .edit-card label {
+    font-size: 0.8rem;
+    color: var(--accent-cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .edit-card input[type="text"] {
+    width: 100%;
+    min-height: 44px;
+    background: var(--bg-elevated);
+    border: var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+  }
+  .edit-card input:focus {
+    outline: 2px solid var(--accent-cyan);
+    outline-offset: 2px;
+  }
+  .edit-card .hint {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+  .edit-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .save-btn {
+    min-height: 44px;
+    padding: 10px 20px;
+    background: var(--accent-cyan);
+    color: var(--bg-base);
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .save-btn:hover { transform: translateY(-1px); }
+  .cancel-btn {
+    min-height: 44px;
+    padding: 10px 20px;
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border: var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+  }
+  .cancel-btn:hover {
+    border-color: var(--accent-cyan);
+    text-decoration: none;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-card">
+  <h1>Edit Profile</h1>
+  <form method="POST" action="{% url 'profile_edit' %}" class="form">
+    {% csrf_token %}
+    <div style="display:grid;gap:16px;">
+      <div>
+        <label for="id_username">Username</label>
+        <input type="text" id="id_username" name="username" value="{{ profile_user.username }}" required />
+        <p class="hint">This is your public display name on scoreboards.</p>
+      </div>
+      <div>
+        <label>Email</label>
+        <input type="text" name="email_display" value="{{ profile_user.email }}" disabled style="opacity:0.6;" />
+        <p class="hint">Email changes are managed via <a href="{% url 'account_email' %}">email settings</a>.</p>
+      </div>
+      <div class="edit-actions">
+        <button type="submit" class="oauthButton">→ SAVE CHANGES</button>
+        <a href="{% url 'profile' user_id=profile_user.id %}" class="cancel-btn">Cancel</a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

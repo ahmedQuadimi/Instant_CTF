@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Dev — Events{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
+
+{% block content %}
+  <section class="platform-stack">
+    <h1>Event Card Preview</h1>
+    <div class="card-grid">
+      <article class="platform-card">
+        <h2>Spring Collegiate CTF</h2>
+        <p class="meta-line">Organization: UxLab</p>
+        <p class="meta-line">Start: 2026-04-09 10:00</p>
+        <p class="meta-line">End: 2026-04-09 16:00</p>
+        <span class="status-badge upcoming"><span>Upcoming</span></span>
+      </article>
+      <article class="platform-card">
+        <h2>Midnight Binary Bash</h2>
+        <p class="meta-line">Organization: Cyber Guild</p>
+        <p class="meta-line">Start: 2026-04-04 11:00</p>
+        <p class="meta-line">End: 2026-04-04 23:00</p>
+        <span class="status-badge active"><span>Active</span></span>
+      </article>
+      <article class="platform-card">
+        <h2>Retro Pwn-Off</h2>
+        <p class="meta-line">Organization: Archive Team</p>
+        <p class="meta-line">Start: 2026-03-21 09:00</p>
+        <p class="meta-line">End: 2026-03-21 15:00</p>
+        <span class="status-badge ended"><span>Ended</span></span>
+      </article>
+    </div>
+  </section>
+{% endblock %}

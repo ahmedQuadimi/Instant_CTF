@@ -73,15 +73,6 @@
       </div>
     </div>
 
-    <div class="action-grid">
-      <a href="{% url 'event_challenges' event.id %}">Challenges</a>
-      <a href="{% url 'event_scoreboard' event.id %}">Scoreboard</a>
-      <a href="{% url 'event_teams' event.id %}">Teams</a>
-      <a href="{% url 'event_users' event.id %}">Users</a>
-      {% if can_manage %}
-        <a href="{% url 'manage_event_dashboard' event.id %}" style="border-color:var(--accent-gold);color:var(--accent-gold);">Manage</a>
-      {% endif %}
-    </div>
 
     <section class="platform-card">
       <h2>Rules</h2>

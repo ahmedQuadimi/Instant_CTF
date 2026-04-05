@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.db.models import F
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -24,16 +24,64 @@ from .models import Challenge
 
 
 @login_required
-def add_challenge(request, event_id):
+def create_challenge(request, event_id):
     event = get_event_or_404(event_id)
-    return render(
-        request,
-        "challenges/create_challenge.html",
-        {
-            "event": event,
-            "message": "Challenge creation is managed from the event dashboard.",
-        },
-    )
+    
+    # organization check: user must be OWNER or ADMIN of event.organization
+    from Organizations.models import OrganizationMembership
+    membership = OrganizationMembership.objects.filter(
+        user=request.user,
+        organization=event.organization,
+        role__in=['OWNER','ADMIN']
+    ).first()
+    
+    if not membership:
+        from django.contrib import messages
+        messages.error(request, "Only event organizers can add challenges.")
+        return redirect('event_dashboard', event_id=event.id)
+
+    if request.method == 'POST':
+        name = request.POST.get('name','').strip()
+        category = request.POST.get('category','').strip()
+        description = request.POST.get('description','').strip()
+        raw_flag = request.POST.get('flag','').strip()
+        status = request.POST.get('status','HIDDEN')
+        release_time_str = request.POST.get('release_time','')
+
+        # validation
+        errors = []
+        if not name: errors.append("Name is required.")
+        if not raw_flag: errors.append("Flag is required.")
+        
+        if errors:
+            from django.contrib import messages
+            for e in errors:
+                messages.error(request, e)
+            return redirect('create_challenge', event_id=event.id)
+
+        flag_hash = hashlib.sha256(raw_flag.encode()).hexdigest()
+
+        release_time = None
+        if release_time_str:
+            from django.utils.dateparse import parse_datetime
+            release_time = parse_datetime(release_time_str)
+            if release_time and timezone.is_naive(release_time):
+                release_time = timezone.make_aware(release_time, timezone.get_current_timezone())
+
+        Challenge.objects.create(
+            event=event,
+            name=name,
+            category=category,
+            description=description,
+            flag_hash=flag_hash,
+            status=status,
+            release_time=release_time,
+        )
+        from django.contrib import messages
+        messages.success(request, f"Challenge '{name}' created.")
+        return redirect('manage_event_dashboard', event_id=event.id)
+
+    return render(request, 'challenges/create_challenge.html', {'event': event})
 
 
 @login_required

@@ -24,6 +24,7 @@
             {% for challenge in category_challenges %}
               <a href="#challenge-{{ challenge.pk }}" class="challenge-card {% if challenge.is_solved %}solved{% else %}unsolved{% endif %}">
                 <h3>{{ challenge.name }}</h3>
+                <span class="worth-badge">{{ challenge.current_worth }} pts</span>
                 <p class="meta-line">Solves: {{ challenge.solves_count }}</p>
                 {% if challenge.is_solved %}
                   <div class="already-solved-banner">Solved</div>
@@ -39,7 +40,10 @@
                     <span class="category-chip">{{ challenge.category }}</span>
                     <a href="#" class="modal-close-btn" aria-label="Close">✕</a>
                   </div>
-                  <h2 class="modal-title">{{ challenge.name }}</h2>
+                  <h2 class="modal-title">
+                    {{ challenge.name }}
+                    <span class="worth-badge" style="margin-left: 12px; vertical-align: middle;">{{ challenge.current_worth }} pts</span>
+                  </h2>
                   <div class="modal-description">
                     {{ challenge.description|linebreaks }}
                   </div>

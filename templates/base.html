@@ -1,4 +1,4 @@
-{% load static %}
+{% load static %}{% load socialaccount %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -170,6 +170,20 @@
       100% { stroke-dashoffset: -2000; opacity: 0.3; }
     }
 
+    .animated-path {
+      will-change: stroke-dashoffset;
+    }
+
+    .boxes-wrapper {
+      contain: layout;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .animated-path { animation: none !important; }
+      .boxes-core { display: none !important; }
+      .shiny-text { animation: none !important; }
+    }
+
     a {
       color: var(--accent-primary);
       text-decoration: none;
@@ -268,6 +282,7 @@
       clip: rect(0 0 0 0);
       overflow: hidden;
       white-space: nowrap;
+      display: none !important;
     }
 
     .nav-center,
@@ -491,7 +506,7 @@
 <body>
   <div class="background-paths-container" aria-hidden="true">
     <div class="paths-wrapper">
-      <svg class="path-svg" viewBox="0 0 1920 1080" preserveAspectRatio="none" role="presentation" aria-hidden="true">
+      <svg class="path-svg" viewBox="0 0 1920 1080" preserveAspectRatio="none" role="presentation" aria-hidden="true" style="vector-effect: non-scaling-stroke;">
         <path
           class="animated-path"
           d="M-120 840 C 180 620, 360 980, 680 760 C 980 560, 1180 920, 1480 720 C 1720 560, 1880 700, 2060 620"
@@ -510,7 +525,7 @@
         ></path>
       </svg>
 
-      <svg class="path-svg" viewBox="0 0 1920 1080" preserveAspectRatio="none" role="presentation" aria-hidden="true">
+      <svg class="path-svg" viewBox="0 0 1920 1080" preserveAspectRatio="none" role="presentation" aria-hidden="true" style="vector-effect: non-scaling-stroke;">
         <path
           class="animated-path"
           d="M-100 1020 C 200 860, 520 1040, 860 900 C 1180 760, 1450 960, 1780 820 C 1940 750, 2060 780, 2200 720"
@@ -534,9 +549,9 @@
   <nav class="site-nav" aria-label="Main navigation">
     <div class="boxes-wrapper" aria-hidden="true">
       <div class="boxes-core">
-        {% for i in "x"|ljust:"200" %}
+        {% for i in "x"|ljust:"24" %}
         <div class="box-column">
-          {% for j in "x"|ljust:"60" %}
+          {% for j in "x"|ljust:"8" %}
           <div class="box-cell">
             {% if forloop.counter|divisibleby:2 %}
             <svg class="box-plus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -566,10 +581,10 @@
         {% if request.user.is_authenticated %}
           <span class="username">{{ request.user.username }}</span>
           <a class="nav-link" href="{% url 'profile' user_id=request.user.id %}">Profile</a>
-          <a class="nav-link" href="{% url 'account_logout' %}">Logout</a>
+          <a class="nav-link" href="#logout-modal">Logout</a>
         {% else %}
-          <a class="nav-link" href="{% url 'account_login' %}">Login</a>
-          <a class="nav-link" href="{% url 'account_signup' %}">Register</a>
+          <a class="nav-link" href="#login-modal">Login</a>
+          <a class="nav-link" href="#signup-modal">Register</a>
         {% endif %}
       </div>
     </div>
@@ -598,9 +613,9 @@
   <footer class="site-footer">
     <div class="boxes-wrapper" aria-hidden="true">
       <div class="boxes-core">
-        {% for i in "x"|ljust:"200" %}
+        {% for i in "x"|ljust:"24" %}
         <div class="box-column">
-          {% for j in "x"|ljust:"60" %}
+          {% for j in "x"|ljust:"8" %}
           <div class="box-cell">
             {% if forloop.counter|divisibleby:2 %}
             <svg class="box-plus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -628,5 +643,111 @@
       <div class="footer-bottom">© 2025 Instant CTF. Built for hackers.</div>
     </div>
   </footer>
+
+  <!-- Logout Modal -->
+  <div class="challenge-modal" id="logout-modal">
+    <div class="challenge-modal-backdrop">
+      <a href="#" class="modal-close-area"></a>
+    </div>
+    <div class="challenge-modal-box" style="max-width:360px;text-align:center">
+      <h2 class="modal-title">Sign out?</h2>
+      <p style="color:var(--text-secondary); margin-bottom:24px; font-size:0.9rem">
+        You will be returned to the homepage.
+      </p>
+      <form method="POST" action="{% url 'account_logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="oauthButton" style="width:100%; margin-bottom:12px">
+          Yes, sign out →
+        </button>
+      </form>
+      <a href="#" class="modal-close-btn" style="display:block; margin-top:8px">
+        Cancel
+      </a>
+    </div>
+  </div>
+
+  <!-- Login Modal -->
+  <div class="challenge-modal" id="login-modal">
+    <div class="challenge-modal-backdrop">
+      <a href="#" class="modal-close-area"></a>
+    </div>
+    <div class="challenge-modal-box" style="max-width:440px;">
+      <h2 class="modal-title">Welcome,</h2>
+      <p style="color:var(--text-secondary); margin-bottom:24px; font-size:0.9rem">
+        sign in to continue
+      </p>
+      
+      <a href="{% provider_login_url 'google' %}" class="oauthButton" style="text-decoration:none;">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Sign in with Google
+      </a>
+
+      <div class="separator" style="margin: 20px 0;">OR</div>
+
+      <form method="POST" action="{% url 'account_login' %}" class="platform-form">
+        {% csrf_token %}
+        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+        <div class="field-group" style="display:grid; gap:8px;">
+          <input type="email" name="login" placeholder="Email Address" required>
+        </div>
+        <div class="field-group" style="display:grid; gap:8px;">
+          <input type="password" name="password" placeholder="Password" required>
+        </div>
+        <button type="submit" class="oauthButton">
+          Sign In →
+        </button>
+      </form>
+      
+      <p style="margin-top:20px; font-size:0.85rem; text-align:center; color:var(--text-secondary)">
+        New here? <a href="{% url 'account_signup' %}" style="color:var(--accent-primary)">Create account</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Signup Modal -->
+  <div class="challenge-modal" id="signup-modal">
+    <div class="challenge-modal-backdrop">
+      <a href="#" class="modal-close-area"></a>
+    </div>
+    <div class="challenge-modal-box" style="max-width:440px;">
+      <h2 class="modal-title">Join the hunt,</h2>
+      <p style="color:var(--text-secondary); margin-bottom:24px; font-size:0.9rem">
+        create your account
+      </p>
+      
+      <a href="{% provider_login_url 'google' %}" class="oauthButton" style="text-decoration:none;">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Sign up with Google
+      </a>
+
+      <div class="separator" style="margin: 20px 0;">OR</div>
+
+      <form method="POST" action="{% url 'account_signup' %}" class="platform-form">
+        {% csrf_token %}
+        {% if redirect_field_value %}
+          <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+        {% endif %}
+        <div class="field-group" style="display:grid; gap:8px;">
+          <input type="text" name="username" placeholder="Hacker Tag (username)" required>
+        </div>
+        <div class="field-group" style="display:grid; gap:8px;">
+          <input type="email" name="email" placeholder="Email Address" required>
+        </div>
+        <div class="field-group" style="display:grid; gap:8px;">
+          <input type="password" name="password1" placeholder="Password" required>
+        </div>
+        <div class="field-group" style="display:grid; gap:8px;">
+          <input type="password" name="password2" placeholder="Confirm Password" required>
+        </div>
+        <button type="submit" class="oauthButton">
+          Create Account →
+        </button>
+      </form>
+      
+      <p style="margin-top:20px; font-size:0.85rem; text-align:center; color:var(--text-secondary)">
+        Already registered? <a href="#login-modal" style="color:var(--accent-primary)">Sign in</a>
+      </p>
+    </div>
+  </div>
 </body>
 </html>

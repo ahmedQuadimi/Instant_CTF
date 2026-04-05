@@ -22,10 +22,10 @@ def profile_view(request, user_id):
     teams = Team.objects.filter(pk__in=team_ids)
 
     # Events participated in
-    event_rosters = (
-        EventRoster.objects.filter(user=profile_user)
-        .select_related("event", "team")
-        .order_by("-joined_at")
+    event_rosters = EventRoster.objects.filter(
+        user=profile_user
+    ).select_related('event', 'team').order_by(
+        '-event__start_time'
     )
 
     # Solve count

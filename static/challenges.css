@@ -267,3 +267,10 @@
   outline: 2px solid var(--accent-cyan);
   outline-offset: 2px;
 }
+
+.worth-badge {
+  font-size: 0.75rem;
+  color: var(--accent-secondary);
+  font-weight: 600;
+  font-family: var(--font-mono);
+}

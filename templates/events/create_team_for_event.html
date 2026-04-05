@@ -1,13 +1,25 @@
 {% extends "base.html" %}
 {% block title %}Create Team for {{ event.title }}{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
 {% block content %}
   {% include 'events/_event_nav.html' %}
 
-  <h1>Create Team for {{ event.title }}</h1>
+  <section class="platform-stack">
+    <h1>Create Team for {{ event.title }}</h1>
+    <p class="meta-line">Pick a team name to complete registration for this event.</p>
 
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Create Team and Join Event</button>
-  </form>
+    <form method="post" class="form">
+      {% csrf_token %}
+      {% for field in form %}
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.errors %}
+          <span class="field-error">{{ field.errors }}</span>
+        {% endif %}
+      {% endfor %}
+      <button class="oauthButton" type="submit">Create Team and Join Event</button>
+    </form>
+  </section>
 {% endblock %}

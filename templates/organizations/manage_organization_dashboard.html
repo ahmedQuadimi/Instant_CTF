@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage {{ organization.name }} — Instant CTF{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+  <style>
+    .member-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg-elevated);
+      border: var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .member-info { flex: 1; min-width: 120px; }
+    .member-info strong { color: var(--text-primary); }
+    .member-info small { display: block; color: var(--text-secondary); font-size: 0.8rem; }
+    .role-badge {
+      display: inline-flex;
+      padding: 2px 10px;
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+      min-height: 28px;
+      align-items: center;
+    }
+    .role-OWNER { background: color-mix(in srgb, var(--accent-gold) 20%, transparent); color: var(--accent-gold); }
+    .role-ADMIN { background: color-mix(in srgb, var(--accent-primary) 20%, transparent); color: var(--accent-primary); }
+    .role-MEMBER { background: color-mix(in srgb, var(--text-secondary) 18%, transparent); color: var(--text-secondary); }
+    .member-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .role-select {
+      min-height: 36px;
+      background: var(--bg-surface);
+      border: var(--border);
+      border-radius: var(--radius);
+      color: var(--text-primary);
+      padding: 4px 10px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+    .btn-role, .btn-remove {
+      min-height: 36px;
+      padding: 6px 14px;
+      border: none;
+      border-radius: var(--radius);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .btn-role {
+      background: color-mix(in srgb, var(--accent-primary) 22%, transparent);
+      color: var(--accent-primary);
+    }
+    .btn-remove {
+      background: color-mix(in srgb, var(--accent-magenta) 18%, transparent);
+      color: var(--accent-magenta);
+    }
+    .btn-role:hover, .btn-remove:hover { transform: translateY(-1px); }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <section class="platform-stack">
+    <div class="platform-header-row">
+      <h1>Manage {{ organization.name }}</h1>
+      <div class="button-row">
+        <a class="btn-primary" href="{% url 'create_event' %}">Create Event</a>
+        <a class="btn-secondary" href="{% url 'organization_details' organization.id %}">View Organization</a>
+      </div>
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="message-card {{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <h2 style="color:var(--accent-secondary);font-size:1.1rem;margin:0;">Members</h2>
+    {% for membership in memberships %}
+      <div class="member-row">
+        <div class="member-info">
+          <strong>{{ membership.user.username }}</strong>
+          <small>Joined {{ membership.joined_at|date:"M d, Y" }}</small>
+        </div>
+        <span class="role-badge role-{{ membership.role }}"><span>{{ membership.role }}</span></span>
+        {% if membership.role != "OWNER" %}
+          <div class="member-actions">
+            <form method="POST" class="form" style="display:inline-flex;gap:6px;align-items:center;max-width:100%;padding:10px;">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="role_change" />
+              <input type="hidden" name="member_id" value="{{ membership.id }}" />
+              <select name="new_role" class="role-select">
+                <option value="ADMIN" {% if membership.role == "ADMIN" %}selected{% endif %}>Admin</option>
+                <option value="MEMBER" {% if membership.role == "MEMBER" %}selected{% endif %}>Member</option>
+              </select>
+              <button type="submit" class="oauthButton">Update</button>
+            </form>
+            <form method="POST" class="form" style="display:inline;max-width:100%;padding:10px;">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="remove_member" />
+              <input type="hidden" name="member_id" value="{{ membership.id }}" />
+              <button type="submit" class="oauthButton">✕ Remove</button>
+            </form>
+          </div>
+        {% endif %}
+      </div>
+    {% empty %}
+      <div class="empty-state"><p>No members in this organization.</p></div>
+    {% endfor %}
+  </section>
+{% endblock %}

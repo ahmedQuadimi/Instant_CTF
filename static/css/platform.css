@@ -1,0 +1,914 @@
+/* ═══════════════════════════════════════════════════════════════
+   INSTANT_CTF — PLATFORM DESIGN SYSTEM
+   Inspired by 21st.dev component patterns, pure CSS only.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Layout Utilities ──────────────────────────────────────── */
+
+.platform-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.platform-header-row,
+.button-row,
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.meta-line {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.platform-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+/* ─── FORMS ────────────────────────────────────────────────────────── */
+
+.form {
+  --background: var(--bg-surface);
+  --bg-color: var(--bg-elevated);
+  --main-color: var(--accent-primary);
+  --font-color: var(--text-primary);
+  --font-color-sub: var(--text-secondary);
+  --input-focus: var(--accent-primary);
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  max-width: 560px;
+  padding: 20px;
+  background: var(--background);
+  border: 1px solid color-mix(in srgb, var(--main-color) 45%, transparent);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+}
+
+.form.compact {
+  max-width: 400px;
+}
+
+.form label {
+  display: block;
+  color: var(--font-color-sub);
+  font-size: 0.82rem;
+  font-family: var(--font-mono);
+}
+
+.form input,
+.form textarea,
+.form select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  color: var(--font-color);
+  background: var(--bg-color);
+  border: 1px solid var(--main-color);
+  border-radius: var(--radius);
+  box-shadow: 4px 4px var(--main-color);
+  font-family: var(--font-mono);
+  outline: none;
+}
+
+.form textarea {
+  resize: vertical;
+  min-height: 96px;
+}
+
+.form input:focus,
+.form textarea:focus,
+.form select:focus {
+  border-color: var(--input-focus);
+}
+
+.form input:focus-visible,
+.form textarea:focus-visible,
+.form select:focus-visible,
+.form button:focus-visible,
+.form .oauthButton:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.form .oauthButton {
+  min-height: 44px;
+  width: 100%;
+  border: 1px solid var(--main-color);
+  border-radius: var(--radius);
+  background: var(--bg-color);
+  color: var(--font-color);
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 4px 4px var(--main-color);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.form .oauthButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-base);
+  transform: skewX(35deg);
+  transition: left 0.4s ease;
+  pointer-events: none;
+}
+
+.form .oauthButton:hover {
+  transform: translateY(-1px);
+}
+
+.form .oauthButton:hover::before {
+  left: 100%;
+}
+
+.form .oauthButton svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.separator {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--font-color-sub);
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+}
+
+.separator::before,
+.separator::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: color-mix(in srgb, var(--accent-primary) 40%, transparent);
+}
+
+.field-error {
+  color: var(--accent-magenta);
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+}
+
+/* ─── 1. SHINY TEXT (Shimmer Sweep) ─────────────────────────── */
+
+.shiny-text {
+  background: linear-gradient(
+    120deg,
+    var(--accent-secondary) 0%,
+    color-mix(in srgb, var(--text-primary) 90%, var(--accent-secondary)) 18%,
+    var(--accent-secondary) 36%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* ─── 2. GRADIENT TEXT HEADERS ──────────────────────────────── */
+
+.gradient-heading {
+  background: linear-gradient(
+    135deg,
+    var(--accent-primary),
+    var(--accent-secondary) 50%,
+    var(--text-primary)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ─── 3. DOT-GRID BACKGROUND ───────────────────────────────── */
+
+.dot-grid-bg {
+  position: relative;
+}
+
+.dot-grid-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--accent-cyan) 40%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 24px 24px;
+}
+
+.dot-grid-bg > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── 4. INNER-GLOW CARDS ──────────────────────────────────── */
+
+.platform-card {
+  background: var(--bg-elevated);
+  border: 1px solid color-mix(in srgb, var(--accent-cyan) 22%, transparent);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--accent-cyan) 8%, transparent);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.platform-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--accent-cyan) 8%, transparent),
+    0 8px 24px color-mix(in srgb, var(--accent-primary) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent-primary) 40%, transparent);
+}
+
+.platform-card h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+/* ─── 5. GLOW BUTTONS (Shine Sweep + Outer Glow) ───────────── */
+
+.btn-primary,
+.btn-secondary,
+button {
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--accent-cyan) 30%, transparent);
+  font-family: var(--font-mono);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-primary,
+button.btn-primary {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent-primary) 28%, var(--bg-elevated)),
+    color-mix(in srgb, var(--accent-primary) 14%, var(--bg-elevated))
+  );
+  color: var(--text-primary);
+  border-color: color-mix(in srgb, var(--accent-primary) 45%, transparent);
+}
+
+.btn-primary:hover,
+button.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--accent-primary) 30%, transparent);
+  border-color: var(--accent-primary);
+}
+
+/* Shine sweep pseudo-element */
+.btn-primary::after,
+button.btn-primary::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -75%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--text-primary) 14%, transparent),
+    transparent
+  );
+  transform: skewX(-25deg);
+  transition: left 0.5s ease;
+  pointer-events: none;
+}
+
+.btn-primary:hover::after,
+button.btn-primary:hover::after {
+  left: 125%;
+}
+
+.btn-secondary {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--accent-cyan) 15%, transparent);
+  border-color: color-mix(in srgb, var(--accent-cyan) 50%, transparent);
+}
+
+/* ─── 6. GRADIENT BORDER BADGES ─────────────────────────────── */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 2px 10px;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  border: 1px solid transparent;
+  position: relative;
+}
+
+.status-badge.active {
+  background: color-mix(in srgb, var(--accent-primary) 16%, var(--bg-elevated));
+  color: var(--accent-primary);
+  border-color: color-mix(in srgb, var(--accent-primary) 50%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent-primary) 15%, transparent);
+}
+
+.status-badge.upcoming {
+  background: color-mix(in srgb, var(--accent-secondary) 16%, var(--bg-elevated));
+  color: var(--accent-secondary);
+  border-color: color-mix(in srgb, var(--accent-secondary) 50%, transparent);
+}
+
+.status-badge.ended {
+  background: color-mix(in srgb, var(--accent-magenta) 16%, var(--bg-elevated));
+  color: var(--accent-magenta);
+  border-color: color-mix(in srgb, var(--accent-magenta) 50%, transparent);
+}
+
+/* ─── 7. GLOW INPUT FOCUS ───────────────────────────────────── */
+
+.platform-form {
+  display: grid;
+  gap: 10px;
+}
+
+.platform-form input,
+.platform-form textarea,
+.platform-form select {
+  min-height: 44px;
+  background: var(--bg-surface);
+  border: 1px solid color-mix(in srgb, var(--accent-cyan) 25%, transparent);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  padding: 10px;
+  font-family: var(--font-mono);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.platform-form input:focus,
+.platform-form textarea:focus,
+.platform-form select:focus {
+  border-color: var(--accent-primary);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--accent-primary) 15%, transparent),
+    0 0 12px color-mix(in srgb, var(--accent-primary) 10%, transparent);
+  outline: none;
+}
+
+/* ─── 8. PLATFORM TABLE ─────────────────────────────────────── */
+
+.platform-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-surface);
+  border: 1px solid color-mix(in srgb, var(--accent-cyan) 22%, transparent);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.platform-table th {
+  padding: 12px 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent-primary) 25%, transparent);
+  text-align: left;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-secondary);
+}
+
+.platform-table td {
+  padding: 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent-cyan) 12%, transparent);
+  text-align: left;
+}
+
+.platform-table tbody tr {
+  transition: background 0.15s ease;
+  animation: rowReveal 0.35s ease-out both;
+  animation-delay: calc(var(--row-index, 0) * 0.06s);
+}
+
+.platform-table tbody tr:hover {
+  background: color-mix(in srgb, var(--accent-primary) 5%, transparent);
+}
+
+.rank-gold {
+  background: color-mix(in srgb, var(--accent-gold) 12%, transparent) !important;
+}
+
+.rank-silver {
+  background: color-mix(in srgb, var(--text-secondary) 10%, transparent) !important;
+}
+
+.rank-bronze {
+  background: color-mix(in srgb, var(--accent-magenta) 8%, transparent) !important;
+}
+
+/* ─── 9. EMPTY STATE (Pulse Glow) ───────────────────────────── */
+
+.empty-state {
+  background: var(--bg-elevated);
+  border: 1px solid color-mix(in srgb, var(--accent-cyan) 22%, transparent);
+  border-radius: var(--radius);
+  padding: 32px 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  position: relative;
+  overflow: hidden;
+  animation: emptyPulse 3s ease-in-out infinite;
+}
+
+.empty-state p {
+  margin: 0;
+}
+
+.empty-state::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent-primary) 8%, transparent),
+    transparent 60%,
+    color-mix(in srgb, var(--accent-secondary) 6%, transparent)
+  );
+  pointer-events: none;
+  animation: emptyGlow 4s ease-in-out infinite;
+}
+
+.message-card {
+  background: var(--bg-elevated);
+  border: 1px solid color-mix(in srgb, var(--accent-cyan) 22%, transparent);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+
+.message-card.success {
+  border-color: color-mix(in srgb, var(--accent-primary) 70%, transparent);
+}
+
+.message-card.error {
+  border-color: color-mix(in srgb, var(--accent-magenta) 70%, transparent);
+}
+
+.message-card.warning {
+  border-color: color-mix(in srgb, var(--accent-gold) 70%, transparent);
+}
+
+.message-card.info {
+  border-color: color-mix(in srgb, var(--accent-cyan) 50%, transparent);
+}
+
+/* ─── 10. HERO — Grid Lines + Dot Grid ──────────────────────── */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Animated grid lines */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: -50% -50%;
+  width: 200%;
+  height: 200%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.06;
+  background:
+    repeating-linear-gradient(
+      -25deg,
+      transparent,
+      transparent 88px,
+      var(--accent-primary) 88px,
+      var(--accent-primary) 88.5px
+    ),
+    repeating-linear-gradient(
+      65deg,
+      transparent,
+      transparent 88px,
+      var(--accent-primary) 88px,
+      var(--accent-primary) 88.5px
+    );
+  background-size: 120px 120px;
+  animation: hero-grid-drift 12s linear infinite;
+}
+
+/* Dot grid overlay */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.25;
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--accent-secondary) 30%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 32px 32px;
+}
+
+/* ─── 11. CHALLENGE CARD HOVER ──────────────────────────────── */
+
+.challenge-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--accent-cyan) 8%, transparent);
+}
+
+.challenge-card:not(.solved):hover {
+  transform: translateY(-4px);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--accent-cyan) 8%, transparent),
+    0 8px 32px color-mix(in srgb, var(--accent-primary) 25%, transparent);
+  border-color: var(--accent-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+@keyframes shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+@keyframes emptyPulse {
+  0%, 100% { border-color: color-mix(in srgb, var(--accent-cyan) 22%, transparent); }
+  50%      { border-color: color-mix(in srgb, var(--accent-primary) 35%, transparent); }
+}
+
+@keyframes emptyGlow {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 0.8; }
+}
+
+@keyframes hero-grid-drift {
+  0%   { background-position: 0 0, 0 0; }
+  100% { background-position: 120px 240px, -120px 240px; }
+}
+
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes flicker {
+  0%   { opacity: 0;    }
+  10%  { opacity: 1;    }
+  18%  { opacity: 0.85; }
+  26%  { opacity: 1;    }
+  40%  { opacity: 0.9;  }
+  52%  { opacity: 1;    }
+  64%  { opacity: 0.92; }
+  78%  { opacity: 1;    }
+  100% { opacity: 1;    }
+}
+
+@keyframes arcFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes statPop {
+  0%   { transform: scale(0.85); opacity: 0; }
+  70%  { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes rowReveal {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* =====================================================================
+   EFFECTS LAYER — SPEC BLOCK 1/10
+   ANIMATED SHINY TEXT
+   ===================================================================== */
+
+@keyframes shinyText {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.shiny-text {
+  background: linear-gradient(
+    90deg,
+    var(--accent-secondary) 0%,
+    color-mix(in srgb, var(--text-primary) 86%, var(--accent-secondary)) 40%,
+    var(--accent-secondary) 60%,
+    var(--accent-primary) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shinyText 3s linear infinite;
+}
+
+.wordmark.shiny-text {
+  animation: flicker 1.2s ease-out 0.1s 1 both, shinyText 3s linear 1.5s infinite;
+}
+
+/* =====================================================================
+   EFFECTS LAYER — SPEC BLOCK 2/10
+   GLOW BUTTONS WITH SHINE SWEEP
+   ===================================================================== */
+
+.btn-primary,
+.cta-primary,
+input[type="submit"],
+button[type="submit"] {
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.btn-primary::after,
+.cta-primary::after,
+input[type="submit"]::after,
+button[type="submit"]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    color-mix(in srgb, var(--text-primary) 15%, transparent),
+    transparent
+  );
+  transition: left 0.4s ease;
+  pointer-events: none;
+}
+
+.btn-primary:hover::after,
+.cta-primary:hover::after,
+input[type="submit"]:hover::after,
+button[type="submit"]:hover::after {
+  left: 150%;
+}
+
+.btn-primary:hover,
+.cta-primary:hover,
+input[type="submit"]:hover,
+button[type="submit"]:hover {
+  box-shadow:
+    0 0 20px color-mix(in srgb, var(--accent-primary) 50%, transparent),
+    0 0 40px color-mix(in srgb, var(--accent-primary) 20%, transparent);
+  transform: translateY(-1px);
+}
+
+/* =====================================================================
+   EFFECTS LAYER — SPEC BLOCK 3/10
+   INNER-GLOW CARDS WITH HOVER LIFT
+   ===================================================================== */
+
+.platform-card,
+.challenge-card,
+.feature-card,
+.stat-item {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent-primary) 8%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--text-primary) 4%, transparent);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.platform-card:hover,
+.challenge-card:not(.solved):hover,
+.feature-card:hover,
+.stat-item:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent-primary) 30%, transparent),
+    0 8px 32px color-mix(in srgb, var(--accent-primary) 15%, transparent),
+    0 2px 8px color-mix(in srgb, var(--bg-base) 45%, transparent);
+  border-color: var(--accent-primary);
+}
+
+.challenge-card.solved {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-cyan) 20%, transparent);
+  transform: none;
+}
+
+/* =====================================================================
+   EFFECTS LAYER — SPEC BLOCK 4/10
+   GRADIENT BORDER BADGES
+   ===================================================================== */
+
+.status-badge,
+.role-badge,
+.elo-badge,
+.pending-count {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  padding: 2px;
+  border-radius: var(--radius);
+  border: none;
+  min-height: 28px;
+}
+
+.status-badge span,
+.role-badge span,
+.elo-badge span,
+.pending-count span {
+  display: block;
+  background: var(--bg-elevated);
+  border-radius: calc(var(--radius) - 2px);
+  padding: 2px 10px;
+  color: var(--text-primary);
+}
+
+/* =====================================================================
+   EFFECTS LAYER — SPEC BLOCK 5/10
+   GLOW INPUT FOCUS
+   ===================================================================== */
+
+.platform-form input,
+.platform-form select,
+.platform-form textarea,
+.flag-form input[type="text"],
+.flag-form input[type="password"] {
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  outline: none;
+}
+
+.platform-form input:focus,
+.platform-form select:focus,
+.platform-form textarea:focus,
+.flag-form input[type="text"]:focus,
+.flag-form input[type="password"]:focus {
+  border-color: var(--accent-primary);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--accent-primary) 20%, transparent),
+    0 0 16px color-mix(in srgb, var(--accent-primary) 10%, transparent);
+}
+
+.platform-form:focus-within,
+.flag-form:focus-within {
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent-primary) 8%, transparent));
+}
+
+/* =====================================================================
+   EFFECTS LAYER — SPEC BLOCK 6/10
+   DOT-GRID BACKGROUND
+   ===================================================================== */
+
+.hero {
+  position: relative;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--accent-secondary) 12%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.event-hero::before {
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--accent-primary) 7%, transparent) 1px,
+    transparent 1px
+  );
+}
+
+/* =====================================================================
+   EFFECTS LAYER — SPEC BLOCK 7/10
+   PULSE GLOW EMPTY STATES
+   ===================================================================== */
+
+@keyframes emptyPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 color-mix(in srgb, var(--accent-primary) 0%, transparent),
+      inset 0 0 0 1px color-mix(in srgb, var(--accent-primary) 20%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 24px 4px color-mix(in srgb, var(--accent-primary) 15%, transparent),
+      inset 0 0 0 1px color-mix(in srgb, var(--accent-primary) 50%, transparent);
+  }
+}
+
+.empty-state {
+  animation: emptyPulse 3s ease-in-out infinite;
+  border-radius: var(--radius);
+}
+
+/* =====================================================================
+   EFFECTS LAYER — SPEC BLOCK 8/10
+   GRADIENT TEXT HEADERS
+   ===================================================================== */
+
+.gradient-heading {
+  background: linear-gradient(
+    135deg,
+    var(--accent-primary) 0%,
+    var(--accent-secondary) 50%,
+    var(--text-primary) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.feature-card {
+  position: relative;
+  background: var(--bg-elevated);
+  z-index: 0;
+}
+
+/* =====================================================================
+   EFFECTS LAYER — SPEC BLOCK 10/10
+   NAV GLASSMORPHISM + BOTTOM GLOW (base.html contains primary rules)
+   ===================================================================== */
+
+.site-nav {
+  background: color-mix(in srgb, var(--bg-surface) 75%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: none;
+}
+
+.site-nav::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent-primary),
+    var(--accent-secondary),
+    var(--accent-primary),
+    transparent
+  );
+}

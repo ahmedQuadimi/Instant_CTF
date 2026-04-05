@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Request Join{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
+
+{% block content %}
+  <section class="platform-stack">
+    <h1>Request to Join {{ team.name }}</h1>
+    <p>Send a request to the team captain.</p>
+    <form method="post" class="form">
+      {% csrf_token %}
+      <button class="oauthButton" type="submit">Send Join Request</button>
+      <a class="btn-secondary" href="{% url 'team_details' team.id %}">Back</a>
+    </form>
+  </section>
+{% endblock %}

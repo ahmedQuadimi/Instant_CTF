@@ -1,19 +1,189 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Instant CTF</title>
-</head>
-<body>
-  <main>
-    <h1>Instant CTF</h1>
-    <p>Welcome to the platform.</p>
-    <nav>
-      <a href="/events/">Events</a>
-      <a href="/teams/">Teams</a>
-      <a href="/orgs/">Organizations</a>
-    </nav>
-  </main>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block title %}Home — Instant CTF{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/platform.css">
+<style>
+  .home-page {
+    display: grid;
+    gap: 36px;
+  }
+
+  .hero {
+    background: var(--bg-surface);
+    border: var(--border);
+    border-radius: var(--radius);
+    padding: clamp(24px, 5vw, 48px);
+    display: grid;
+    gap: 14px;
+  }
+
+  .hero h1,
+  .hero p {
+    margin: 0;
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3.3rem);
+    line-height: 1.15;
+  }
+
+  .hero-sub {
+    color: var(--text-secondary);
+    font-size: clamp(1rem, 2vw, 1.2rem);
+  }
+
+  .cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .cta-btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 10px 18px;
+    border-radius: var(--radius);
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    transition: transform 0.2s ease;
+  }
+
+  .cta-btn:hover {
+    transform: translateY(-1px);
+    text-decoration: none;
+  }
+
+  .cta-primary {
+    background: var(--accent-primary);
+    color: var(--text-primary);
+  }
+
+  .cta-secondary {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border-color: var(--accent-primary);
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--bg-elevated);
+    border: var(--border);
+    padding: 20px;
+    border-radius: var(--radius);
+    display: grid;
+    gap: 8px;
+  }
+
+  .feature-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+
+  .feature-card h2,
+  .feature-card p {
+    margin: 0;
+  }
+
+  .feature-card p {
+    color: var(--text-secondary);
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .stat-item {
+    background: var(--bg-elevated);
+    border: var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: grid;
+    gap: 6px;
+  }
+
+  .stat-label {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+  }
+
+  .stat-value {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    line-height: 1.1;
+    font-weight: 700;
+    color: var(--accent-secondary);
+    animation: statPop 0.5s ease-out both;
+  }
+
+  .stat-item:nth-child(1) .stat-value { animation-delay: 0.1s; }
+  .stat-item:nth-child(2) .stat-value { animation-delay: 0.2s; }
+  .stat-item:nth-child(3) .stat-value { animation-delay: 0.3s; }
+
+  @media (max-width: 900px) {
+    .feature-grid,
+    .stats-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  <div class="home-page">
+    <section class="hero" aria-labelledby="hero-heading">
+      <h1 id="hero-heading" class="gradient-heading">The one platform for everything CTF.</h1>
+      <p class="hero-sub">Compete. Organize. Dominate.</p>
+      <div class="cta-row">
+        <a class="cta-btn cta-primary" href="{% url 'event_list' %}">Browse Events</a>
+        {% if not request.user.is_authenticated %}
+          <a class="cta-btn cta-secondary" href="{% url 'account_signup' %}">Get Started</a>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="feature-grid" aria-label="Platform features">
+      <article class="card feature-card">
+        <span class="feature-icon" aria-hidden="true">⚡</span>
+        <h2>Compete</h2>
+        <p>Join CTF events, solve challenges, climb the scoreboard.</p>
+      </article>
+      <article class="card feature-card">
+        <span class="feature-icon" aria-hidden="true">🏆</span>
+        <h2>Organize</h2>
+        <p>Create and manage your own CTF events with full challenge control.</p>
+      </article>
+      <article class="card feature-card">
+        <span class="feature-icon" aria-hidden="true">👥</span>
+        <h2>Team Up</h2>
+        <p>Build teams, recruit members, and compete as a unit.</p>
+      </article>
+    </section>
+
+    <section class="stats-row" aria-label="Platform stats">
+      <article class="stat-item">
+        <span class="stat-label">Events Hosted</span>
+        <span class="stat-value stat-number shiny-text">0</span>
+      </article>
+      <article class="stat-item">
+        <span class="stat-label">Teams Registered</span>
+        <span class="stat-value stat-number shiny-text">0</span>
+      </article>
+      <article class="stat-item">
+        <span class="stat-label">Challenges Solved</span>
+        <span class="stat-value stat-number shiny-text">0</span>
+      </article>
+    </section>
+  </div>
+{% endblock %}

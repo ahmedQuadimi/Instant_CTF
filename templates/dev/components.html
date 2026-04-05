@@ -1,0 +1,386 @@
+{% extends 'base.html' %}
+
+{% block title %}Dev — Components{% endblock %}
+
+{% block content %}
+  <style>
+    .dev-components {
+      display: grid;
+      gap: 34px;
+    }
+
+    .dev-components section {
+      display: grid;
+      gap: 14px;
+      padding: 20px;
+      background: var(--bg-surface);
+      border: var(--border);
+      border-radius: var(--radius);
+    }
+
+    .dev-components h1 {
+      margin: 0;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+    }
+
+    .dev-components h2,
+    .dev-components h3,
+    .dev-components h4,
+    .dev-components p,
+    .dev-components pre {
+      margin: 0;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .btn {
+      min-height: 44px;
+      min-width: 44px;
+      padding: 10px 18px;
+      border-radius: var(--radius);
+      border: 1px solid transparent;
+      font: inherit;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--accent-cyan);
+      color: var(--bg-base);
+    }
+
+    .btn-secondary {
+      background: var(--bg-elevated);
+      color: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+    }
+
+    .btn-danger {
+      background: var(--bg-elevated);
+      color: var(--accent-magenta);
+      border-color: var(--accent-magenta);
+    }
+
+    .btn:disabled {
+      cursor: not-allowed;
+      color: var(--text-secondary);
+      border-color: var(--text-secondary);
+      background: var(--bg-elevated);
+    }
+
+    .muted {
+      color: var(--text-secondary);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--bg-elevated);
+      border: var(--border);
+      padding: 2px 6px;
+      border-radius: var(--radius);
+    }
+
+    pre {
+      border: var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-elevated);
+      padding: 14px;
+      overflow-x: auto;
+    }
+
+    .swatches,
+    .card-grid,
+    .chip-row,
+    .stat-row {
+      display: grid;
+      gap: 12px;
+    }
+
+    .swatches {
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+
+    .swatch {
+      border: var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+      background: var(--bg-elevated);
+    }
+
+    .swatch-color {
+      height: 48px;
+      border-radius: var(--radius);
+      border: var(--border);
+    }
+
+    .card-grid {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .card {
+      background: var(--bg-elevated);
+      border: var(--border);
+      padding: 20px;
+      border-radius: var(--radius);
+      display: grid;
+      gap: 8px;
+    }
+
+    .chip-row {
+      grid-template-columns: repeat(auto-fit, minmax(150px, max-content));
+      align-items: start;
+    }
+
+    .chip {
+      min-height: 44px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid;
+      background: var(--bg-elevated);
+    }
+
+    .chip-cyan {
+      color: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+    }
+
+    .chip-magenta {
+      color: var(--accent-magenta);
+      border-color: var(--accent-magenta);
+    }
+
+    .chip-gold {
+      color: var(--accent-gold);
+      border-color: var(--accent-gold);
+    }
+
+    .chip-solved {
+      color: color-mix(in srgb, var(--accent-cyan) 75%, var(--text-primary));
+      border-color: var(--accent-cyan);
+    }
+
+    .chip-locked {
+      color: var(--text-secondary);
+      border-color: var(--text-secondary);
+    }
+
+    .form-demo {
+      display: grid;
+      gap: 12px;
+      max-width: 640px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+    }
+
+    input,
+    textarea {
+      min-height: 44px;
+      width: 100%;
+      border-radius: var(--radius);
+      border: var(--border);
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      font: inherit;
+      padding: 10px 12px;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    input:focus-visible,
+    textarea:focus-visible {
+      border-color: var(--accent-cyan);
+    }
+
+    .message {
+      padding: 12px 20px;
+      border-left: 4px solid;
+      border-radius: var(--radius);
+      background: var(--bg-elevated);
+      font-family: var(--font-mono);
+    }
+
+    .message-success {
+      border-left-color: var(--accent-cyan);
+      color: color-mix(in srgb, var(--accent-cyan) 75%, var(--text-primary));
+    }
+
+    .message-error {
+      border-left-color: var(--accent-magenta);
+      color: color-mix(in srgb, var(--accent-magenta) 75%, var(--text-primary));
+    }
+
+    .message-warning {
+      border-left-color: var(--accent-gold);
+      color: color-mix(in srgb, var(--accent-gold) 75%, var(--text-primary));
+    }
+
+    .message-info {
+      border-left-color: var(--accent-cyan);
+      color: color-mix(in srgb, var(--accent-cyan) 70%, var(--text-primary));
+    }
+
+    .stat-row {
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    .stat-item {
+      border: var(--border);
+      background: var(--bg-elevated);
+      border-radius: var(--radius);
+      padding: 14px;
+      display: grid;
+      gap: 6px;
+      align-content: start;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+  </style>
+
+  <div class="dev-components">
+    <h1>Reusable UI Components</h1>
+
+    <section aria-labelledby="buttons-heading">
+      <h2 id="buttons-heading">Buttons</h2>
+      <div class="btn-row">
+        <button class="btn btn-primary" type="button">Primary</button>
+        <button class="btn btn-secondary" type="button">Secondary</button>
+        <button class="btn btn-danger" type="button">Danger</button>
+        <button class="btn" type="button" disabled>Disabled</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="type-heading">
+      <h2 id="type-heading">Typography Scale</h2>
+      <h1>Heading One</h1>
+      <h2>Heading Two</h2>
+      <h3>Heading Three</h3>
+      <h4>Heading Four</h4>
+      <p>Body text for normal reading and labels in the platform UI.</p>
+      <p class="muted">Muted text for secondary information and helper hints.</p>
+      <p>Inline code example: <code>flag{demo_component}</code></p>
+      <pre><code>if solved:
+    print("award points")
+else:
+    print("keep hacking")</code></pre>
+    </section>
+
+    <section aria-labelledby="colors-heading">
+      <h2 id="colors-heading">Color Swatches</h2>
+      <div class="swatches">
+        <div class="swatch"><div class="swatch-color" style="background: var(--bg-base);"></div><span>--bg-base</span></div>
+        <div class="swatch"><div class="swatch-color" style="background: var(--bg-surface);"></div><span>--bg-surface</span></div>
+        <div class="swatch"><div class="swatch-color" style="background: var(--bg-elevated);"></div><span>--bg-elevated</span></div>
+        <div class="swatch"><div class="swatch-color" style="background: var(--accent-cyan);"></div><span>--accent-cyan</span></div>
+        <div class="swatch"><div class="swatch-color" style="background: var(--accent-magenta);"></div><span>--accent-magenta</span></div>
+        <div class="swatch"><div class="swatch-color" style="background: var(--accent-gold);"></div><span>--accent-gold</span></div>
+        <div class="swatch"><div class="swatch-color" style="background: var(--text-primary);"></div><span>--text-primary</span></div>
+        <div class="swatch"><div class="swatch-color" style="background: var(--text-secondary);"></div><span>--text-secondary</span></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="cards-heading">
+      <h2 id="cards-heading">Cards</h2>
+      <div class="card-grid">
+        <article class="card">
+          <h3>Web Exploitation</h3>
+          <p class="muted">Difficulty: Medium</p>
+          <p>Break the auth flow and capture the admin token.</p>
+        </article>
+        <article class="card">
+          <h3>Binary Reversing</h3>
+          <p class="muted">Difficulty: Hard</p>
+          <p>Analyze a stripped ELF and recover the hidden key.</p>
+        </article>
+        <article class="card">
+          <h3>Forensics</h3>
+          <p class="muted">Difficulty: Easy</p>
+          <p>Extract artifacts from packet captures and image metadata.</p>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="chips-heading">
+      <h2 id="chips-heading">Chips / Tags</h2>
+      <div class="chip-row">
+        <span class="chip chip-cyan">Category: Web</span>
+        <span class="chip chip-magenta">Category: Crypto</span>
+        <span class="chip chip-gold">Category: Forensics</span>
+        <span class="chip chip-solved">Solved</span>
+        <span class="chip chip-locked">Hidden / Locked</span>
+      </div>
+    </section>
+
+    <section aria-labelledby="forms-heading">
+      <h2 id="forms-heading">Form Elements</h2>
+      <form class="form" method="post" action="#">
+        {% csrf_token %}
+        <label>
+          Challenge title
+          <input type="text" name="challenge_title" placeholder="Enter challenge title">
+        </label>
+        <label>
+          Description
+          <textarea name="description" placeholder="Write challenge description"></textarea>
+        </label>
+        <button class="oauthButton" type="submit">Submit</button>
+      </form>
+    </section>
+
+    <section aria-labelledby="messages-heading">
+      <h2 id="messages-heading">Django Message Variants</h2>
+      <div class="message message-success">Challenge updated successfully.</div>
+      <div class="message message-error">Could not submit flag. Try again.</div>
+      <div class="message message-warning">This challenge is nearing its attempt limit.</div>
+      <div class="message message-info">Hint unlocked for 25 points.</div>
+    </section>
+
+    <section aria-labelledby="stats-heading">
+      <h2 id="stats-heading">Stat Block</h2>
+      <div class="stat-row">
+        <div class="stat-item">
+          <span class="stat-label">Teams Registered</span>
+          <span class="stat-value">48</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Challenges</span>
+          <span class="stat-value">27</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Total Solves</span>
+          <span class="stat-value">362</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Active Teams</span>
+          <span class="stat-value">41</span>
+        </div>
+      </div>
+    </section>
+  </div>
+{% endblock %}

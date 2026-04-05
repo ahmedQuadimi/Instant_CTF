@@ -1,28 +1,34 @@
 {% extends "base.html" %}
 {% block title %}Manage Event Dashboard{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
 {% block content %}
   {% include 'events/_event_nav.html' %}
 
-  <h1>Manage Event Dashboard</h1>
+  <section class="platform-stack">
+    <h1 class="gradient-heading">Manage Event Dashboard</h1>
+    <p class="meta-line">Event: {{ event.title }}</p>
+    <a class="btn-secondary" href="{% url 'create_challenge' event.id %}">Create Challenge</a>
 
-  {% if saved %}
-    <p>Challenge saved successfully.</p>
-  {% endif %}
+    {% if saved %}
+      <div class="message-card success">Challenge saved successfully.</div>
+    {% endif %}
 
-  {% if form_errors %}
-    <div>
-      <h2>Validation Errors</h2>
-      <ul>
-        {% for error in form_errors %}
-          <li>{{ error }}</li>
-        {% endfor %}
-      </ul>
-    </div>
-  {% endif %}
+    {% if form_errors %}
+      <div class="message-card error">
+        <h2>Validation Errors</h2>
+        <ul>
+          {% for error in form_errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
 
-  <section>
-    <h2>Challenges</h2>
-    <table>
+    <section>
+      <h2>Challenges Panel</h2>
+      <table class="platform-table">
       <thead>
         <tr>
           <th>Name</th>
@@ -44,18 +50,18 @@
               {% endif %}
             </td>
             <td>{{ challenge.solves_count }}</td>
-            <td>{{ challenge.status|default:challenge.status }}</td>
+            <td><span class="status-badge"><span>{{ challenge.status|default:challenge.status }}</span></span></td>
             <td>
-              <form method="post">
+              <form method="post" class="form" style="max-width: 100%; padding: 10px;">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="toggle_status" />
                 <input type="hidden" name="challenge_id" value="{{ challenge.id }}" />
                 {% if challenge.status == "VISIBLE" or challenge.status == "VISIBLE" %}
                   <input type="hidden" name="new_status" value="HIDDEN" />
-                  <button type="submit">Set Hidden</button>
+                  <button type="submit" class="oauthButton">Set Hidden</button>
                 {% else %}
                   <input type="hidden" name="new_status" value="VISIBLE" />
-                  <button type="submit">Set Visible</button>
+                  <button type="submit" class="oauthButton">Set Visible</button>
                 {% endif %}
               </form>
             </td>
@@ -66,12 +72,12 @@
           </tr>
         {% endfor %}
       </tbody>
-    </table>
-  </section>
+      </table>
+    </section>
 
-  <section>
-    <h2>Teams Panel (Read-Only)</h2>
-    <table>
+    <section>
+      <h2>Teams Panel (Read-Only)</h2>
+      <table class="platform-table">
       <thead>
         <tr>
           <th>Team</th>
@@ -92,12 +98,12 @@
           </tr>
         {% endfor %}
       </tbody>
-    </table>
-  </section>
+      </table>
+    </section>
 
   <section>
     <h2>Create Challenge</h2>
-    <form method="post">
+    <form method="post" class="form">
       {% csrf_token %}
       <input type="hidden" name="action" value="create" />
 
@@ -135,7 +141,7 @@
       <label for="create-decay-factor">Decay Factor</label>
       <input id="create-decay-factor" name="decay_factor" type="number" step="any" min="0.0000001" placeholder="Must be > 0" />
 
-      <button type="submit">Create Challenge</button>
+      <button type="submit" class="oauthButton">Create Challenge</button>
     </form>
   </section>
 
@@ -144,7 +150,7 @@
     {% for challenge in challenges %}
       <article>
         <h3>{{ challenge.name }}</h3>
-        <form method="post">
+        <form method="post" class="form">
           {% csrf_token %}
           <input type="hidden" name="action" value="edit" />
           <input type="hidden" name="challenge_id" value="{{ challenge.id }}" />
@@ -226,11 +232,12 @@
             value="{{ challenge.decay_factor|default:'' }}"
           />
 
-          <button type="submit">Save Challenge</button>
+          <button class="oauthButton" type="submit">Save Challenge</button>
         </form>
       </article>
     {% empty %}
       <p>No challenges yet.</p>
     {% endfor %}
+  </section>
   </section>
 {% endblock %}

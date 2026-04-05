@@ -1,33 +1,50 @@
 {% extends "base.html" %}
 {% block title %}Team details{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
 {% block content %}
-  <h1>{{ team.name }}</h1>
+  <section class="platform-stack">
+    <h1>{{ team.name }}</h1>
 
-  <p><strong>Captain:</strong> {{ team.captain.username }}</p>
+    <p><strong>Captain:</strong> {{ team.captain.username }}</p>
+    <p>
+      <strong>Visibility:</strong>
+      {% if team.is_public %}
+        <span class="status-badge active"><span>Public</span></span>
+      {% else %}
+        <span class="status-badge"><span>Private</span></span>
+      {% endif %}
+    </p>
 
-  <section>
-    <h2>Members in this event</h2>
-    {% if members %}
-      <ul>
-        {% for roster in members %}
-          <li>{{ roster.user.username }}</li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>No members are registered for this team in this event.</p>
+    {% if event %}
+      <p class="meta-line"><strong>Event:</strong> {{ event.title }}</p>
     {% endif %}
-  </section>
 
-  <section>
-    <h2>Solved Challenges</h2>
-    {% if solves %}
-      <ul>
-        {% for solve in solves %}
-          <li>{{ solve }}</li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>No solve data available yet.</p>
-    {% endif %}
+    <section>
+      <h2>Members</h2>
+      {% if members %}
+        <ul class="platform-list">
+          {% for roster in members %}
+            <li>{{ roster.user.username }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="empty-state"><p>No members are registered for this team in this event.</p></div>
+      {% endif %}
+    </section>
+
+    <section>
+      <h2>Solved Challenges</h2>
+      {% if solves %}
+        <ul class="platform-list">
+          {% for solve in solves %}
+            <li>{{ solve }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="empty-state"><p>No solve data available yet.</p></div>
+      {% endif %}
+    </section>
   </section>
 {% endblock %}

@@ -1,30 +1,35 @@
 {% extends "base.html" %}
 {% block title %}My Join Requests{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
 {% block content %}
   {% include 'events/_event_nav.html' %}
 
-  <h1>My Join Requests for {{ event.title }}</h1>
+  <section class="platform-stack">
+    <h1>My Join Requests for {{ event.title }}</h1>
 
-  {% if join_requests %}
-    <table>
-      <thead>
-        <tr>
-          <th>Team</th>
-          <th>Status</th>
-          <th>Requested At</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for join_request in join_requests %}
+    {% if join_requests %}
+      <table class="platform-table">
+        <thead>
           <tr>
-            <td>{{ join_request.team.name }}</td>
-            <td>{{ join_request.status }}</td>
-            <td>{{ join_request.requested_at }}</td>
+            <th>Team</th>
+            <th>Status</th>
+            <th>Requested At</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <p>You do not have any join requests for this event.</p>
-  {% endif %}
+        </thead>
+        <tbody>
+          {% for join_request in join_requests %}
+            <tr>
+              <td>{{ join_request.team.name }}</td>
+              <td><span class="status-badge"><span>{{ join_request.status }}</span></span></td>
+              <td>{{ join_request.requested_at }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state"><p>You do not have any join requests for this event.</p></div>
+    {% endif %}
+  </section>
 {% endblock %}

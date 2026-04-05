@@ -1,9 +1,11 @@
+import math
 from collections import defaultdict
 
 from django.core.cache import cache
-from django.db.models import Min
+from django.db.models import Count, Min
 from django.utils import timezone
 
+from Challenges.models import Challenge
 from Events.models import EventRoster
 from Scoring.models import Solve
 
@@ -16,6 +18,19 @@ def get_event_scoreboard_cache_key(event_id):
 
 def invalidate_event_scoreboard_cache(event_id):
     cache.delete(get_event_scoreboard_cache_key(event_id))
+
+
+def _dynamic_points(base_points, min_points, decay_factor, solves_count):
+    """
+    Dynamic scoring formula:
+    max(min_points, round(base_points * exp(-decay * solves_count)))
+
+    As more teams solve a challenge, its point value drops from base_points
+    toward min_points.
+    """
+    if solves_count <= 0:
+        return base_points
+    return max(min_points, round(base_points * math.exp(-decay_factor * solves_count)))
 
 
 def _compute_ranked_teams(event):
@@ -36,6 +51,22 @@ def _compute_ranked_teams(event):
         for row in roster_rows
     }
 
+    # Get scoring parameters from the event model
+    scoring_strategy = getattr(event, "scoring_strategy", "STANDARD")
+    base_points = getattr(event, "max_points", 500)
+    min_points = getattr(event, "min_points", 50)
+    decay_factor = getattr(event, "decay_factor", 0.08)
+
+    # Count total solves per challenge (for dynamic scoring)
+    challenge_solve_counts = {}
+    if scoring_strategy == "DYNAMIC":
+        challenge_solve_counts = dict(
+            Solve.objects.filter(challenge__event=event)
+            .values_list("challenge_id")
+            .annotate(total=Count("id"))
+            .values_list("challenge_id", "total")
+        )
+
     solves_by_team = defaultdict(list)
     for solve in (
         Solve.objects.filter(team_id__in=teams_by_id, challenge__event=event)
@@ -49,7 +80,15 @@ def _compute_ranked_teams(event):
         solves = solves_by_team.get(team_id, [])
 
         if solves:
-            team_data["score"] = sum(solve.awarded_points for solve in solves)
+            total_score = 0
+            for solve in solves:
+                if scoring_strategy == "DYNAMIC":
+                    sc = challenge_solve_counts.get(solve.challenge_id, 1)
+                    total_score += _dynamic_points(base_points, min_points, decay_factor, sc)
+                else:
+                    total_score += solve.awarded_points
+
+            team_data["score"] = total_score
             team_data["solve_count"] = len(solves)
             team_data["last_solve_at"] = solves[-1].timestamp
 

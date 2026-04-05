@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ organization.name }} — Instant CTF{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
+
+{% block content %}
+  <section class="platform-stack">
+    <h1 class="gradient-heading">{{ organization.name }}</h1>
+    <p>{{ organization.description|default:"No description provided." }}</p>
+
+    {% if can_manage %}
+      <a class="btn-primary" href="{% url 'manage_organization_dashboard' organization.id %}">Manage</a>
+    {% endif %}
+
+    <section>
+      <h2 style="color:var(--accent-secondary);font-size:1.1rem;margin:0 0 12px;">Members</h2>
+      <table class="platform-table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Role</th>
+            <th>Joined At</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for membership in memberships %}
+            <tr>
+              <td>{{ membership.user.username }}</td>
+              <td>{{ membership.role }}</td>
+              <td>{{ membership.joined_at|date:"M d, Y" }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="3">No members found.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    {% if events %}
+    <section>
+      <h2 style="color:var(--accent-secondary);font-size:1.1rem;margin:0 0 12px;">Events Hosted</h2>
+      <div class="card-grid">
+        {% for event in events %}
+          <article class="platform-card">
+            <h2><a href="{% url 'event_dashboard' event.id %}">{{ event.title }}</a></h2>
+            <p class="meta-line">{{ event.start_time|date:"M d, Y" }} – {{ event.end_time|date:"M d, Y" }}</p>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+  </section>
+{% endblock %}

@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}{{ profile_user.username }} — Instant CTF{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/platform.css">
+<style>
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .profile-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-magenta));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--bg-base);
+    flex-shrink: 0;
+  }
+  .profile-info { display: grid; gap: 4px; }
+  .profile-info h1 { margin: 0; font-size: 1.5rem; }
+  .profile-info .elo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 10px;
+    background: color-mix(in srgb, var(--accent-gold) 18%, transparent);
+    border: var(--border);
+    border-radius: var(--radius);
+    color: var(--accent-gold);
+    font-size: 0.85rem;
+    width: fit-content;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--bg-elevated);
+    border: var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: grid;
+    gap: 4px;
+  }
+  .stat-card .stat-label { color: var(--text-secondary); font-size: 0.85rem; }
+  .stat-card .stat-value { font-size: 1.4rem; font-weight: 700; }
+  .profile-section { margin-bottom: 24px; }
+  .profile-section h2 {
+    font-size: 1.1rem;
+    margin: 0 0 12px;
+    color: var(--accent-secondary);
+  }
+  .edit-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 8px 16px;
+    background: var(--bg-elevated);
+    border: var(--border);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    transition: border-color 0.15s ease;
+    font-size: 0.9rem;
+  }
+  .edit-link:hover {
+    border-color: var(--accent-primary);
+    text-decoration: none;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="platform-stack">
+  <div class="profile-header">
+    <div class="profile-avatar">{{ profile_user.username|first|upper }}</div>
+    <div class="profile-info">
+      <h1>{{ profile_user.username }}</h1>
+      <div class="elo-badge"><span>⚡ ELO: {{ profile_user.elo }}</span></div>
+    </div>
+    {% if is_own_profile %}
+      <a class="edit-link" href="{% url 'profile_edit' %}">Edit Profile</a>
+    {% endif %}
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-label">Teams</span>
+      <span class="stat-value">{{ teams|length }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Events</span>
+      <span class="stat-value">{{ event_rosters|length }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Solves</span>
+      <span class="stat-value">{{ solve_count }}</span>
+    </div>
+  </div>
+
+  {% if teams %}
+  <div class="profile-section">
+    <h2>Team Memberships</h2>
+    <table class="platform-table">
+      <thead>
+        <tr>
+          <th>Team</th>
+          <th>Rating</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for team in teams %}
+          <tr>
+            <td><a href="{% url 'team_detail' team.id %}">{{ team.name }}</a></td>
+            <td>{{ team.global_rating }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if event_rosters %}
+  <div class="profile-section">
+    <h2>Events Participated</h2>
+    <table class="platform-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Team</th>
+          <th>Joined</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for roster in event_rosters %}
+          <tr>
+            <td><a href="{% url 'event_dashboard' roster.event.id %}">{{ roster.event.title }}</a></td>
+            <td>{{ roster.team.name }}</td>
+            <td>{{ roster.joined_at|date:"M d, Y" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

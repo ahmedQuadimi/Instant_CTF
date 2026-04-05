@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Event Not Started{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
+
+{% block content %}
+  {% include 'events/_event_nav.html' %}
+  <section class="platform-stack">
+    <h1>{{ event.title }}</h1>
+    <div class="message-card warning">
+      {{ message|default:"This event has not started yet." }}
+    </div>
+  </section>
+{% endblock %}

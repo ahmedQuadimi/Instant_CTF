@@ -7,7 +7,7 @@ from Teams.models import Team
 
 
 class Event(models.Model):
-    VISIBILITY_CHOICES = [("PUBLIC", "Public"), ("CODE", "Code"), ("INVITE", "Invite")]
+    VISIBILITY_CHOICES = [("PUBLIC", "Public"), ("PRIVATE", "Private")]
     SCORING_STRATEGIES = [
         ("STATIC", "Static"),
         ("LINEAR", "Linear"),

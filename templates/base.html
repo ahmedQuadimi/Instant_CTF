@@ -295,6 +295,35 @@
       pointer-events: auto;
     }
 
+    .menu-toggle .menu-toggle-icon {
+      position: relative;
+      width: 18px;
+      height: 2px;
+      border-radius: 999px;
+      background: var(--accent-primary);
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .menu-toggle .menu-toggle-icon::before,
+    .menu-toggle .menu-toggle-icon::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      width: 18px;
+      height: 2px;
+      border-radius: 999px;
+      background: var(--accent-primary);
+      transition: transform 0.2s ease;
+    }
+
+    .menu-toggle .menu-toggle-icon::before {
+      transform: translateY(-6px);
+    }
+
+    .menu-toggle .menu-toggle-icon::after {
+      transform: translateY(6px);
+    }
+
     .nav-toggle-input {
       position: absolute;
       opacity: 0;
@@ -302,23 +331,19 @@
       height: 0;
     }
 
-    .nav-toggle-input:checked + .menu-toggle .checkbox-box {
-      background: var(--accent-primary);
-      border-color: var(--accent-primary);
+    .nav-toggle-input:checked + .menu-toggle .menu-toggle-icon {
+      background: transparent;
     }
 
-    .nav-toggle-input:checked + .menu-toggle .checkbox-box::after {
-      content: "";
-      display: block;
-      width: 5px;
-      height: 9px;
-      border: 2px solid var(--bg-base);
-      border-top: none;
-      border-left: none;
-      transform: rotate(45deg) translateY(-1px);
+    .nav-toggle-input:checked + .menu-toggle .menu-toggle-icon::before {
+      transform: rotate(45deg);
     }
 
-    .nav-toggle-input:focus-visible + .menu-toggle .checkbox-box {
+    .nav-toggle-input:checked + .menu-toggle .menu-toggle-icon::after {
+      transform: rotate(-45deg);
+    }
+
+    .nav-toggle-input:focus-visible + .menu-toggle {
       outline: 2px solid var(--accent-cyan);
       outline-offset: 2px;
     }
@@ -606,9 +631,8 @@
     <div class="nav-inner">
       <a class="wordmark shiny-text" href="{% url 'home' %}">INSTANT_CTF</a>
       <input id="nav-toggle" class="nav-toggle-input" type="checkbox" aria-label="Toggle navigation">
-      <label class="menu-toggle checkbox-wrapper" for="nav-toggle">
-        <span class="checkbox-box" aria-hidden="true"></span>
-        <span class="checkbox-label">Menu</span>
+      <label class="menu-toggle" for="nav-toggle" aria-label="Toggle navigation menu">
+        <span class="menu-toggle-icon" aria-hidden="true"></span>
       </label>
 
       <div class="nav-center">

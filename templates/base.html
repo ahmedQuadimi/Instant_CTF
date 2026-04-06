@@ -297,15 +297,30 @@
 
     .nav-toggle-input {
       position: absolute;
-      inline-size: 1px;
-      block-size: 1px;
-      margin: -1px;
-      border: 0;
-      padding: 0;
-      clip: rect(0 0 0 0);
-      overflow: hidden;
-      white-space: nowrap;
-      display: none !important;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .nav-toggle-input:checked + .menu-toggle .checkbox-box {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+    }
+
+    .nav-toggle-input:checked + .menu-toggle .checkbox-box::after {
+      content: "";
+      display: block;
+      width: 5px;
+      height: 9px;
+      border: 2px solid var(--bg-base);
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg) translateY(-1px);
+    }
+
+    .nav-toggle-input:focus-visible + .menu-toggle .checkbox-box {
+      outline: 2px solid var(--accent-cyan);
+      outline-offset: 2px;
     }
 
     .nav-center,
@@ -590,8 +605,11 @@
 
     <div class="nav-inner">
       <a class="wordmark shiny-text" href="{% url 'home' %}">INSTANT_CTF</a>
-      <label class="menu-toggle" for="nav-toggle">Menu</label>
       <input id="nav-toggle" class="nav-toggle-input" type="checkbox" aria-label="Toggle navigation">
+      <label class="menu-toggle checkbox-wrapper" for="nav-toggle">
+        <span class="checkbox-box" aria-hidden="true"></span>
+        <span class="checkbox-label">Menu</span>
+      </label>
 
       <div class="nav-center">
         <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}">Home</a>
@@ -694,7 +712,7 @@
     <div class="challenge-modal-backdrop">
       <a href="#" class="modal-close-area"></a>
     </div>
-    <div class="challenge-modal-box" style="max-width:440px;">
+    <div class="challenge-modal-box" style="max-width:440px; padding:32px;">
       <h2 class="modal-title">Welcome,</h2>
       <p style="color:var(--text-secondary); margin-bottom:24px; font-size:0.9rem">
         sign in to continue
@@ -716,6 +734,11 @@
         <div class="field-group" style="display:grid; gap:8px;">
           <input type="password" name="password" placeholder="Password" required>
         </div>
+        <label class="checkbox-wrapper remember-me-row" for="modal-id-remember">
+          <input type="checkbox" id="modal-id-remember" name="remember" checked>
+          <span class="checkbox-box" aria-hidden="true"></span>
+          <span class="checkbox-label">Keep me signed in</span>
+        </label>
         <button type="submit" class="oauthButton">
           Sign In →
         </button>
@@ -732,7 +755,7 @@
     <div class="challenge-modal-backdrop">
       <a href="#" class="modal-close-area"></a>
     </div>
-    <div class="challenge-modal-box" style="max-width:440px;">
+    <div class="challenge-modal-box" style="max-width:440px; padding:32px;">
       <h2 class="modal-title">Join the hunt,</h2>
       <p style="color:var(--text-secondary); margin-bottom:24px; font-size:0.9rem">
         create your account
@@ -745,7 +768,7 @@
 
       <div class="separator" style="margin: 20px 0;">OR</div>
 
-      <form method="POST" action="{% url 'account_signup' %}" class="platform-form">
+      <form method="POST" action="{% url 'account_signup' %}" class="platform-form modal-signup-form">
         {% csrf_token %}
         {% if redirect_field_value %}
           <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />

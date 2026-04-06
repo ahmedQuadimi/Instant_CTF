@@ -49,7 +49,7 @@
   gap: 12px;
   width: 100%;
   max-width: 560px;
-  padding: 20px;
+  padding: 32px;
   background: var(--background);
   border: var(--border);
   border-radius: var(--radius);
@@ -84,6 +84,91 @@
 .form textarea {
   resize: vertical;
   min-height: 96px;
+}
+
+/* CHECKBOXES */
+
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.checkbox-wrapper .checkbox-box {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  border: 1.5px solid var(--accent-primary);
+  border-radius: var(--radius);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease,
+              border-color 0.15s ease;
+}
+
+.checkbox-wrapper input[type="checkbox"]:checked
+  + .checkbox-box {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.checkbox-wrapper input[type="checkbox"]:checked
+  + .checkbox-box::after {
+  content: '';
+  display: block;
+  width: 5px;
+  height: 9px;
+  border: 2px solid var(--bg-base);
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg) translateY(-1px);
+}
+
+.checkbox-wrapper
+  input[type="checkbox"]:focus-visible
+  + .checkbox-box {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.checkbox-label {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.remember-me-row {
+  margin-top: 16px;
+  margin-bottom: 16px;
+  padding: 4px 0;
+}
+
+.signup-form .signup-field-group {
+  margin-bottom: 20px;
+}
+
+.signup-form .signup-separator {
+  margin: 20px 0;
+}
+
+.modal-signup-form {
+  margin-top: 20px;
+}
+
+.modal-signup-form .field-group {
+  margin-bottom: 20px;
 }
 
 .form input:focus,
@@ -978,7 +1063,7 @@ button[type="submit"]:hover {
 .form {
   gap: 16px;
   max-width: 440px;
-  padding: 28px 32px;
+  padding: 32px;
   border-radius: 8px;
 }
 
@@ -1112,62 +1197,6 @@ tr:hover,
 .role-badge.role-ADMIN {
   background: color-mix(in srgb, var(--accent-cyan) 18%, var(--bg-elevated));
   color: var(--accent-cyan);
-}
-
-/* ─── CUSTOM CHECKBOXES ────────────────────────────────────── */
-
-input[type="checkbox"] {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  border: 1px solid var(--accent-primary);
-  border-radius: var(--radius);
-  background: transparent;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  margin: 0;
-  display: inline-block;
-  vertical-align: middle;
-}
-
-input[type="checkbox"]:hover {
-  transform: scale(1.1);
-}
-
-input[type="checkbox"]:checked {
-  background: var(--accent-primary);
-}
-
-input[type="checkbox"]:checked::after {
-  content: "";
-  position: absolute;
-  top: 1px;
-  left: 4px;
-  width: 4px;
-  height: 8px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-input[type="checkbox"]:focus-visible {
-  outline: 2px solid var(--accent-cyan);
-  outline-offset: 2px;
-}
-
-.form .checkbox-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 4px;
-}
-
-.form .checkbox-row label {
-  margin-bottom: 0;
-  cursor: pointer;
 }
 
 .event-card-grid {

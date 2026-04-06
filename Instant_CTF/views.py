@@ -1,8 +1,17 @@
 from django.shortcuts import render
 
+from Events.models import Event
+from Scoring.models import Solve
+from Teams.models import Team
+
 
 def home(request):
-    return render(request, "home.html")
+    context = {
+        "events_count": Event.objects.count(),
+        "teams_count": Team.objects.count(),
+        "solves_count": Solve.objects.count(),
+    }
+    return render(request, "home.html", context)
 
 
 def dev_index(request):

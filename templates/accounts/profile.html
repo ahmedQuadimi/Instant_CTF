@@ -25,6 +25,12 @@
     flex-shrink: 0;
   }
   .profile-info { display: grid; gap: 4px; }
+  .profile-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
   .profile-info h1 { margin: 0; font-size: 1.5rem; }
   .profile-info .elo-badge {
     display: inline-flex;
@@ -84,7 +90,12 @@
   <div class="profile-header">
     <div class="profile-avatar">{{ profile_user.username|first|upper }}</div>
     <div class="profile-info">
-      <h1>{{ profile_user.username }}</h1>
+      <div class="profile-title-row">
+        <h1>{{ profile_user.username }}</h1>
+        <span class="role-badge {% if profile_user.site_role == 'SITE_ADMIN' %}role-site-admin{% elif profile_user.site_role == 'EVENT_OWNER' %}role-event-owner{% elif profile_user.site_role == 'EVENT_ADMIN' %}role-event-admin{% else %}role-player{% endif %}">
+          {{ profile_user.get_site_role_display }}
+        </span>
+      </div>
       <div class="elo-badge"><span>⚡ ELO: {{ profile_user.elo }}</span></div>
     </div>
     {% if is_own_profile %}

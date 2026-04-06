@@ -390,6 +390,22 @@
       pointer-events: auto;
     }
 
+    .admin-chip {
+      min-height: 24px;
+      padding: 2px 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: 1px solid var(--accent-magenta);
+      background: color-mix(in srgb, var(--accent-magenta) 20%, transparent);
+      color: var(--accent-magenta);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      pointer-events: auto;
+    }
+
     .arc-divider {
       margin-top: var(--nav-height);
       height: var(--arc-height);
@@ -559,6 +575,11 @@
         border-bottom: var(--border);
       }
 
+      .admin-chip {
+        width: fit-content;
+        margin: 6px 8px;
+      }
+
       .arc-divider {
         margin-top: calc(var(--nav-height) + 4px);
       }
@@ -645,6 +666,9 @@
       <div class="nav-right">
         {% if request.user.is_authenticated %}
           <span class="username">{{ request.user.username }}</span>
+          {% if request.user.site_role == 'SITE_ADMIN' %}
+            <span class="admin-chip">ADMIN</span>
+          {% endif %}
           <a class="nav-link" href="{% url 'profile' user_id=request.user.id %}">Profile</a>
           <a class="nav-link" href="#logout-modal">Logout</a>
         {% else %}

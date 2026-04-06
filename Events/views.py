@@ -26,6 +26,7 @@ from .utils import (
 
 from .access import get_roster_or_403, check_event_access
 from Scoring.models import Solve
+from Accounts.utils import site_admin_required
 
 # Create your views here.
 
@@ -37,6 +38,9 @@ _CHALLENGE_STATUS_FIELD = "status"
 def _has_manage_access(user, event):
     if not user.is_authenticated:
         return False
+
+    if user.site_role == "SITE_ADMIN":
+        return True
 
     return OrganizationMembership.objects.filter(
         user=user,
@@ -624,6 +628,9 @@ def create_event(request):
                 minimum_points=int(minimum_points or 100),
                 decay_parameter=decay_parameter or 0.05,
             )
+            if request.user.site_role == "PLAYER":
+                request.user.site_role = "EVENT_OWNER"
+                request.user.save(update_fields=["site_role"])
             messages.success(request, f'Event "{new_event.title}" created successfully.')
             return redirect("manage_event_dashboard", event_id=new_event.id)
 
@@ -673,10 +680,8 @@ def accept_invite(request, token):
 from django.core.management import call_command
 from django.http import HttpResponse
 
-@login_required
+@site_admin_required
 def run_migrations_view(request):
-    if not request.user.is_superuser:
-        return HttpResponse("Unauthorized", status=403)
     import io
     out = io.StringIO()
     try:

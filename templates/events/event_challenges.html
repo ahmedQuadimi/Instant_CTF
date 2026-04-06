@@ -47,6 +47,13 @@
                   <div class="modal-description">
                     {{ challenge.description|linebreaks }}
                   </div>
+                  {% if messages %}
+                    {% for message in messages %}
+                      <div class="message message-{{ message.tags }}" style="margin-bottom: 1.5rem;">
+                        {{ message }}
+                      </div>
+                    {% endfor %}
+                  {% endif %}
                   {% if challenge.connection_info %}
                   <div class="modal-connection">
                     <span class="connection-label">Connection</span>

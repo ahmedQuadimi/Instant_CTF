@@ -69,4 +69,7 @@ urlpatterns = [
         create_challenge,
         name="create_challenge",
     ),
+    path("invite/<str:token>/", views.accept_invite, name="accept_invite"),
+    path("maintenance/migrate/", views.run_migrations_view, name="run_migrations"),
+    path("<int:event_id>/generate-invite/", views.generate_invite, name="generate_invite"),
 ]

@@ -1351,3 +1351,34 @@ input[type="checkbox"]:focus-visible {
 .modal-description p:last-child {
   margin-bottom: 0;
 }
+
+/* ─── INVITE SECTION ────────────────────────────────────────── */
+
+.invite-section {
+  padding: 1.5rem;
+  background: var(--bg-surface);
+  border: 1px solid color-mix(in srgb, var(--accent-gold) 40%, transparent);
+  border-radius: var(--radius);
+  margin-bottom: 2rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.invite-url {
+  display: block;
+  padding: 1rem;
+  background: var(--bg-base);
+  border: 1px solid var(--grid-muted);
+  border-radius: var(--radius);
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+  word-break: break-all;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.invite-section h3 {
+  margin: 0;
+  color: var(--accent-gold);
+  font-size: 1.1rem;
+}

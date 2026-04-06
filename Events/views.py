@@ -1,4 +1,5 @@
 import hashlib
+import secrets
 from itertools import groupby
 
 from django.contrib import messages
@@ -23,7 +24,7 @@ from .utils import (
     get_event_time_window,
 )
 
-from .access import get_roster_or_403
+from .access import get_roster_or_403, check_event_access
 from Scoring.models import Solve
 
 # Create your views here.
@@ -95,6 +96,9 @@ def event_list(request):
 
 def event(request, event_id):
     event = get_event_or_404(event_id)
+    if not check_event_access(request, event):
+        return render(request, "events/event_403.html", {"event": event}, status=403)
+
     time_status = get_event_time_window(event)
     is_participant = False
 
@@ -124,6 +128,9 @@ def event(request, event_id):
 
 def event_users(request, event_id):
     event = get_event_or_404(event_id)
+    if not check_event_access(request, event):
+        return render(request, "events/event_403.html", {"event": event}, status=403)
+
     rosters = EventRoster.objects.filter(event=event).select_related("user", "team")
     return render(
         request,
@@ -137,6 +144,9 @@ def event_users(request, event_id):
 
 def event_user_details(request, event_id, user_id):
     event = get_event_or_404(event_id)
+    if not check_event_access(request, event):
+        return render(request, "events/event_403.html", {"event": event}, status=403)
+
     User = get_user_model()
     profile_user = get_object_or_404(User, pk=user_id)
     roster = get_object_or_404(EventRoster, user=profile_user, event=event)
@@ -327,6 +337,9 @@ def manage_event_dashboard(request, event_id):
 
 def event_challenges(request, event_id):
     event = get_event_or_404(event_id)
+    if not check_event_access(request, event):
+        return render(request, "events/event_403.html", {"event": event}, status=403)
+
     now = timezone.now()
 
     if not event_has_started(event, now):
@@ -386,12 +399,12 @@ def event_challenges(request, event_id):
 
 
 @login_required
-@login_required
 def register_for_event(request, event_id):
     event = get_event_or_404(event_id)
+    if not check_event_access(request, event):
+        return render(request, "events/event_403.html", {"event": event}, status=403)
 
-    # 1. Prevent joining multiple teams / multiple registrations
-    if EventRoster.objects.filter(user=request.user, event=event).exists():
+    if request.user.is_authenticated and EventRoster.objects.filter(user=request.user, event=event).exists():
         messages.error(request, "You are already registered for this event.")
         return redirect("event_dashboard", event_id=event.id)
 
@@ -463,6 +476,9 @@ def register_for_event(request, event_id):
 @login_required
 def request_join_team(request, event_id, team_id):
     event = get_event_or_404(event_id)
+    if not check_event_access(request, event):
+        return render(request, "events/event_403.html", {"event": event}, status=403)
+
     team = get_object_or_404(Team, pk=team_id)
 
     is_team_in_event = EventRoster.objects.filter(event=event, team=team).exists()
@@ -511,6 +527,9 @@ def request_join_team(request, event_id, team_id):
 @login_required
 def my_join_requests(request, event_id):
     event = get_event_or_404(event_id)
+    if not check_event_access(request, event):
+        return render(request, "events/event_403.html", {"event": event}, status=403)
+
     join_requests = (
         TeamJoinRequest.objects.filter(
             user=request.user,
@@ -617,3 +636,52 @@ def create_event(request):
             "saved": saved,
         },
     )
+@login_required
+def generate_invite(request, event_id):
+    event = get_object_or_404(Event, pk=event_id)
+    # only org owner/admin can generate
+    if not _has_manage_access(request.user, event):
+        messages.error(request, "Not authorized.")
+        return redirect("event_dashboard", event_id=event.id)
+
+    if not event.invite_token:
+        event.invite_token = secrets.token_urlsafe(32)
+        event.save(update_fields=["invite_token"])
+
+    invite_url = request.build_absolute_uri(f"/events/invite/{event.invite_token}/")
+    messages.success(request, f"Invite link: {invite_url}")
+    return redirect("manage_event_dashboard", event_id=event.id)
+
+
+def accept_invite(request, token):
+    event = get_object_or_404(Event, invite_token=token)
+    if not request.user.is_authenticated:
+        # store token in session, redirect to login
+        request.session["pending_invite"] = token
+        return redirect("account_login")
+
+    # grant access by adding to a session whitelist
+    invited = request.session.get("event_invites", [])
+    if event.pk not in invited:
+        invited.append(event.pk)
+        request.session["event_invites"] = invited
+        request.session.modified = True
+
+    messages.success(request, f"You now have access to {event.title}.")
+    return redirect("event_dashboard", event_id=event.id)
+
+from django.core.management import call_command
+from django.http import HttpResponse
+
+@login_required
+def run_migrations_view(request):
+    if not request.user.is_superuser:
+        return HttpResponse("Unauthorized", status=403)
+    import io
+    out = io.StringIO()
+    try:
+        call_command('migrate', 'Events', stdout=out)
+        result = out.getvalue()
+    except Exception as e:
+        result = str(e)
+    return HttpResponse(f"<pre>{result}</pre>")

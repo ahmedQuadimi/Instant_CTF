@@ -29,6 +29,7 @@ urlpatterns = [
     # Platform routes – all protected by @login_required
     # -----------------------------------------------------------------------
     path("", login_required(views.home), name="home"),
+    path("about/", views.about, name="about"),
     path("accounts/profile/", include("Accounts.urls")),
     path("orgs/", include("Organizations.urls")),
     path("teams/", include("Teams.urls")),

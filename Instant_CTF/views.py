@@ -31,3 +31,7 @@ def dev_events(request):
 
 def dev_forms(request):
     return render(request, "dev/forms.html")
+
+
+def about(request):
+    return render(request, "about.html")

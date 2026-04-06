@@ -9,6 +9,31 @@
   <section class="platform-stack content-wide">
     <h1 class="gradient-heading">Manage Event Dashboard</h1>
     <p class="meta-line">Event: {{ event.title }}</p>
+    
+    {% if event.visibility == 'PRIVATE' %}
+      <div class="invite-section">
+        <h3>Private Event Invite Link</h3>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.5rem;">
+          Share this link with users to grant them access to this private event.
+        </p>
+        {% if event.invite_token %}
+          <code class="invite-url">
+            {{ request.scheme }}://{{ request.get_host }}{% url 'accept_invite' event.invite_token %}
+          </code>
+        {% endif %}
+        <form method="POST" action="{% url 'generate_invite' event.id %}">
+          {% csrf_token %}
+          <button type="submit" class="oauthButton">
+            {% if event.invite_token %}
+              Regenerate Link
+            {% else %}
+              Generate Invite Link
+            {% endif %}
+          </button>
+        </form>
+      </div>
+    {% endif %}
+
     <a class="btn-secondary" href="{% url 'create_challenge' event.id %}">Create Challenge</a>
 
     {% if saved %}

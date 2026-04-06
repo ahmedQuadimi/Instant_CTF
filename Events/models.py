@@ -41,6 +41,9 @@ class Event(models.Model):
 
     base_points = models.IntegerField(default=500, help_text="The base points")
     minimum_points = models.IntegerField(default=100, help_text="The minimum points")
+    invite_token = models.CharField(
+        max_length=64, blank=True, null=True, unique=True, db_index=True
+    )
 
     def __str__(self):
         return self.title

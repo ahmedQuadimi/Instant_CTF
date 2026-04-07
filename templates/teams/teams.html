@@ -15,6 +15,23 @@
       {% endif %}
     </div>
 
+    <form method="GET" class="search-form">
+      <div class="search-bar">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search teams..." class="search-input">
+        <button type="submit" class="search-btn">Search</button>
+      </div>
+      <div class="filter-row">
+        <select name="public" class="filter-select">
+          <option value="">All teams</option>
+          <option value="public" {% if public_filter == 'public' %}selected{% endif %}>Public only</option>
+          <option value="private" {% if public_filter == 'private' %}selected{% endif %}>Private only</option>
+        </select>
+        {% if query or public_filter %}
+          <a href="{% url 'teams' %}" class="clear-filters">Clear</a>
+        {% endif %}
+      </div>
+    </form>
+
     {% if teams %}
       <div class="card-grid">
         {% for team in teams %}

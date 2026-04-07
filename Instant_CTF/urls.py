@@ -17,6 +17,7 @@ urlpatterns = [
     #           /accounts/google/login/  (OAuth2 callback)
     # -----------------------------------------------------------------------
     path("accounts/", include("allauth.urls")),
+    path("accounts/", include("Accounts.urls")),
     path("dev/", views.dev_index, name="dev_index"),
     path("dev/components/", views.dev_components, name="dev_components"),
     path("dev/auth/", views.dev_auth, name="dev_auth"),
@@ -30,7 +31,6 @@ urlpatterns = [
     # -----------------------------------------------------------------------
     path("", login_required(views.home), name="home"),
     path("about/", views.about, name="about"),
-    path("accounts/profile/", include("Accounts.urls")),
     path("orgs/", include("Organizations.urls")),
     path("teams/", include("Teams.urls")),
     path("events/", include("Events.urls")),

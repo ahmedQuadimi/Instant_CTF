@@ -28,10 +28,32 @@ def event_teams(request, event_id):
 
 
 def teams(request):
+    query = request.GET.get("q", "").strip()
+    public_filter = request.GET.get("public", "")
+
     team_rows = Team.objects.select_related("captain").annotate(
-        member_count=Count("event_rosters", distinct=True)
-    ).order_by("name")
-    return render(request, "teams/teams.html", {"teams": team_rows})
+        member_count=Count("members", distinct=True)
+    )
+
+    if query:
+        team_rows = team_rows.filter(name__icontains=query)
+
+    if public_filter == "public":
+        team_rows = team_rows.filter(is_public=True)
+    elif public_filter == "private":
+        team_rows = team_rows.filter(is_public=False)
+
+    team_rows = team_rows.order_by("-global_rating")
+
+    return render(
+        request,
+        "teams/teams.html",
+        {
+            "teams": team_rows,
+            "query": query,
+            "public_filter": public_filter,
+        },
+    )
 
 
 def team_details(request, team_id, event_id=None):

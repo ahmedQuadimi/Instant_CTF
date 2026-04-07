@@ -63,3 +63,31 @@ def profile_edit(request):
         "accounts/profile_edit.html",
         {"profile_user": request.user},
     )
+
+
+def players_list(request):
+    query = request.GET.get("q", "").strip()
+    role_filter = request.GET.get("role", "")
+
+    from Accounts.models import User
+
+    players = User.objects.annotate(
+        team_count=Count("event_rosters__team", distinct=True)
+    ).order_by("-elo")
+
+    if query:
+        players = players.filter(username__icontains=query)
+
+    if role_filter:
+        players = players.filter(site_role=role_filter)
+
+    return render(
+        request,
+        "accounts/players.html",
+        {
+            "players": players,
+            "query": query,
+            "role_filter": role_filter,
+            "role_choices": User.ROLE_CHOICES,
+        },
+    )

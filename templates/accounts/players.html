@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Players{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+{% endblock %}
+
+{% block content %}
+  <section class="platform-stack content-wide" aria-labelledby="players-title">
+    <div class="platform-header-row">
+      <h1 id="players-title" class="gradient-heading">Players</h1>
+    </div>
+
+    <form method="GET" class="search-form">
+      <div class="search-bar">
+        <input
+          type="text"
+          name="q"
+          value="{{ query }}"
+          placeholder="Search players..."
+          class="search-input"
+        >
+        <button type="submit" class="search-btn">Search</button>
+      </div>
+      <div class="filter-row">
+        <select name="role" class="filter-select">
+          <option value="">All roles</option>
+          {% for role_value, role_label in role_choices %}
+            <option value="{{ role_value }}" {% if role_filter == role_value %}selected{% endif %}>
+              {{ role_label }}
+            </option>
+          {% endfor %}
+        </select>
+        {% if query or role_filter %}
+          <a href="{% url 'players_list' %}" class="clear-filters">Clear filters</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% if players %}
+      <div class="platform-card">
+        <table class="platform-table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Role</th>
+              <th>ELO</th>
+              <th>Teams</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for player in players %}
+              <tr style="--row-index: {{ forloop.counter0 }};">
+                <td>
+                  <a href="{% url 'profile' user_id=player.id %}">{{ player.username }}</a>
+                </td>
+                <td>
+                  <span class="status-badge">{{ player.get_site_role_display }}</span>
+                </td>
+                <td>
+                  <span class="elo-badge">{{ player.elo }}</span>
+                </td>
+                <td>{{ player.team_count }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <p>No players found for the current filters.</p>
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}

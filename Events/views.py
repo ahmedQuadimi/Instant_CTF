@@ -82,9 +82,30 @@ def _toggle_status_value(current_status):
 
 
 def event_list(request):
-    events = Event.objects.select_related("organization").order_by("-start_time")
+    query = request.GET.get("q", "").strip()
+    status_filter = request.GET.get("status", "")
+    org_filter = request.GET.get("org", "")
+
+    events = (
+        Event.objects.filter(visibility="PUBLIC")
+        .select_related("organization")
+        .order_by("-start_time")
+    )
+
+    if query:
+        events = events.filter(title__icontains=query)
 
     now = timezone.now()
+    if status_filter == "active":
+        events = events.filter(start_time__lte=now, end_time__gte=now)
+    elif status_filter == "upcoming":
+        events = events.filter(start_time__gt=now)
+    elif status_filter == "ended":
+        events = events.filter(end_time__lt=now)
+
+    if org_filter:
+        events = events.filter(organization__name__icontains=org_filter)
+
     event_data = []
     for evt in events:
         if now < evt.start_time:
@@ -95,7 +116,15 @@ def event_list(request):
             time_status = "active"
         event_data.append({"event": evt, "time_status": time_status})
 
-    return render(request, "events/event_list.html", {"event_data": event_data})
+    context = {
+        "events": events,
+        "event_data": event_data,
+        "query": query,
+        "status_filter": status_filter,
+        "org_filter": org_filter,
+    }
+
+    return render(request, "events/event_list.html", context)
 
 
 def event(request, event_id):

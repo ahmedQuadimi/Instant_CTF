@@ -660,6 +660,7 @@
         <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}">Home</a>
         <a class="nav-link {% if request.path|slice:':7' == '/events' %}active{% endif %}" href="{% url 'event_list' %}">Events</a>
         <a class="nav-link {% if request.path|slice:':6' == '/teams' %}active{% endif %}" href="{% url 'teams' %}">Teams</a>
+        <a class="nav-link {% if request.path|slice:':17' == '/accounts/players' %}active{% endif %}" href="{% url 'players_list' %}">Players</a>
         <a class="nav-link {% if request.path|slice:':5' == '/orgs' %}active{% endif %}" href="{% url 'organization_home' %}">Organizations</a>
       </div>
 

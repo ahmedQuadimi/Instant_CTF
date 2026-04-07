@@ -28,7 +28,7 @@
       <div class="rate-limited-banner">Rate limit active. Please wait before retrying.</div>
     {% endif %}
 
-    <form method="post" action="{% url 'submit_flag' event.id challenge.id %}" class="form challenge-flag-form">
+    <form method="post" action="{% url 'submit_flag' event.id challenge.id %}" class="form challenge-flag-form" data-no-warn>
       {% csrf_token %}
       <label for="flag">Flag</label>
       <input id="flag" name="flag" type="text" placeholder="flag{...}" required>

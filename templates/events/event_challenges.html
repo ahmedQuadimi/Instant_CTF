@@ -67,7 +67,8 @@
                   {% else %}
                   <form method="POST"
                         action="{% url 'submit_flag' event.pk challenge.pk %}"
-                        class="flag-form">
+                    class="flag-form"
+                    data-no-warn>
                     {% csrf_token %}
                     <input type="text" name="flag"
                            placeholder="CTF{...}"

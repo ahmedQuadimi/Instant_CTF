@@ -2,6 +2,49 @@
 {% block title %}Manage Event Dashboard{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="/static/css/platform.css">
+  <style>
+    .challenge-form-wrapper {
+      max-width: 860px;
+      margin: 0 auto 1.5rem;
+      padding: 1.5rem;
+      border: var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-surface);
+    }
+    .challenge-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px 32px;
+    }
+    .challenge-form-grid .full-width {
+      grid-column: 1 / -1;
+    }
+    .challenge-form-grid textarea {
+      max-height: 160px;
+      resize: vertical;
+    }
+    .challenge-helper {
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      margin-top: 8px;
+    }
+    .challenge-submit-row {
+      display: flex;
+      justify-content: center;
+    }
+    .challenge-submit-row .oauthButton {
+      width: 100%;
+      max-width: 260px;
+    }
+    @media (max-width: 768px) {
+      .challenge-form-grid {
+        grid-template-columns: 1fr;
+      }
+      .challenge-form-grid .full-width {
+        grid-column: 1;
+      }
+    }
+  </style>
 {% endblock %}
 {% block content %}
   {% include 'events/_event_nav.html' %}
@@ -33,8 +76,6 @@
         </form>
       </div>
     {% endif %}
-
-    <a class="btn-secondary" href="{% url 'create_challenge' event.id %}">Create Challenge</a>
 
     {% if saved %}
       <div class="message-card success">Challenge saved successfully.</div>
@@ -130,46 +171,77 @@
 
   <section>
     <h2>Create Challenge</h2>
-    <form method="post" class="form content-form">
-      {% csrf_token %}
-      <input type="hidden" name="action" value="create" />
+    <div class="challenge-form-wrapper">
+      <form method="post" class="form content-form">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="create" />
 
-      <label for="create-name">Name</label>
-      <input id="create-name" name="name" type="text" required />
+        <div class="challenge-form-grid">
+          <div>
+            <label for="create-name">Name</label>
+            <input id="create-name" name="name" type="text" required />
+          </div>
 
-      <label for="create-category">Category</label>
-      <input id="create-category" name="category" type="text" required />
+          <div>
+            <label for="create-category">Category</label>
+            <input id="create-category" name="category" type="text" required />
+          </div>
 
-      <label for="create-description">Description</label>
-      <textarea id="create-description" name="description" required></textarea>
+          <div>
+            <label for="create-status">Status</label>
+            <select id="create-status" name="{{ status_field }}">
+              {% for value, label in challenge_status_choices %}
+                <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
 
-      <label for="create-connection-info">Connection Info</label>
-      <textarea id="create-connection-info" name="connection_info"></textarea>
+          <div>
+            <label for="create-release-time">Release Time</label>
+            <input id="create-release-time" name="release_time" type="datetime-local" />
+          </div>
 
-      <label for="create-status">Status</label>
-      <select id="create-status" name="{{ status_field }}">
-        {% for value, label in challenge_status_choices %}
-          <option value="{{ value }}">{{ label }}</option>
-        {% endfor %}
-      </select>
+          <div>
+            <label for="create-raw-flag">Flag (plaintext input, hashed server-side)</label>
+            <input id="create-raw-flag" name="raw_flag" type="text" required />
+          </div>
 
-      <label for="create-raw-flag">Flag (plaintext input, hashed server-side)</label>
-      <input id="create-raw-flag" name="raw_flag" type="text" required />
+          <div>
+            <label aria-hidden="true" style="opacity:0;">Helper</label>
+            <div class="challenge-helper">Set VISIBLE + release time to schedule timed publishing.</div>
+          </div>
 
-      <label for="create-release-time">Release Time</label>
-      <input id="create-release-time" name="release_time" type="datetime-local" />
+          <div class="full-width">
+            <label for="create-description">Description</label>
+            <textarea id="create-description" name="description" required></textarea>
+          </div>
 
-      <label for="create-min-points">Min Points</label>
-      <input id="create-min-points" name="min_points" type="number" step="any" placeholder="Must be less than max points" />
+          <div>
+            <label for="create-connection-info">Connection Info</label>
+            <textarea id="create-connection-info" name="connection_info"></textarea>
+          </div>
 
-      <label for="create-max-points">Max Points</label>
-      <input id="create-max-points" name="max_points" type="number" step="any" placeholder="Must be greater than min points" />
+          <div>
+            <label for="create-min-points">Min Points</label>
+            <input id="create-min-points" name="min_points" type="number" step="any" placeholder="Must be less than max points" />
+          </div>
 
-      <label for="create-decay-factor">Decay Factor</label>
-      <input id="create-decay-factor" name="decay_factor" type="number" step="any" min="0.0000001" placeholder="Must be > 0" />
+          <div>
+            <label for="create-max-points">Max Points</label>
+            <input id="create-max-points" name="max_points" type="number" step="any" placeholder="Must be greater than min points" />
+          </div>
 
-      <button type="submit" class="oauthButton">Create Challenge</button>
-    </form>
+          <div>
+            <label for="create-decay-factor">Decay Factor</label>
+            <input id="create-decay-factor" name="decay_factor" type="number" step="any" min="0.0000001" placeholder="Must be > 0" />
+          </div>
+
+          <div class="full-width challenge-submit-row">
+            <button type="submit" class="oauthButton">Create Challenge</button>
+          </div>
+        </div>
+      </form>
+    </div>
   </section>
 
   <section>
@@ -177,90 +249,121 @@
     {% for challenge in challenges %}
       <article>
         <h3>{{ challenge.name }}</h3>
-        <form method="post" class="form content-form">
-          {% csrf_token %}
-          <input type="hidden" name="action" value="edit" />
-          <input type="hidden" name="challenge_id" value="{{ challenge.id }}" />
+        <div class="challenge-form-wrapper">
+          <form method="post" class="form content-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="edit" />
+            <input type="hidden" name="challenge_id" value="{{ challenge.id }}" />
 
-          <label for="edit-name-{{ challenge.id }}">Name</label>
-          <input
-            id="edit-name-{{ challenge.id }}"
-            name="name"
-            type="text"
-            value="{{ challenge.name }}"
-            required
-          />
+            <div class="challenge-form-grid">
+              <div>
+                <label for="edit-name-{{ challenge.id }}">Name</label>
+                <input
+                  id="edit-name-{{ challenge.id }}"
+                  name="name"
+                  type="text"
+                  value="{{ challenge.name }}"
+                  required
+                />
+              </div>
 
-          <label for="edit-category-{{ challenge.id }}">Category</label>
-          <input
-            id="edit-category-{{ challenge.id }}"
-            name="category"
-            type="text"
-            value="{{ challenge.category }}"
-            required
-          />
+              <div>
+                <label for="edit-category-{{ challenge.id }}">Category</label>
+                <input
+                  id="edit-category-{{ challenge.id }}"
+                  name="category"
+                  type="text"
+                  value="{{ challenge.category }}"
+                  required
+                />
+              </div>
 
-          <label for="edit-description-{{ challenge.id }}">Description</label>
-          <textarea id="edit-description-{{ challenge.id }}" name="description" required>{{ challenge.description }}</textarea>
+              <div>
+                <label for="edit-status-{{ challenge.id }}">Status</label>
+                <select id="edit-status-{{ challenge.id }}" name="{{ status_field }}">
+                  {% for value, label in challenge_status_choices %}
+                    {% if value == challenge.status or value == challenge.status %}
+                      <option value="{{ value }}" selected>{{ label }}</option>
+                    {% else %}
+                      <option value="{{ value }}">{{ label }}</option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
 
-          <label for="edit-connection-info-{{ challenge.id }}">Connection Info</label>
-          <textarea id="edit-connection-info-{{ challenge.id }}" name="connection_info">{{ challenge.connection_info }}</textarea>
+              <div>
+                <label for="edit-release-time-{{ challenge.id }}">Release Time</label>
+                <input
+                  id="edit-release-time-{{ challenge.id }}"
+                  name="release_time"
+                  type="datetime-local"
+                  value="{% if challenge.release_time %}{{ challenge.release_time|date:'Y-m-d\\TH:i' }}{% endif %}"
+                />
+              </div>
 
-          <label for="edit-status-{{ challenge.id }}">Status</label>
-          <select id="edit-status-{{ challenge.id }}" name="{{ status_field }}">
-            {% for value, label in challenge_status_choices %}
-              {% if value == challenge.status or value == challenge.status %}
-                <option value="{{ value }}" selected>{{ label }}</option>
-              {% else %}
-                <option value="{{ value }}">{{ label }}</option>
-              {% endif %}
-            {% endfor %}
-          </select>
+              <div>
+                <label for="edit-raw-flag-{{ challenge.id }}">New Flag (optional)</label>
+                <input id="edit-raw-flag-{{ challenge.id }}" name="raw_flag" type="text" />
+              </div>
 
-          <label for="edit-raw-flag-{{ challenge.id }}">New Flag (optional, plaintext input)</label>
-          <input id="edit-raw-flag-{{ challenge.id }}" name="raw_flag" type="text" />
+              <div>
+                <label aria-hidden="true" style="opacity:0;">Helper</label>
+                <div class="challenge-helper">Leave flag empty to keep current hash.</div>
+              </div>
 
-          <label for="edit-release-time-{{ challenge.id }}">Release Time</label>
-          <input
-            id="edit-release-time-{{ challenge.id }}"
-            name="release_time"
-            type="datetime-local"
-            value="{% if challenge.release_time %}{{ challenge.release_time|date:'Y-m-d\\TH:i' }}{% endif %}"
-          />
+              <div class="full-width">
+                <label for="edit-description-{{ challenge.id }}">Description</label>
+                <textarea id="edit-description-{{ challenge.id }}" name="description" required>{{ challenge.description }}</textarea>
+              </div>
 
-          <label for="edit-min-points-{{ challenge.id }}">Min Points</label>
-          <input
-            id="edit-min-points-{{ challenge.id }}"
-            name="min_points"
-            type="number"
-            step="any"
-            placeholder="Must be less than max points"
-            value="{{ challenge.min_points|default:'' }}"
-          />
+              <div>
+                <label for="edit-connection-info-{{ challenge.id }}">Connection Info</label>
+                <textarea id="edit-connection-info-{{ challenge.id }}" name="connection_info">{{ challenge.connection_info }}</textarea>
+              </div>
 
-          <label for="edit-max-points-{{ challenge.id }}">Max Points</label>
-          <input
-            id="edit-max-points-{{ challenge.id }}"
-            name="max_points"
-            type="number"
-            step="any"
-            placeholder="Must be greater than min points"
-            value="{{ challenge.max_points|default:'' }}"
-          />
+              <div>
+                <label for="edit-min-points-{{ challenge.id }}">Min Points</label>
+                <input
+                  id="edit-min-points-{{ challenge.id }}"
+                  name="min_points"
+                  type="number"
+                  step="any"
+                  placeholder="Must be less than max points"
+                  value="{{ challenge.min_points|default:'' }}"
+                />
+              </div>
 
-          <label for="edit-decay-factor-{{ challenge.id }}">Decay Factor</label>
-          <input
-            id="edit-decay-factor-{{ challenge.id }}"
-            name="decay_factor"
-            type="number"
-            step="any"
-            min="0.0000001"
-            placeholder="Must be > 0"
-            value="{{ challenge.decay_factor|default:'' }}"
-          />
+              <div>
+                <label for="edit-max-points-{{ challenge.id }}">Max Points</label>
+                <input
+                  id="edit-max-points-{{ challenge.id }}"
+                  name="max_points"
+                  type="number"
+                  step="any"
+                  placeholder="Must be greater than min points"
+                  value="{{ challenge.max_points|default:'' }}"
+                />
+              </div>
 
-          <button class="oauthButton" type="submit">Save Challenge</button>
-        </form>
+              <div>
+                <label for="edit-decay-factor-{{ challenge.id }}">Decay Factor</label>
+                <input
+                  id="edit-decay-factor-{{ challenge.id }}"
+                  name="decay_factor"
+                  type="number"
+                  step="any"
+                  min="0.0000001"
+                  placeholder="Must be > 0"
+                  value="{{ challenge.decay_factor|default:'' }}"
+                />
+              </div>
+
+              <div class="full-width challenge-submit-row">
+                <button class="oauthButton" type="submit">Save Challenge</button>
+              </div>
+            </div>
+          </form>
+        </div>
       </article>
     {% empty %}
       <div class="empty-state">No challenges yet.</div>

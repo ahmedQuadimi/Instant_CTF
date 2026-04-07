@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load ui_extras %}
 {% block title %}{{ event.title }}{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="/static/css/platform.css">
@@ -72,6 +73,15 @@
         <span class="stat-value">{{ challenge_count }}</span>
       </div>
     </div>
+
+    {% if request.user.is_authenticated %}
+      {% get_org_role request.user event.organization as user_org_role %}
+      {% if user_org_role == 'OWNER' or user_org_role == 'ADMIN' %}
+        <div class="action-grid">
+          <a href="{% url 'manage_event_dashboard' event.pk %}">Manage</a>
+        </div>
+      {% endif %}
+    {% endif %}
 
 
     <section class="platform-card">

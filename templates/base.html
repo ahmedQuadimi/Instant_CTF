@@ -744,7 +744,7 @@
       <p style="color:var(--text-secondary); margin-bottom:24px; font-size:0.9rem">
         You will be returned to the homepage.
       </p>
-      <form method="POST" action="{% url 'account_logout' %}">
+      <form method="POST" action="{% url 'account_logout' %}" data-no-warn>
         {% csrf_token %}
         <button type="submit" class="oauthButton" style="width:100%; margin-bottom:12px">
           Yes, sign out →
@@ -844,5 +844,28 @@
       </p>
     </div>
   </div>
+
+  <script>
+    (function () {
+      var dirty = false;
+
+      document.addEventListener("input", function (e) {
+        if (e.target.closest("form:not([data-no-warn])")) {
+          dirty = true;
+        }
+      });
+
+      document.addEventListener("submit", function () {
+        dirty = false;
+      });
+
+      window.addEventListener("beforeunload", function (e) {
+        if (dirty) {
+          e.preventDefault();
+          e.returnValue = "";
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

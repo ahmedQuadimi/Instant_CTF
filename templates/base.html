@@ -181,9 +181,8 @@
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+        animation: none !important;
+        transition: none !important;
       }
     }
 
@@ -886,7 +885,7 @@
 
       <div class="separator" style="margin: 20px 0;">OR</div>
 
-      <form method="POST" action="{% url 'account_login' %}" class="platform-form">
+      <form method="POST" action="{% url 'account_login' %}" class="platform-form" style="margin-top: 20px;">
         {% csrf_token %}
         <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
         <div class="field-group" style="display:grid; gap:8px;">

@@ -176,7 +176,7 @@
   height: 18px;
   min-width: 18px;
   border: 1.5px solid var(--accent-primary);
-  border-radius: var(--radius);
+  border: 2px solid var(--text-primary);
   background: transparent;
   display: flex;
   align-items: center;
@@ -188,6 +188,28 @@
 .checkbox-wrapper input[type="checkbox"]:checked
   + .checkbox-box {
   background: var(--accent-primary);
+
+/* CHALLENGE FORMS */
+
+.challenge-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 32px;
+}
+
+.challenge-form-grid .full-width {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 768px) {
+  .challenge-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .challenge-form-grid .full-width {
+    grid-column: 1;
+  }
+}
   border-color: var(--accent-primary);
 }
 

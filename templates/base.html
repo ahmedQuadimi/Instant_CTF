@@ -84,99 +84,6 @@
       animation-iteration-count: infinite;
     }
 
-    .boxes-wrapper {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .boxes-core {
-      position: absolute;
-      left: calc(50% + var(--offset-x, 0%));
-      top: 50%;
-      transform: translate(-50%, -50%)
-                 skewX(-48deg) skewY(14deg)
-                 scale(0.675) translateZ(0);
-      display: flex;
-      width: 100%;
-      height: 200%;
-      padding: 1rem;
-    }
-
-    .boxes-core:nth-child(1) {
-      --offset-x: -33%;
-    }
-
-    .boxes-core:nth-child(2) {
-      --offset-x: 0%;
-    }
-
-    .boxes-core:nth-child(3) {
-      --offset-x: 33%;
-    }
-
-    .site-nav .boxes-core {
-      left: 50%;
-    }
-
-    .site-footer .boxes-core {
-      left: 50%;
-    }
-
-    .box-column {
-      width: 4rem;
-      position: relative;
-      border-left: 1px solid var(--grid-muted);
-    }
-
-    .box-cell {
-      width: 4rem;
-      height: 2rem;
-      position: relative;
-      border-right: 1px solid var(--grid-muted);
-      border-top: 1px solid var(--grid-muted);
-      transition: background-color 2s ease;
-    }
-
-    .boxes-wrapper .box-cell {
-      pointer-events: all;
-    }
-
-    .box-cell:nth-child(4n + 1):hover {
-      background-color: color-mix(in srgb, var(--accent-magenta) 40%, var(--bg-base) 60%);
-      transition-duration: 0s;
-    }
-
-    .box-cell:nth-child(4n + 2):hover {
-      background-color: color-mix(in srgb, var(--accent-magenta) 40%, var(--bg-base) 60%);
-      transition-duration: 0s;
-    }
-
-    .box-cell:nth-child(4n + 3):hover {
-      background-color: color-mix(in srgb, var(--accent-magenta) 40%, var(--bg-base) 60%);
-      transition-duration: 0s;
-    }
-
-    .box-cell:nth-child(4n + 4):hover {
-      background-color: color-mix(in srgb, var(--accent-magenta) 40%, var(--bg-base) 60%);
-      transition-duration: 0s;
-    }
-
-    .box-plus {
-      position: absolute;
-      height: 1.5rem;
-      width: 2.5rem;
-      top: -14px;
-      left: -22px;
-      color: var(--grid-muted);
-      stroke: var(--grid-muted);
-      stroke-width: 1px;
-      pointer-events: none;
-    }
 
     @keyframes drawPath {
       0%   { stroke-dashoffset: 2000;  opacity: 0.3; }
@@ -186,10 +93,6 @@
 
     .animated-path {
       will-change: stroke-dashoffset;
-    }
-
-    .boxes-wrapper {
-      contain: layout style;
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -236,6 +139,8 @@
     }
 
     .site-nav {
+      position: relative;
+      overflow: hidden;
       position: fixed;
       top: 0;
       left: 0;
@@ -755,54 +660,6 @@
   </div>
 
   <nav class="site-nav" aria-label="Main navigation">
-    <div class="boxes-wrapper" aria-hidden="true">
-      <div class="boxes-core">
-        {% for i in "x"|ljust:"24" %}
-        <div class="box-column">
-          {% for j in "x"|ljust:"8" %}
-          <div class="box-cell">
-            {% if forloop.counter|divisibleby:2 %}
-            <svg class="box-plus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
-            </svg>
-            {% endif %}
-          </div>
-          {% endfor %}
-        </div>
-        {% endfor %}
-      </div>
-      <div class="boxes-core">
-        {% for i in "x"|ljust:"24" %}
-        <div class="box-column">
-          {% for j in "x"|ljust:"8" %}
-          <div class="box-cell">
-            {% if forloop.counter|divisibleby:2 %}
-            <svg class="box-plus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
-            </svg>
-            {% endif %}
-          </div>
-          {% endfor %}
-        </div>
-        {% endfor %}
-      </div>
-      <div class="boxes-core">
-        {% for i in "x"|ljust:"24" %}
-        <div class="box-column">
-          {% for j in "x"|ljust:"8" %}
-          <div class="box-cell">
-            {% if forloop.counter|divisibleby:2 %}
-            <svg class="box-plus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
-            </svg>
-            {% endif %}
-          </div>
-          {% endfor %}
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-
     <div class="nav-inner">
       <a class="wordmark shiny-text" href="{% url 'home' %}">INSTANT_CTF</a>
       <input id="nav-toggle" class="nav-toggle-input" type="checkbox" aria-label="Toggle navigation">
@@ -855,54 +712,6 @@
   </main>
 
   <footer class="site-footer">
-    <div class="boxes-wrapper" aria-hidden="true">
-      <div class="boxes-core">
-        {% for i in "x"|ljust:"24" %}
-        <div class="box-column">
-          {% for j in "x"|ljust:"8" %}
-          <div class="box-cell">
-            {% if forloop.counter|divisibleby:2 %}
-            <svg class="box-plus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
-            </svg>
-            {% endif %}
-          </div>
-          {% endfor %}
-        </div>
-        {% endfor %}
-      </div>
-      <div class="boxes-core">
-        {% for i in "x"|ljust:"24" %}
-        <div class="box-column">
-          {% for j in "x"|ljust:"8" %}
-          <div class="box-cell">
-            {% if forloop.counter|divisibleby:2 %}
-            <svg class="box-plus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
-            </svg>
-            {% endif %}
-          </div>
-          {% endfor %}
-        </div>
-        {% endfor %}
-      </div>
-      <div class="boxes-core">
-        {% for i in "x"|ljust:"24" %}
-        <div class="box-column">
-          {% for j in "x"|ljust:"8" %}
-          <div class="box-cell">
-            {% if forloop.counter|divisibleby:2 %}
-            <svg class="box-plus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
-            </svg>
-            {% endif %}
-          </div>
-          {% endfor %}
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-
     <div class="footer-inner">
       <div class="footer-top">
         <div class="footer-brand">

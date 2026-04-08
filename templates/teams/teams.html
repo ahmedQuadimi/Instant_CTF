@@ -16,6 +16,7 @@
     </div>
 
     <form method="GET" class="search-form" data-no-warn>
+      {% csrf_token %}
       <div class="search-bar">
         <input type="text" name="q" value="{{ query }}" placeholder="Search teams..." class="search-input">
         <button type="submit" class="search-btn">Search</button>

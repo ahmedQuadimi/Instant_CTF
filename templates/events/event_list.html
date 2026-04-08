@@ -16,6 +16,7 @@
     </div>
 
     <form method="GET" action="" class="search-form" data-no-warn>
+      {% csrf_token %}
       <div class="search-bar">
         <input
           type="text"

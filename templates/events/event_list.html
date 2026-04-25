@@ -15,6 +15,38 @@
       {% endif %}
     </div>
 
+    <form method="GET" action="" class="search-form" data-no-warn>
+      {% csrf_token %}
+      <div class="search-bar">
+        <input
+          type="text"
+          name="q"
+          value="{{ query }}"
+          placeholder="Search events..."
+          class="search-input"
+        >
+        <button type="submit" class="search-btn">Search</button>
+      </div>
+      <div class="filter-row">
+        <select name="status" class="filter-select">
+          <option value="">All statuses</option>
+          <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+          <option value="upcoming" {% if status_filter == 'upcoming' %}selected{% endif %}>Upcoming</option>
+          <option value="ended" {% if status_filter == 'ended' %}selected{% endif %}>Ended</option>
+        </select>
+        <input
+          type="text"
+          name="org"
+          value="{{ org_filter }}"
+          placeholder="Filter by organization..."
+          class="filter-input"
+        >
+        {% if query or status_filter or org_filter %}
+          <a href="{% url 'event_list' %}" class="clear-filters">Clear filters</a>
+        {% endif %}
+      </div>
+    </form>
+
     {% if event_data %}
       <div class="event-card-grid">
         {% for item in event_data %}

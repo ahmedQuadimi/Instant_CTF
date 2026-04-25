@@ -1,9 +1,10 @@
-{% load static %}
+{% load static %}{% load socialaccount %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="view-transition" content="same-origin">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -38,6 +39,7 @@
     body {
       margin: 0;
       min-height: 100%;
+      overflow-x: hidden;
     }
 
     body {
@@ -82,92 +84,42 @@
       animation-iteration-count: infinite;
     }
 
-    .boxes-wrapper {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .boxes-core {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%)
-                 skewX(-48deg) skewY(14deg)
-                 scale(0.675) translateZ(0);
-      display: flex;
-      width: max-content;
-      height: max-content;
-      padding: 1rem;
-    }
-
-    .site-nav .boxes-core {
-      left: 50%;
-    }
-
-    .site-footer .boxes-core {
-      left: 50%;
-    }
-
-    .box-column {
-      width: 4rem;
-      position: relative;
-      border-left: 1px solid var(--grid-muted);
-    }
-
-    .box-cell {
-      width: 4rem;
-      height: 2rem;
-      position: relative;
-      border-right: 1px solid var(--grid-muted);
-      border-top: 1px solid var(--grid-muted);
-      transition: background-color 2s ease;
-    }
-
-    .boxes-wrapper .box-cell {
-      pointer-events: all;
-    }
-
-    .box-cell:nth-child(4n + 1):hover {
-      background-color: color-mix(in srgb, var(--accent-magenta) 40%, var(--bg-base) 60%);
-      transition-duration: 0s;
-    }
-
-    .box-cell:nth-child(4n + 2):hover {
-      background-color: color-mix(in srgb, var(--accent-magenta) 40%, var(--bg-base) 60%);
-      transition-duration: 0s;
-    }
-
-    .box-cell:nth-child(4n + 3):hover {
-      background-color: color-mix(in srgb, var(--accent-magenta) 40%, var(--bg-base) 60%);
-      transition-duration: 0s;
-    }
-
-    .box-cell:nth-child(4n + 4):hover {
-      background-color: color-mix(in srgb, var(--accent-magenta) 40%, var(--bg-base) 60%);
-      transition-duration: 0s;
-    }
-
-    .box-plus {
-      position: absolute;
-      height: 1.5rem;
-      width: 2.5rem;
-      top: -14px;
-      left: -22px;
-      color: var(--grid-muted);
-      stroke: var(--grid-muted);
-      stroke-width: 1px;
-      pointer-events: none;
-    }
 
     @keyframes drawPath {
       0%   { stroke-dashoffset: 2000;  opacity: 0.3; }
       50%  { stroke-dashoffset: 0;     opacity: 0.6; }
       100% { stroke-dashoffset: -2000; opacity: 0.3; }
+    }
+
+    .animated-path {
+      will-change: stroke-dashoffset;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+
+    @view-transition {
+      navigation: auto;
+    }
+    
+    /* Keep nav and footer visually stable 
+       across navigations */
+    nav {
+      view-transition-name: site-nav;
+    }
+    
+    footer {
+      view-transition-name: site-footer;
+    }
+    
+    .background-paths-container {
+      view-transition-name: site-bg;
+      contain: strict;
+      will-change: transform;
     }
 
     a {
@@ -187,6 +139,8 @@
     }
 
     .site-nav {
+      position: relative;
+      overflow: hidden;
       position: fixed;
       top: 0;
       left: 0;
@@ -258,16 +212,57 @@
       pointer-events: auto;
     }
 
+    .menu-toggle .menu-toggle-icon {
+      position: relative;
+      width: 18px;
+      height: 2px;
+      border-radius: 999px;
+      background: var(--accent-primary);
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .menu-toggle .menu-toggle-icon::before,
+    .menu-toggle .menu-toggle-icon::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      width: 18px;
+      height: 2px;
+      border-radius: 999px;
+      background: var(--accent-primary);
+      transition: transform 0.2s ease;
+    }
+
+    .menu-toggle .menu-toggle-icon::before {
+      transform: translateY(-6px);
+    }
+
+    .menu-toggle .menu-toggle-icon::after {
+      transform: translateY(6px);
+    }
+
     .nav-toggle-input {
       position: absolute;
-      inline-size: 1px;
-      block-size: 1px;
-      margin: -1px;
-      border: 0;
-      padding: 0;
-      clip: rect(0 0 0 0);
-      overflow: hidden;
-      white-space: nowrap;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .nav-toggle-input:checked + .menu-toggle .menu-toggle-icon {
+      background: transparent;
+    }
+
+    .nav-toggle-input:checked + .menu-toggle .menu-toggle-icon::before {
+      transform: rotate(45deg);
+    }
+
+    .nav-toggle-input:checked + .menu-toggle .menu-toggle-icon::after {
+      transform: rotate(-45deg);
+    }
+
+    .nav-toggle-input:focus-visible + .menu-toggle {
+      outline: 2px solid var(--accent-cyan);
+      outline-offset: 2px;
     }
 
     .nav-center,
@@ -309,6 +304,22 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      pointer-events: auto;
+    }
+
+    .admin-chip {
+      min-height: 24px;
+      padding: 2px 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: 1px solid var(--accent-magenta);
+      background: color-mix(in srgb, var(--accent-magenta) 20%, transparent);
+      color: var(--accent-magenta);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
       pointer-events: auto;
     }
 
@@ -481,6 +492,11 @@
         border-bottom: var(--border);
       }
 
+      .admin-chip {
+        width: fit-content;
+        margin: 6px 8px;
+      }
+
       .arc-divider {
         margin-top: calc(var(--nav-height) + 4px);
       }
@@ -491,85 +507,185 @@
 <body>
   <div class="background-paths-container" aria-hidden="true">
     <div class="paths-wrapper">
-      <svg class="path-svg" viewBox="0 0 1920 1080" preserveAspectRatio="none" role="presentation" aria-hidden="true">
+      <svg class="path-svg" viewBox="0 0 1920 1080" preserveAspectRatio="none" role="presentation" aria-hidden="true" style="vector-effect: non-scaling-stroke;">
+        <path
+          class="animated-path"
+          d="M-120 834 C 180 614, 360 974, 680 754 C 980 554, 1180 914, 1480 714 C 1720 554, 1880 694, 2060 614"
+          fill="none"
+          stroke-width="0.96"
+          stroke-opacity="0.6"
+          stroke-linecap="round"
+          style="animation-duration: 18s; animation-delay: -2s;"
+        ></path>
         <path
           class="animated-path"
           d="M-120 840 C 180 620, 360 980, 680 760 C 980 560, 1180 920, 1480 720 C 1720 560, 1880 700, 2060 620"
           fill="none"
           stroke-width="1.2"
+          stroke-opacity="1"
           stroke-linecap="round"
           style="animation-duration: 18s; animation-delay: -2s;"
+        ></path>
+        <path
+          class="animated-path"
+          d="M-120 846 C 180 626, 360 986, 680 766 C 980 566, 1180 926, 1480 726 C 1720 566, 1880 706, 2060 626"
+          fill="none"
+          stroke-width="0.96"
+          stroke-opacity="0.6"
+          stroke-linecap="round"
+          style="animation-duration: 20s; animation-delay: -2s;"
+        ></path>
+        <path
+          class="animated-path"
+          d="M-120 852 C 180 632, 360 992, 680 772 C 980 572, 1180 932, 1480 732 C 1720 572, 1880 712, 2060 632"
+          fill="none"
+          stroke-width="0.96"
+          stroke-opacity="0.35"
+          stroke-linecap="round"
+          style="animation-duration: 22s; animation-delay: -2s;"
+        ></path>
+        <path
+          class="animated-path"
+          d="M-160 324 C 220 174, 460 514, 820 354 C 1160 204, 1380 494, 1760 334 C 1900 274, 2020 304, 2140 254"
+          fill="none"
+          stroke-width="0.72"
+          stroke-opacity="0.6"
+          stroke-linecap="round"
+          style="animation-duration: 22s; animation-delay: -9s;"
         ></path>
         <path
           class="animated-path"
           d="M-160 330 C 220 180, 460 520, 820 360 C 1160 210, 1380 500, 1760 340 C 1900 280, 2020 310, 2140 260"
           fill="none"
           stroke-width="0.9"
+          stroke-opacity="1"
           stroke-linecap="round"
           style="animation-duration: 24s; animation-delay: -9s;"
         ></path>
+        <path
+          class="animated-path"
+          d="M-160 336 C 220 186, 460 526, 820 366 C 1160 216, 1380 506, 1760 346 C 1900 286, 2020 316, 2140 266"
+          fill="none"
+          stroke-width="0.72"
+          stroke-opacity="0.6"
+          stroke-linecap="round"
+          style="animation-duration: 26s; animation-delay: -9s;"
+        ></path>
+        <path
+          class="animated-path"
+          d="M-160 342 C 220 192, 460 532, 820 372 C 1160 222, 1380 512, 1760 352 C 1900 292, 2020 322, 2140 272"
+          fill="none"
+          stroke-width="0.72"
+          stroke-opacity="0.35"
+          stroke-linecap="round"
+          style="animation-duration: 28s; animation-delay: -9s;"
+        ></path>
       </svg>
 
-      <svg class="path-svg" viewBox="0 0 1920 1080" preserveAspectRatio="none" role="presentation" aria-hidden="true">
+      <svg class="path-svg" viewBox="0 0 1920 1080" preserveAspectRatio="none" role="presentation" aria-hidden="true" style="vector-effect: non-scaling-stroke;">
+        <path
+          class="animated-path"
+          d="M-100 1014 C 200 854, 520 1034, 860 894 C 1180 754, 1450 954, 1780 814 C 1940 744, 2060 774, 2200 714"
+          fill="none"
+          stroke-width="0.8"
+          stroke-opacity="0.6"
+          stroke-linecap="round"
+          style="animation-duration: 28s; animation-delay: -5s;"
+        ></path>
         <path
           class="animated-path"
           d="M-100 1020 C 200 860, 520 1040, 860 900 C 1180 760, 1450 960, 1780 820 C 1940 750, 2060 780, 2200 720"
           fill="none"
           stroke-width="1"
+          stroke-opacity="1"
           stroke-linecap="round"
           style="animation-duration: 30s; animation-delay: -5s;"
+        ></path>
+        <path
+          class="animated-path"
+          d="M-100 1026 C 200 866, 520 1046, 860 906 C 1180 766, 1450 966, 1780 826 C 1940 756, 2060 786, 2200 726"
+          fill="none"
+          stroke-width="0.8"
+          stroke-opacity="0.6"
+          stroke-linecap="round"
+          style="animation-duration: 32s; animation-delay: -5s;"
+        ></path>
+        <path
+          class="animated-path"
+          d="M-100 1032 C 200 872, 520 1052, 860 912 C 1180 772, 1450 972, 1780 832 C 1940 762, 2060 792, 2200 732"
+          fill="none"
+          stroke-width="0.8"
+          stroke-opacity="0.35"
+          stroke-linecap="round"
+          style="animation-duration: 34s; animation-delay: -5s;"
+        ></path>
+        <path
+          class="animated-path"
+          d="M-140 114 C 140 254, 420 -26, 760 164 C 1060 334, 1330 74, 1650 234 C 1880 354, 2040 304, 2180 384"
+          fill="none"
+          stroke-width="0.88"
+          stroke-opacity="0.6"
+          stroke-linecap="round"
+          style="animation-duration: 20s; animation-delay: -12s;"
         ></path>
         <path
           class="animated-path"
           d="M-140 120 C 140 260, 420 -20, 760 170 C 1060 340, 1330 80, 1650 240 C 1880 360, 2040 310, 2180 390"
           fill="none"
           stroke-width="1.1"
+          stroke-opacity="1"
           stroke-linecap="round"
           style="animation-duration: 22s; animation-delay: -12s;"
+        ></path>
+        <path
+          class="animated-path"
+          d="M-140 126 C 140 266, 420 -14, 760 176 C 1060 346, 1330 86, 1650 246 C 1880 366, 2040 316, 2180 396"
+          fill="none"
+          stroke-width="0.88"
+          stroke-opacity="0.6"
+          stroke-linecap="round"
+          style="animation-duration: 24s; animation-delay: -12s;"
+        ></path>
+        <path
+          class="animated-path"
+          d="M-140 132 C 140 272, 420 -8, 760 182 C 1060 352, 1330 92, 1650 252 C 1880 372, 2040 322, 2180 402"
+          fill="none"
+          stroke-width="0.88"
+          stroke-opacity="0.35"
+          stroke-linecap="round"
+          style="animation-duration: 26s; animation-delay: -12s;"
         ></path>
       </svg>
     </div>
   </div>
 
   <nav class="site-nav" aria-label="Main navigation">
-    <div class="boxes-wrapper" aria-hidden="true">
-      <div class="boxes-core">
-        {% for i in "x"|ljust:"200" %}
-        <div class="box-column">
-          {% for j in "x"|ljust:"60" %}
-          <div class="box-cell">
-            {% if forloop.counter|divisibleby:2 %}
-            <svg class="box-plus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
-            </svg>
-            {% endif %}
-          </div>
-          {% endfor %}
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-
     <div class="nav-inner">
       <a class="wordmark shiny-text" href="{% url 'home' %}">INSTANT_CTF</a>
-      <label class="menu-toggle" for="nav-toggle">Menu</label>
       <input id="nav-toggle" class="nav-toggle-input" type="checkbox" aria-label="Toggle navigation">
+      <label class="menu-toggle" for="nav-toggle" aria-label="Toggle navigation menu">
+        <span class="menu-toggle-icon" aria-hidden="true"></span>
+      </label>
 
       <div class="nav-center">
         <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}">Home</a>
         <a class="nav-link {% if request.path|slice:':7' == '/events' %}active{% endif %}" href="{% url 'event_list' %}">Events</a>
         <a class="nav-link {% if request.path|slice:':6' == '/teams' %}active{% endif %}" href="{% url 'teams' %}">Teams</a>
+        <a class="nav-link {% if request.path|slice:':17' == '/accounts/players' %}active{% endif %}" href="{% url 'players_list' %}">Players</a>
         <a class="nav-link {% if request.path|slice:':5' == '/orgs' %}active{% endif %}" href="{% url 'organization_home' %}">Organizations</a>
       </div>
 
       <div class="nav-right">
         {% if request.user.is_authenticated %}
           <span class="username">{{ request.user.username }}</span>
+          {% if request.user.site_role == 'SITE_ADMIN' %}
+            <span class="admin-chip">ADMIN</span>
+          {% endif %}
           <a class="nav-link" href="{% url 'profile' user_id=request.user.id %}">Profile</a>
-          <a class="nav-link" href="{% url 'account_logout' %}">Logout</a>
+          <a class="nav-link" href="#logout-modal">Logout</a>
         {% else %}
-          <a class="nav-link" href="{% url 'account_login' %}">Login</a>
-          <a class="nav-link" href="{% url 'account_signup' %}">Register</a>
+          <a class="nav-link" href="#login-modal">Login</a>
+          <a class="nav-link" href="#signup-modal">Register</a>
         {% endif %}
       </div>
     </div>
@@ -596,24 +712,6 @@
   </main>
 
   <footer class="site-footer">
-    <div class="boxes-wrapper" aria-hidden="true">
-      <div class="boxes-core">
-        {% for i in "x"|ljust:"200" %}
-        <div class="box-column">
-          {% for j in "x"|ljust:"60" %}
-          <div class="box-cell">
-            {% if forloop.counter|divisibleby:2 %}
-            <svg class="box-plus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6" />
-            </svg>
-            {% endif %}
-          </div>
-          {% endfor %}
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-
     <div class="footer-inner">
       <div class="footer-top">
         <div class="footer-brand">
@@ -621,12 +719,146 @@
           <span>The one platform for everything CTF.</span>
         </div>
         <div class="footer-links">
-          <a href="#">GitHub</a>
-          <a href="#">About</a>
+          <a href="https://github.com/ahmedQuadimi/Instant_CTF" target="_blank" rel="noopener">GitHub</a>
+          <a href="{% url 'about' %}">About</a>
         </div>
       </div>
       <div class="footer-bottom">© 2025 Instant CTF. Built for hackers.</div>
     </div>
   </footer>
+
+  <!-- Logout Modal -->
+  <div class="challenge-modal" id="logout-modal">
+    <div class="challenge-modal-backdrop">
+      <a href="#" class="modal-close-area"></a>
+    </div>
+    <div class="challenge-modal-box" style="max-width:360px;text-align:center">
+      <h2 class="modal-title">Sign out?</h2>
+      <p style="color:var(--text-secondary); margin-bottom:24px; font-size:0.9rem">
+        You will be returned to the homepage.
+      </p>
+      <form method="POST" action="{% url 'account_logout' %}" data-no-warn>
+        {% csrf_token %}
+        <button type="submit" class="oauthButton" style="width:100%; margin-bottom:12px">
+          Yes, sign out →
+        </button>
+      </form>
+      <a href="#" class="modal-close-btn" style="display:block; margin-top:8px">
+        Cancel
+      </a>
+    </div>
+  </div>
+
+  <!-- Login Modal -->
+  <div class="challenge-modal" id="login-modal">
+    <div class="challenge-modal-backdrop">
+      <a href="#" class="modal-close-area"></a>
+    </div>
+    <div class="challenge-modal-box" style="max-width:440px; padding:32px;">
+      <h2 class="modal-title">Welcome,</h2>
+      <p style="color:var(--text-secondary); margin-bottom:24px; font-size:0.9rem">
+        sign in to continue
+      </p>
+      
+      <a href="{% provider_login_url 'google' %}" class="oauthButton" style="text-decoration:none;">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Sign in with Google
+      </a>
+
+      <div class="separator" style="margin: 20px 0;">OR</div>
+
+      <form method="POST" action="{% url 'account_login' %}" class="platform-form" style="margin-top: 20px;">
+        {% csrf_token %}
+        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+        <div class="field-group" style="display:grid; gap:8px;">
+          <input type="email" name="login" placeholder="Email Address" required>
+        </div>
+        <div class="field-group" style="display:grid; gap:8px;">
+          <input type="password" name="password" placeholder="Password" required>
+        </div>
+        <label class="checkbox-wrapper remember-me-row" for="modal-id-remember">
+          <input type="checkbox" id="modal-id-remember" name="remember" checked>
+          <span class="checkbox-box" aria-hidden="true"></span>
+          <span class="checkbox-label">Keep me signed in</span>
+        </label>
+        <button type="submit" class="oauthButton">
+          Sign In →
+        </button>
+      </form>
+      
+      <p style="margin-top:20px; font-size:0.85rem; text-align:center; color:var(--text-secondary)">
+        New here? <a href="{% url 'account_signup' %}" style="color:var(--accent-primary)">Create account</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Signup Modal -->
+  <div class="challenge-modal" id="signup-modal">
+    <div class="challenge-modal-backdrop">
+      <a href="#" class="modal-close-area"></a>
+    </div>
+    <div class="challenge-modal-box" style="max-width:440px; padding:32px;">
+      <h2 class="modal-title">Join the hunt,</h2>
+      <p style="color:var(--text-secondary); margin-bottom:24px; font-size:0.9rem">
+        create your account
+      </p>
+      
+      <a href="{% provider_login_url 'google' %}" class="oauthButton" style="text-decoration:none;">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Sign up with Google
+      </a>
+
+      <div class="separator" style="margin: 20px 0;">OR</div>
+
+      <form method="POST" action="{% url 'account_signup' %}" class="platform-form modal-signup-form">
+        {% csrf_token %}
+        {% if redirect_field_value %}
+          <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+        {% endif %}
+        <div class="field-group" style="display:grid; gap:8px;">
+          <input type="text" name="username" placeholder="Hacker Tag (username)" required>
+        </div>
+        <div class="field-group" style="display:grid; gap:8px;">
+          <input type="email" name="email" placeholder="Email Address" required>
+        </div>
+        <div class="field-group" style="display:grid; gap:8px;">
+          <input type="password" name="password1" placeholder="Password" required>
+        </div>
+        <div class="field-group" style="display:grid; gap:8px;">
+          <input type="password" name="password2" placeholder="Confirm Password" required>
+        </div>
+        <button type="submit" class="oauthButton">
+          Create Account →
+        </button>
+      </form>
+      
+      <p style="margin-top:20px; font-size:0.85rem; text-align:center; color:var(--text-secondary)">
+        Already registered? <a href="#login-modal" style="color:var(--accent-primary)">Sign in</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var dirty = false;
+
+      document.addEventListener("input", function (e) {
+        if (e.target.closest("form:not([data-no-warn])")) {
+          dirty = true;
+        }
+      });
+
+      document.addEventListener("submit", function () {
+        dirty = false;
+      });
+
+      window.addEventListener("beforeunload", function (e) {
+        if (dirty) {
+          e.preventDefault();
+          e.returnValue = "";
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

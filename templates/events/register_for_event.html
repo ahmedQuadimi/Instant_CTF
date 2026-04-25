@@ -6,20 +6,56 @@
 {% block content %}
   {% include 'events/_event_nav.html' %}
 
-  <section class="platform-stack">
-    <h1>Register for {{ event.title }}</h1>
-    <p class="meta-line">This event requires an access code. Enter it below to continue registration.</p>
+  <section class="platform-stack content-single">
+    <h1 class="gradient-heading">Register for {{ event.title }}</h1>
+    
+    {% if not is_captain %}
+      <div class="message-card error">
+        <strong>Error:</strong> {{ error_message }}
+      </div>
+      <div class="button-row" style="margin-top: 20px;">
+        <a href="{% url 'event_dashboard' event.id %}" class="btn-secondary">← Back to Dashboard</a>
+      </div>
+    {% else %}
+      <p class="meta-line">
+        Select members from <strong>{{ captain_team.name }}</strong> to include in the event roster.
+        <br>
+        <span class="status-badge info">{{ slots_remaining }} slots remaining</span>
+      </p>
 
-    <form method="post" class="form">
-      {% csrf_token %}
-      {% for field in form %}
-        {{ field.label_tag }}
-        {{ field }}
-        {% if field.errors %}
-          <span class="field-error">{{ field.errors }}</span>
-        {% endif %}
-      {% endfor %}
-      <button class="oauthButton" type="submit">Verify Access Code</button>
-    </form>
+      <form method="post" class="form" style="max-width: 600px;">
+        {% csrf_token %}
+        
+        <div class="member-selection-grid" style="display: grid; gap: 12px; margin-bottom: 24px;">
+          <div style="padding: 10px; background: var(--bg-elevated); border-radius: var(--radius); border: var(--border);">
+            <label class="checkbox-wrapper" for="captain-member">
+              <input type="checkbox" id="captain-member" checked disabled>
+              <span class="checkbox-box" aria-hidden="true"></span>
+              <span class="checkbox-label" style="flex: 1; display: flex; align-items: center; justify-content: space-between;">
+                <span>{{ request.user.username }} (Captain)</span>
+                <span class="elo-badge">⚡ {{ request.user.elo }}</span>
+              </span>
+            </label>
+          </div>
+
+          {% for membership in memberships %}
+            {% if membership.user != request.user %}
+              <div style="padding: 10px; background: var(--bg-surface); border-radius: var(--radius); border: var(--border); transition: border-color 0.2s;">
+                <label class="checkbox-wrapper" for="member-{{ membership.user.id }}">
+                  <input type="checkbox" name="member_ids" value="{{ membership.user.id }}" id="member-{{ membership.user.id }}">
+                  <span class="checkbox-box" aria-hidden="true"></span>
+                  <span class="checkbox-label" style="flex: 1; display: flex; align-items: center; justify-content: space-between;">
+                    <span>{{ membership.user.username }}</span>
+                    <span class="elo-badge">⚡ {{ membership.user.elo }}</span>
+                  </span>
+                </label>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        <button class="oauthButton" type="submit">Register Team →</button>
+      </form>
+    {% endif %}
   </section>
 {% endblock %}

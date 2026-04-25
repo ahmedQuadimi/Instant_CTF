@@ -19,72 +19,6 @@
       {% endfor %}
     {% endif %}
 
-    <form method="POST" action="{% url 'account_signup' %}" id="signup-form">
-      {% csrf_token %}
-
-      {% if redirect_field_value %}
-        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
-      {% endif %}
-
-      <label for="id_username">Hacker Tag (username)</label>
-      <input
-        type="text"
-        id="id_username"
-        name="username"
-        value="{{ form.username.value|default:'' }}"
-        placeholder="d4rk_n3t"
-        autocomplete="username"
-        required
-      />
-      {% if form.username.errors %}
-        <span class="field-error">{{ form.username.errors }}</span>
-      {% endif %}
-
-      <label for="id_email">Email Address</label>
-      <input
-        type="email"
-        id="id_email"
-        name="email"
-        value="{{ form.email.value|default:'' }}"
-        placeholder="hacker@example.com"
-        autocomplete="email"
-        required
-      />
-      {% if form.email.errors %}
-        <span class="field-error">{{ form.email.errors }}</span>
-      {% endif %}
-
-      <label for="id_password1">Password</label>
-      <input
-        type="password"
-        id="id_password1"
-        name="password1"
-        placeholder="Min. 8 characters"
-        autocomplete="new-password"
-        required
-      />
-      {% if form.password1.errors %}
-        <span class="field-error">{{ form.password1.errors }}</span>
-      {% endif %}
-
-      <label for="id_password2">Confirm Password</label>
-      <input
-        type="password"
-        id="id_password2"
-        name="password2"
-        placeholder="Repeat password"
-        autocomplete="new-password"
-        required
-      />
-      {% if form.password2.errors %}
-        <span class="field-error">{{ form.password2.errors }}</span>
-      {% endif %}
-
-      <button type="submit" class="oauthButton" id="signup-submit-btn">→ CREATE ACCOUNT</button>
-    </form>
-
-    <div class="separator">or register with</div>
-
     {% get_providers as socialaccount_providers %}
     {% for provider in socialaccount_providers %}
       {% if provider.id == 'google' %}
@@ -106,6 +40,80 @@
         </a>
       {% endif %}
     {% endfor %}
+
+    <div class="separator signup-separator">OR</div>
+
+    <form method="POST" action="{% url 'account_signup' %}" id="signup-form" class="signup-form" style="margin-top: 20px;">
+      {% csrf_token %}
+
+      {% if redirect_field_value %}
+        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+      {% endif %}
+
+      <div class="signup-field-group">
+        <label for="id_username">Hacker Tag (username)</label>
+        <input
+          type="text"
+          id="id_username"
+          name="username"
+          value="{{ form.username.value|default:'' }}"
+          placeholder="d4rk_n3t"
+          autocomplete="username"
+          required
+        />
+        {% if form.username.errors %}
+          <span class="field-error">{{ form.username.errors }}</span>
+        {% endif %}
+      </div>
+
+      <div class="signup-field-group">
+        <label for="id_email">Email Address</label>
+        <input
+          type="email"
+          id="id_email"
+          name="email"
+          value="{{ form.email.value|default:'' }}"
+          placeholder="hacker@example.com"
+          autocomplete="email"
+          required
+        />
+        {% if form.email.errors %}
+          <span class="field-error">{{ form.email.errors }}</span>
+        {% endif %}
+      </div>
+
+      <div class="signup-field-group">
+        <label for="id_password1">Password</label>
+        <input
+          type="password"
+          id="id_password1"
+          name="password1"
+          placeholder="Min. 8 characters"
+          autocomplete="new-password"
+          required
+        />
+        {% if form.password1.errors %}
+          <span class="field-error">{{ form.password1.errors }}</span>
+        {% endif %}
+      </div>
+
+      <div class="signup-field-group">
+        <label for="id_password2">Confirm Password</label>
+        <input
+          type="password"
+          id="id_password2"
+          name="password2"
+          placeholder="Repeat password"
+          autocomplete="new-password"
+          required
+        />
+        {% if form.password2.errors %}
+          <span class="field-error">{{ form.password2.errors }}</span>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="oauthButton" id="signup-submit-btn">→ CREATE ACCOUNT</button>
+    </form>
 
       <p class="meta-line">Already registered? <a href="{% url 'account_login' %}" id="signin-link">Sign in</a></p>
     </div>

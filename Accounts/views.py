@@ -22,10 +22,10 @@ def profile_view(request, user_id):
     teams = Team.objects.filter(pk__in=team_ids)
 
     # Events participated in
-    event_rosters = (
-        EventRoster.objects.filter(user=profile_user)
-        .select_related("event", "team")
-        .order_by("-joined_at")
+    event_rosters = EventRoster.objects.filter(
+        user=profile_user
+    ).select_related('event', 'team').order_by(
+        '-event__start_time'
     )
 
     # Solve count
@@ -62,4 +62,32 @@ def profile_edit(request):
         request,
         "accounts/profile_edit.html",
         {"profile_user": request.user},
+    )
+
+
+def players_list(request):
+    query = request.GET.get("q", "").strip()
+    role_filter = request.GET.get("role", "")
+
+    from Accounts.models import User
+
+    players = User.objects.annotate(
+        team_count=Count("event_rosters__team", distinct=True)
+    ).order_by("-elo")
+
+    if query:
+        players = players.filter(username__icontains=query)
+
+    if role_filter:
+        players = players.filter(site_role=role_filter)
+
+    return render(
+        request,
+        "accounts/players.html",
+        {
+            "players": players,
+            "query": query,
+            "role_filter": role_filter,
+            "role_choices": User.ROLE_CHOICES,
+        },
     )

@@ -1,7 +1,26 @@
-<nav>
-  <a href="{% url 'event_dashboard' event.id %}">Event Home</a>
-  <a href="{% url 'event_challenges' event.id %}">Challenges</a>
-  <a href="{% url 'event_scoreboard' event.id %}">Scoreboard</a>
-  <a href="{% url 'event_teams' event.id %}">Teams</a>
-  <a href="{% url 'event_users' event.id %}">Users</a>
-</nav>
+{% load ui_extras %}
+<div class="event-nav-tabs">
+  <a href="{% url 'event_dashboard' event.id %}" class="event-tab {% if request.resolver_match.url_name == 'event_dashboard' %}active{% endif %}">
+    Dashboard
+  </a>
+  <a href="{% url 'event_challenges' event.id %}" class="event-tab {% if request.resolver_match.url_name == 'event_challenges' %}active{% endif %}">
+    Challenges
+  </a>
+  <a href="{% url 'event_scoreboard' event.id %}" class="event-tab {% if request.resolver_match.url_name == 'event_scoreboard' %}active{% endif %}">
+    Scoreboard
+  </a>
+  <a href="{% url 'event_teams' event.id %}" class="event-tab {% if request.resolver_match.url_name == 'event_teams' %}active{% endif %}">
+    Teams
+  </a>
+  <a href="{% url 'event_users' event.id %}" class="event-tab {% if request.resolver_match.url_name == 'event_users' %}active{% endif %}">
+    Users
+  </a>
+  {% if request.user.is_authenticated %}
+    {% get_org_role request.user event.organization as user_org_role %}
+    {% if user_org_role == 'OWNER' or user_org_role == 'ADMIN' %}
+      <a href="{% url 'manage_event_dashboard' event.id %}" class="event-tab {% if request.resolver_match.url_name == 'manage_event_dashboard' %}active{% endif %}" style="color:var(--accent-gold);">
+        Manage
+      </a>
+    {% endif %}
+  {% endif %}
+</div>

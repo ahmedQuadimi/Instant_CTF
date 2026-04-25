@@ -1,0 +1,28 @@
+from django import template
+
+from Organizations.models import OrganizationMembership
+
+register = template.Library()
+
+
+def _resolve_org_role(user, organization):
+    if not user or not getattr(user, "is_authenticated", False) or organization is None:
+        return None
+
+    try:
+        return OrganizationMembership.objects.get(
+            user=user,
+            organization=organization,
+        ).role
+    except OrganizationMembership.DoesNotExist:
+        return None
+
+
+@register.filter
+def get_org_role(user, organization):
+    return _resolve_org_role(user, organization)
+
+
+@register.simple_tag(name="get_org_role")
+def get_org_role_assignment(user, organization):
+    return _resolve_org_role(user, organization)

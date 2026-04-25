@@ -53,15 +53,16 @@
         <span class="field-error">{{ form.password.errors }}</span>
       {% endif %}
 
-      <div class="checkbox-row">
+      <label class="checkbox-wrapper remember-me-row" for="id_remember">
         <input type="checkbox" id="id_remember" name="remember" checked />
-        <label for="id_remember">Keep me signed in</label>
-      </div>
+        <span class="checkbox-box" aria-hidden="true"></span>
+        <span class="checkbox-label">Keep me signed in</span>
+      </label>
 
       <button type="submit" class="oauthButton" id="login-submit-btn">→ SIGN IN</button>
     </form>
 
-    <div class="separator">or continue with</div>
+    <div class="separator" style="margin: 20px 0;">or continue with</div>
 
     {% get_providers as socialaccount_providers %}
     {% for provider in socialaccount_providers %}

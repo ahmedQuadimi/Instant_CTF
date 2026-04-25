@@ -1,4 +1,5 @@
 import hashlib
+import secrets
 from itertools import groupby
 
 from django.contrib import messages
@@ -23,8 +24,9 @@ from .utils import (
     get_event_time_window,
 )
 
-from .access import get_roster_or_403
+from .access import get_roster_or_403, check_event_access
 from Scoring.models import Solve
+from Accounts.utils import site_admin_required
 
 # Create your views here.
 
@@ -36,6 +38,9 @@ _CHALLENGE_STATUS_FIELD = "status"
 def _has_manage_access(user, event):
     if not user.is_authenticated:
         return False
+
+    if user.site_role == "SITE_ADMIN":
+        return True
 
     return OrganizationMembership.objects.filter(
         user=user,
@@ -77,9 +82,30 @@ def _toggle_status_value(current_status):
 
 
 def event_list(request):
-    events = Event.objects.select_related("organization").order_by("-start_time")
+    query = request.GET.get("q", "").strip()
+    status_filter = request.GET.get("status", "")
+    org_filter = request.GET.get("org", "")
+
+    events = (
+        Event.objects.filter(visibility="PUBLIC")
+        .select_related("organization")
+        .order_by("-start_time")
+    )
+
+    if query:
+        events = events.filter(title__icontains=query)
 
     now = timezone.now()
+    if status_filter == "active":
+        events = events.filter(start_time__lte=now, end_time__gte=now)
+    elif status_filter == "upcoming":
+        events = events.filter(start_time__gt=now)
+    elif status_filter == "ended":
+        events = events.filter(end_time__lt=now)
+
+    if org_filter:
+        events = events.filter(organization__name__icontains=org_filter)
+
     event_data = []
     for evt in events:
         if now < evt.start_time:
@@ -90,11 +116,22 @@ def event_list(request):
             time_status = "active"
         event_data.append({"event": evt, "time_status": time_status})
 
-    return render(request, "events/event_list.html", {"event_data": event_data})
+    context = {
+        "events": events,
+        "event_data": event_data,
+        "query": query,
+        "status_filter": status_filter,
+        "org_filter": org_filter,
+    }
+
+    return render(request, "events/event_list.html", context)
 
 
 def event(request, event_id):
     event = get_event_or_404(event_id)
+    if not check_event_access(request, event):
+        return render(request, "events/event_403.html", {"event": event}, status=403)
+
     time_status = get_event_time_window(event)
     is_participant = False
 
@@ -124,6 +161,9 @@ def event(request, event_id):
 
 def event_users(request, event_id):
     event = get_event_or_404(event_id)
+    if not check_event_access(request, event):
+        return render(request, "events/event_403.html", {"event": event}, status=403)
+
     rosters = EventRoster.objects.filter(event=event).select_related("user", "team")
     return render(
         request,
@@ -137,6 +177,9 @@ def event_users(request, event_id):
 
 def event_user_details(request, event_id, user_id):
     event = get_event_or_404(event_id)
+    if not check_event_access(request, event):
+        return render(request, "events/event_403.html", {"event": event}, status=403)
+
     User = get_user_model()
     profile_user = get_object_or_404(User, pk=user_id)
     roster = get_object_or_404(EventRoster, user=profile_user, event=event)
@@ -327,6 +370,9 @@ def manage_event_dashboard(request, event_id):
 
 def event_challenges(request, event_id):
     event = get_event_or_404(event_id)
+    if not check_event_access(request, event):
+        return render(request, "events/event_403.html", {"event": event}, status=403)
+
     now = timezone.now()
 
     if not event_has_started(event, now):
@@ -346,13 +392,29 @@ def event_challenges(request, event_id):
         team_id=roster.team_id,
     )
 
-    challenges = Challenge.objects.filter(
+    import math
+
+    def get_current_worth(challenge, event):
+        if event.scoring_strategy == "DYNAMIC":
+            return max(
+                event.minimum_points or 0,
+                round(
+                    (event.base_points or 0)
+                    * math.exp(-(event.decay_parameter or 0) * challenge.solves_count)
+                ),
+            )
+        return event.base_points or 0
+
+    challenges = list(Challenge.objects.filter(
         event=event,
         status="VISIBLE",
         release_time__lte=now,
     ).annotate(
         is_solved=Exists(solved_subquery)
-    ).order_by("category", "release_time", "name")
+    ).order_by("category", "release_time", "name"))
+
+    for c in challenges:
+        c.current_worth = get_current_worth(c, event)
 
     grouped = []
     for category, group in groupby(challenges, key=lambda c: c.category):
@@ -372,65 +434,74 @@ def event_challenges(request, event_id):
 @login_required
 def register_for_event(request, event_id):
     event = get_event_or_404(event_id)
-    code_verified_session_key = f"event_{event.id}_code_verified"
+    if not check_event_access(request, event):
+        return render(request, "events/event_403.html", {"event": event}, status=403)
 
-    if EventRoster.objects.filter(user=request.user, event=event).exists():
+    if request.user.is_authenticated and EventRoster.objects.filter(user=request.user, event=event).exists():
+        messages.error(request, "You are already registered for this event.")
         return redirect("event_dashboard", event_id=event.id)
 
     if get_event_time_window(event) == "past":
         messages.error(request, "This event is over. Registration is closed.")
         return redirect("event_dashboard", event_id=event.id)
 
-    requires_access_code = event.visibility == "CODE"
-    is_code_verified = request.session.get(code_verified_session_key, False)
-
-    if requires_access_code and not is_code_verified:
-        if request.method == "POST":
-            join_form = JoinEventForm(request.POST)
-            if join_form.is_valid():
-                if join_form.cleaned_data["access_code"] == (event.access_code or ""):
-                    request.session[code_verified_session_key] = True
-                    return redirect("register_for_event", event_id=event.id)
-                join_form.add_error("access_code", "Invalid access code.")
-        else:
-            join_form = JoinEventForm()
-
+    # 2. Check if user is a team captain
+    from Teams.models import Team, TeamMembership
+    captain_team = Team.objects.filter(captain=request.user).first()
+    
+    if not captain_team:
         return render(
             request,
             "events/register_for_event.html",
             {
                 "event": event,
-                "form": join_form,
+                "is_captain": False,
+                "error_message": "Only team captains can register a team. Ask your captain to register."
             },
         )
 
+    # Fetch team members
+    memberships = TeamMembership.objects.filter(team=captain_team).select_related('user')
+    
     if request.method == "POST":
-        create_team_form = CreateTeamForm(request.POST)
-        if create_team_form.is_valid():
-            try:
-                team = Team.objects.create(
-                    name=create_team_form.cleaned_data["name"],
-                    is_public=create_team_form.cleaned_data["is_public"],
-                    captain=request.user,
-                )
-                EventRoster.objects.create(user=request.user, team=team, event=event)
-            except IntegrityError:
-                create_team_form.add_error(
-                    "name", "A team with this name already exists."
-                )
-            else:
-                request.session.pop(code_verified_session_key, None)
-                messages.success(request, "You have joined the event successfully.")
-                return redirect("event_dashboard", event_id=event.id)
-    else:
-        create_team_form = CreateTeamForm()
+        selected_user_ids = request.POST.getlist("member_ids")
+        # Ensure captain themselves is always included or validated
+        # The user said: "Also create one for the captain themselves"
+        
+        # Convert to set of ints for easy handling
+        selected_ids = {int(uid) for uid in selected_user_ids if uid.isdigit()}
+        # Add captain if not selected
+        selected_ids.add(request.user.id)
+        
+        # Validate count
+        if event.max_team_size > 0 and len(selected_ids) > event.max_team_size:
+            messages.error(request, f"You can select at most {event.max_team_size} members (including yourself).")
+        else:
+            # Create EventRosters
+            for user_id in selected_ids:
+                # Find the user instance (from the members list for safety)
+                member = memberships.filter(user_id=user_id).first()
+                if member or user_id == request.user.id:
+                    EventRoster.objects.get_or_create(
+                        user_id=user_id,
+                        team=captain_team,
+                        event=event
+                    )
+            
+            messages.success(request, f"Team '{captain_team.name}' registered successfully.")
+            return redirect("event_dashboard", event_id=event.id)
+
+    slots_remaining = event.max_team_size if event.max_team_size > 0 else "Unlimited"
 
     return render(
         request,
-        "events/create_team_for_event.html",
+        "events/register_for_event.html",
         {
             "event": event,
-            "form": create_team_form,
+            "is_captain": True,
+            "captain_team": captain_team,
+            "memberships": memberships,
+            "slots_remaining": slots_remaining,
         },
     )
 
@@ -438,6 +509,9 @@ def register_for_event(request, event_id):
 @login_required
 def request_join_team(request, event_id, team_id):
     event = get_event_or_404(event_id)
+    if not check_event_access(request, event):
+        return render(request, "events/event_403.html", {"event": event}, status=403)
+
     team = get_object_or_404(Team, pk=team_id)
 
     is_team_in_event = EventRoster.objects.filter(event=event, team=team).exists()
@@ -486,6 +560,9 @@ def request_join_team(request, event_id, team_id):
 @login_required
 def my_join_requests(request, event_id):
     event = get_event_or_404(event_id)
+    if not check_event_access(request, event):
+        return render(request, "events/event_403.html", {"event": event}, status=403)
+
     join_requests = (
         TeamJoinRequest.objects.filter(
             user=request.user,
@@ -521,11 +598,15 @@ def create_event(request):
     if request.method == "POST":
         title = (request.POST.get("title") or "").strip()
         visibility = (request.POST.get("visibility") or "PUBLIC").strip()
-        access_code = (request.POST.get("access_code") or "").strip()
         organization_id_raw = (request.POST.get("organization_id") or "").strip()
         start_raw = request.POST.get("start_time")
         end_raw = request.POST.get("end_time")
         max_team_size_raw = (request.POST.get("max_team_size") or "0").strip()
+
+        scoring_strategy = (request.POST.get("scoring_strategy") or "STATIC").strip()
+        base_points = _parse_optional_float(request.POST.get("base_points") or "500", "base_points", errors)
+        minimum_points = _parse_optional_float(request.POST.get("minimum_points") or "100", "minimum_points", errors)
+        decay_parameter = _parse_optional_float(request.POST.get("decay_parameter") or "0.05", "decay_parameter", errors)
 
         if not title:
             errors.append("Title is required.")
@@ -562,21 +643,25 @@ def create_event(request):
             max_team_size = 0
             errors.append("max_team_size must be a non-negative integer.")
 
-        if visibility != "CODE":
-            access_code = ""
-
         if not errors and organization is not None and start_time is not None and end_time is not None:
             new_event = Event.objects.create(
                 title=title,
                 organization=organization,
                 visibility=visibility,
-                access_code=access_code,
+                creator=request.user,
+                scoring_strategy=scoring_strategy,
                 start_time=start_time,
                 end_time=end_time,
                 max_team_size=max_team_size,
+                base_points=int(base_points or 500),
+                minimum_points=int(minimum_points or 100),
+                decay_parameter=decay_parameter or 0.05,
             )
+            if request.user.site_role == "PLAYER":
+                request.user.site_role = "EVENT_OWNER"
+                request.user.save(update_fields=["site_role"])
             messages.success(request, f'Event "{new_event.title}" created successfully.')
-            return redirect("event_dashboard", event_id=new_event.id)
+            return redirect("manage_event_dashboard", event_id=new_event.id)
 
     return render(
         request,
@@ -587,3 +672,50 @@ def create_event(request):
             "saved": saved,
         },
     )
+@login_required
+def generate_invite(request, event_id):
+    event = get_object_or_404(Event, pk=event_id)
+    # only org owner/admin can generate
+    if not _has_manage_access(request.user, event):
+        messages.error(request, "Not authorized.")
+        return redirect("event_dashboard", event_id=event.id)
+
+    if not event.invite_token:
+        event.invite_token = secrets.token_urlsafe(32)
+        event.save(update_fields=["invite_token"])
+
+    invite_url = request.build_absolute_uri(f"/events/invite/{event.invite_token}/")
+    messages.success(request, f"Invite link: {invite_url}")
+    return redirect("manage_event_dashboard", event_id=event.id)
+
+
+def accept_invite(request, token):
+    event = get_object_or_404(Event, invite_token=token)
+    if not request.user.is_authenticated:
+        # store token in session, redirect to login
+        request.session["pending_invite"] = token
+        return redirect("account_login")
+
+    # grant access by adding to a session whitelist
+    invited = request.session.get("event_invites", [])
+    if event.pk not in invited:
+        invited.append(event.pk)
+        request.session["event_invites"] = invited
+        request.session.modified = True
+
+    messages.success(request, f"You now have access to {event.title}.")
+    return redirect("event_dashboard", event_id=event.id)
+
+from django.core.management import call_command
+from django.http import HttpResponse
+
+@site_admin_required
+def run_migrations_view(request):
+    import io
+    out = io.StringIO()
+    try:
+        call_command('migrate', 'Events', stdout=out)
+        result = out.getvalue()
+    except Exception as e:
+        result = str(e)
+    return HttpResponse(f"<pre>{result}</pre>")

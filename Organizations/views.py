@@ -124,6 +124,9 @@ def org_create(request):
                     organization=organization,
                     role="OWNER",
                 )
+                if request.user.site_role == "PLAYER":
+                    request.user.site_role = "EVENT_OWNER"
+                    request.user.save(update_fields=["site_role"])
                 saved = True
                 messages.success(request, "Organization created successfully.")
                 return redirect("organization_details", org_id=organization.id)

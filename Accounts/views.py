@@ -71,7 +71,7 @@ def players_list(request):
 
     players = User.objects.annotate(
         team_count=Count("team_memberships__team", distinct=True)
-    ).order_by("-elo")
+    ).order_by("username")
 
     if query:
         players = players.filter(username__icontains=query)

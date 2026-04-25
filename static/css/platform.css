@@ -956,7 +956,6 @@ button[type="submit"]:hover {
 
 .status-badge,
 .role-badge,
-.elo-badge,
 .pending-count {
   position: relative;
   display: inline-flex;
@@ -1296,7 +1295,6 @@ tr:hover,
 .badge,
 .chip,
 .role-badge,
-.elo-badge,
 .pending-count {
   font-size: 0.75rem;
   padding: 3px 10px;

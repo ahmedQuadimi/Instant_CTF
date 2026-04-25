@@ -33,18 +33,6 @@
     flex-wrap: wrap;
   }
   .profile-info h1 { margin: 0; font-size: 1.5rem; }
-  .profile-info .elo-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 2px 10px;
-    background: color-mix(in srgb, var(--accent-gold) 18%, transparent);
-    border: var(--border);
-    border-radius: var(--radius);
-    color: var(--accent-gold);
-    font-size: 0.85rem;
-    width: fit-content;
-  }
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -99,7 +87,6 @@
         <span class="role-badge role-player">Player</span>
       {% endif %}
       </div>
-      <div class="elo-badge"><span>⚡ ELO: {{ profile_user.elo }}</span></div>
     </div>
     {% if is_own_profile %}
       <a class="edit-link" href="{% url 'profile_edit' %}">Edit Profile</a>
@@ -113,10 +100,6 @@
   </div>
 
   <div class="stat-row">
-    <div class="stat-item">
-      <span class="stat-label">ELO</span>
-      <span class="stat-value">{{ profile_user.elo }}</span>
-    </div>
     <div class="stat-item">
       <span class="stat-label">Teams</span>
       <span class="stat-value">{{ memberships|length }}</span>

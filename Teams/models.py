@@ -22,7 +22,7 @@ class Team(models.Model):
 class TeamJoinRequest(models.Model):
     STATUS_CHOICES = [
         ("PENDING", "Pending"),
-        ("APPROVED", "Approved"),
+        ("ACCEPTED", "Accepted"),
         ("REJECTED", "Rejected"),
     ]
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

@@ -58,6 +58,14 @@ def team_details(request, team_id, event_id=None):
     team = get_object_or_404(Team, pk=team_id)
     event = get_event_or_404(event_id) if event_id is not None else None
 
+    is_member = False
+    is_captain = False
+    has_pending_request = False
+    if request.user.is_authenticated:
+        is_captain = (team.captain == request.user)
+        is_member = TeamMembership.objects.filter(team=team, user=request.user).exists()
+        has_pending_request = TeamJoinRequest.objects.filter(team=team, user=request.user, status="PENDING").exists()
+
     if event is None:
         memberships = TeamMembership.objects.filter(team=team).select_related("user")
         return render(
@@ -68,6 +76,9 @@ def team_details(request, team_id, event_id=None):
                 "team": team,
                 "memberships": memberships,
                 "solves": [],
+                "is_captain": is_captain,
+                "is_member": is_member,
+                "has_pending_request": has_pending_request,
             },
         )
 
@@ -78,6 +89,14 @@ def team_details(request, team_id, event_id=None):
     memberships = TeamMembership.objects.filter(team=team).select_related("user")
     solves = []  # TODO: populate from Scoring app once available
 
+    is_member = False
+    is_captain = False
+    has_pending_request = False
+    if request.user.is_authenticated:
+        is_captain = (team.captain == request.user)
+        is_member = TeamMembership.objects.filter(team=team, user=request.user).exists()
+        has_pending_request = TeamJoinRequest.objects.filter(team=team, user=request.user, status="PENDING").exists()
+
     return render(
         request,
         "teams/team_detail.html",
@@ -86,6 +105,9 @@ def team_details(request, team_id, event_id=None):
             "team": team,
             "memberships": memberships,
             "solves": solves,
+            "is_captain": is_captain,
+            "is_member": is_member,
+            "has_pending_request": has_pending_request,
         },
     )
 
@@ -128,7 +150,7 @@ def manage(request, team_id):
                 messages.error(request, "Join request not found.")
             else:
                 if action == "accept":
-                    join_request.status = "APPROVED"
+                    join_request.status = "ACCEPTED"
                     join_request.save(update_fields=["status"])
                     TeamMembership.objects.get_or_create(team=team, user=join_request.user)
                     messages.success(
@@ -150,6 +172,8 @@ def manage(request, team_id):
     pending_requests = TeamJoinRequest.objects.filter(
         team=team, status="PENDING"
     ).select_related("user")
+    
+    history_count = TeamJoinRequest.objects.filter(team=team).exclude(status="PENDING").count()
 
     return render(
         request,
@@ -158,6 +182,7 @@ def manage(request, team_id):
             "team": team,
             "memberships": memberships,
             "pending_requests": pending_requests,
+            "history_count": history_count,
         },
     )
 

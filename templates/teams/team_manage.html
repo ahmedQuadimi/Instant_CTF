@@ -87,6 +87,7 @@
     <a class="btn-secondary" href="{% url 'team_detail' team.id %}" style="min-height:44px;padding:10px 14px;border-radius:var(--radius);border:var(--border);background:var(--bg-surface);color:var(--text-primary);font-family:var(--font-mono);text-decoration:none;display:inline-flex;align-items:center;">← Back to Team</a>
   </div>
   <p class="meta-line">Captain: {{ team.captain.username }}</p>
+  <p class="meta-line">Processed Requests (Accepted/Rejected): {{ history_count }}</p>
 
   {% if pending_requests %}
   <div style="margin-top:16px;">
@@ -98,13 +99,13 @@
           <small>Requested {{ jr.requested_at|date:"M d, Y H:i" }}</small>
         </div>
         <div class="request-actions">
-          <form method="POST" class="form" style="display:inline;max-width:100%;padding:10px;">
+          <form method="POST" class="form" style="display:inline;max-width:100%;padding:10px;" data-no-warn="true">
             {% csrf_token %}
             <input type="hidden" name="action" value="accept" />
             <input type="hidden" name="join_request_id" value="{{ jr.id }}" />
             <button type="submit" class="oauthButton">✓ Accept</button>
           </form>
-          <form method="POST" class="form" style="display:inline;max-width:100%;padding:10px;">
+          <form method="POST" class="form" style="display:inline;max-width:100%;padding:10px;" data-no-warn="true">
             {% csrf_token %}
             <input type="hidden" name="action" value="reject" />
             <input type="hidden" name="join_request_id" value="{{ jr.id }}" />

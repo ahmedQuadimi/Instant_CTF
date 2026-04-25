@@ -21,6 +21,20 @@
       <p class="meta-line"><strong>Event:</strong> {{ event.title }}</p>
     {% endif %}
 
+    {% if is_captain %}
+      <p style="margin-top: 1rem;">
+        <a class="oauthButton" href="{% url 'team_manage' team.id %}" style="display:inline-block; text-decoration:none;">Manage Team</a>
+      </p>
+    {% elif user.is_authenticated %}
+      <p style="margin-top: 1rem;">
+      {% if has_pending_request %}
+        <span class="status-badge" style="opacity: 0.7;"><span>Request Pending</span></span>
+      {% elif not is_member %}
+        <a class="oauthButton" href="{% url 'request_join' team.id %}" style="display:inline-block; text-decoration:none;">Request to Join</a>
+      {% endif %}
+      </p>
+    {% endif %}
+
     <section>
       <h2>Members</h2>
       {% if memberships %}

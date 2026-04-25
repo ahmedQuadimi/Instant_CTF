@@ -858,6 +858,60 @@
           e.returnValue = "";
         }
       });
+      
+      const searchForms = document.querySelectorAll('.search-form');
+      searchForms.forEach(form => {
+        const btn = form.querySelector('.search-btn');
+        if (btn) btn.style.display = 'none';
+
+        let debounceTimeout;
+        const fetchResults = () => {
+          const url = new URL(form.action || window.location.href);
+          const formData = new FormData(form);
+          for (const [k, v] of formData.entries()) {
+            if (v) url.searchParams.set(k, v);
+            else url.searchParams.delete(k);
+          }
+          
+          window.history.replaceState({}, '', url);
+
+          fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(html, 'text/html');
+              const currentContainer = document.querySelector('.content-wide');
+              const newContainer = doc.querySelector('.content-wide');
+              
+              if (currentContainer && newContainer) {
+                const oldResults = Array.from(currentContainer.children).filter(el => 
+                  !el.classList.contains('search-form') && 
+                  !el.classList.contains('platform-header-row')
+                );
+                const newResults = Array.from(newContainer.children).filter(el => 
+                  !el.classList.contains('search-form') && 
+                  !el.classList.contains('platform-header-row')
+                );
+                
+                oldResults.forEach(el => el.remove());
+                newResults.forEach(el => currentContainer.appendChild(el));
+              }
+            });
+        };
+
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          fetchResults();
+        });
+
+        const inputs = form.querySelectorAll('input, select');
+        inputs.forEach(input => {
+          input.addEventListener(input.tagName === 'SELECT' ? 'change' : 'input', () => {
+            clearTimeout(debounceTimeout);
+            debounceTimeout = setTimeout(fetchResults, 400);
+          });
+        });
+      });
     })();
   </script>
 </body>

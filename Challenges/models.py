@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 from Events.models import Event
 
@@ -27,6 +28,17 @@ class Challenge(models.Model):
         help_text="Date from when the problem is going to be available .",
     )
     solves_count = models.IntegerField(default=0, db_index=True)
+
+    @property
+    def is_released(self):
+        if self.release_time is None:
+            return True
+        return timezone.now() >= self.release_time
+    
+    @property
+    def is_visible_and_released(self):
+        return (self.status == 'VISIBLE' and 
+                self.is_released)
 
     class Meta:
         ordering = ["category", "release_time", "name"]

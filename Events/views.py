@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -114,19 +114,8 @@ def event_list(request):
     if org_filter:
         events = events.filter(organization__name__icontains=org_filter)
 
-    event_data = []
-    for evt in events:
-        if now < evt.start_time:
-            time_status = "upcoming"
-        elif now > evt.end_time:
-            time_status = "ended"
-        else:
-            time_status = "active"
-        event_data.append({"event": evt, "time_status": time_status})
-
     context = {
         "events": events,
-        "event_data": event_data,
         "query": query,
         "status_filter": status_filter,
         "org_filter": org_filter,
@@ -140,7 +129,6 @@ def event(request, event_id):
     if not check_event_access(request, event):
         return render(request, "events/event_403.html", {"event": event}, status=403)
 
-    time_status = get_event_time_window(event)
     is_participant = False
 
     if request.user.is_authenticated:
@@ -158,7 +146,6 @@ def event(request, event_id):
         "events/event_home.html",
         {
             "event": event,
-            "time_status": time_status,
             "is_participant": is_participant,
             "participant_count": participant_count,
             "challenge_count": challenge_count,
@@ -444,7 +431,9 @@ def event_challenges(request, event_id):
     challenges = list(Challenge.objects.filter(
         event=event,
         status="VISIBLE",
-        release_time__lte=now,
+    ).filter(
+        Q(release_time__isnull=True) | 
+        Q(release_time__lte=now)
     ).annotate(
         is_solved=Exists(solved_subquery)
     ).order_by("category", "release_time", "name"))

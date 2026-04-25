@@ -537,6 +537,39 @@ button.btn-primary:hover::after {
   color: var(--accent-magenta);
 }
 
+.badge-active { 
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 15%, transparent);
+  border: 1px solid var(--accent-primary);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.badge-upcoming { 
+  color: var(--accent-secondary);
+  background: color-mix(in srgb, var(--accent-secondary) 15%, transparent);
+  border: 1px solid var(--accent-secondary);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.badge-ended { 
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--text-secondary) 15%, transparent);
+  border: 1px solid var(--text-secondary);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
 /* ─── 7. GLOW INPUT FOCUS ───────────────────────────────────── */
 
 .platform-form {

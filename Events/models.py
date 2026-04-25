@@ -1,6 +1,7 @@
 # Create your models here.
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 from Organizations.models import Organization
 from Teams.models import Team
@@ -47,6 +48,28 @@ class Event(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def time_status(self):
+        now = timezone.now()
+        if now < self.start_time:
+            return 'upcoming'
+        elif now > self.end_time:
+            return 'ended'
+        else:
+            return 'active'
+    
+    @property
+    def is_active(self):
+        return self.time_status == 'active'
+    
+    @property
+    def is_upcoming(self):
+        return self.time_status == 'upcoming'
+    
+    @property
+    def is_ended(self):
+        return self.time_status == 'ended'
 
 
 class EventRoster(models.Model):

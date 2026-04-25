@@ -43,3 +43,15 @@ def get_event_role(user, event):
 @register.simple_tag(name="get_event_role")
 def get_event_role_assignment(user, event):
     return get_event_role(user, event)
+
+@register.filter
+def time_status(event):
+    return event.time_status
+
+@register.filter
+def status_badge_class(status):
+    return {
+        'active': 'badge-active',
+        'upcoming': 'badge-upcoming', 
+        'ended': 'badge-ended',
+    }.get(status, '')

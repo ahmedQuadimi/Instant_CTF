@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load ui_extras %}
 {% block title %}{{ profile_user.username }} — Instant CTF{% endblock %}
 
 {% block extra_css %}
@@ -170,14 +171,9 @@
             <td>{{ roster.team.name }}</td>
             <td>{{ roster.event.start_time|date:"M d, Y" }}</td>
             <td>
-              {% now "U" as now_ts %}
-              {% if roster.event.end_time|date:"U" < now_ts %}
-                <span class="status-badge ended">Ended</span>
-              {% elif roster.event.start_time|date:"U" > now_ts %}
-                <span class="status-badge upcoming">Upcoming</span>
-              {% else %}
-                <span class="status-badge active">Active</span>
-              {% endif %}
+              <span class="status-badge {{ roster.event.time_status|status_badge_class }}">
+                {{ roster.event.time_status|title }}
+              </span>
             </td>
           </tr>
         {% empty %}

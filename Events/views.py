@@ -559,7 +559,8 @@ def request_join_team(request, event_id, team_id):
         messages.error(request, "You are already part of a team in this event.")
         return redirect("event_dashboard", event_id=event.id)
 
-    team_member_count = EventRoster.objects.filter(event=event, team=team).count()
+    from Teams.models import TeamMembership
+    team_member_count = TeamMembership.objects.filter(team=team).count()
     if event.max_team_size > 0 and team_member_count >= event.max_team_size:
         messages.error(request, "This team has reached the event team size limit.")
         return redirect("event_teams", event_id=event.id)

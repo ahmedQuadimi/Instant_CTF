@@ -39,3 +39,7 @@ def get_event_role(user, event):
         ).role
     except EventRole.DoesNotExist:
         return None
+
+@register.simple_tag(name="get_event_role")
+def get_event_role_assignment(user, event):
+    return get_event_role(user, event)

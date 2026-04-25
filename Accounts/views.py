@@ -13,13 +13,9 @@ User = get_user_model()
 def profile_view(request, user_id):
     profile_user = get_object_or_404(User, pk=user_id)
 
-    # Team memberships (via EventRoster → team)
-    team_ids = (
-        EventRoster.objects.filter(user=profile_user)
-        .values_list("team_id", flat=True)
-        .distinct()
-    )
-    teams = Team.objects.filter(pk__in=team_ids)
+    from Teams.models import TeamMembership
+    # Team memberships
+    memberships = TeamMembership.objects.filter(user=profile_user).select_related('team')
 
     # Events participated in
     event_rosters = EventRoster.objects.filter(
@@ -30,7 +26,7 @@ def profile_view(request, user_id):
 
     # Solve count
     solve_count = Solve.objects.filter(
-        team_id__in=team_ids,
+        team_id__in=memberships.values_list('team_id', flat=True),
         submission__user=profile_user,
     ).count()
 
@@ -41,7 +37,7 @@ def profile_view(request, user_id):
         "accounts/profile.html",
         {
             "profile_user": profile_user,
-            "teams": teams,
+            "memberships": memberships,
             "event_rosters": event_rosters,
             "solve_count": solve_count,
             "is_own_profile": is_own_profile,
@@ -72,7 +68,7 @@ def players_list(request):
     from Accounts.models import User
 
     players = User.objects.annotate(
-        team_count=Count("event_rosters__team", distinct=True)
+        team_count=Count("team_memberships__team", distinct=True)
     ).order_by("-elo")
 
     if query:

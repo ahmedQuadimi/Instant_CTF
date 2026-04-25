@@ -23,10 +23,10 @@
 
     <section>
       <h2>Members</h2>
-      {% if members %}
+      {% if memberships %}
         <ul class="platform-list">
-          {% for roster in members %}
-            <li>{{ roster.user.username }}</li>
+          {% for member in memberships %}
+            <li>{{ member.user.username }}</li>
           {% endfor %}
         </ul>
       {% else %}

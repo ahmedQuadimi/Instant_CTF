@@ -47,7 +47,7 @@ class TeamMembership(models.Model):
     team = models.ForeignKey(
         Team, 
         on_delete=models.CASCADE, 
-        related_name="members"
+        related_name="teammembership"
     )
     joined_at = models.DateTimeField(auto_now_add=True)
 

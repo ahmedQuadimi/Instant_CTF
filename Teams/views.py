@@ -7,8 +7,7 @@ from django.db import IntegrityError
 
 from Events.models import EventRoster
 from Events.utils import get_event_or_404
-from .models import Team
-from .models import TeamJoinRequest
+from .models import Team, TeamJoinRequest, TeamMembership
 
 
 def event_teams(request, event_id):
@@ -17,8 +16,7 @@ def event_teams(request, event_id):
         Team.objects.filter(event_rosters__event=event)
         .annotate(
             member_count=Count(
-                "event_rosters",
-                filter=Q(event_rosters__event=event),
+                "teammembership",
                 distinct=True,
             )
         )
@@ -32,7 +30,7 @@ def teams(request):
     public_filter = request.GET.get("public", "")
 
     team_rows = Team.objects.select_related("captain").annotate(
-        member_count=Count("members", distinct=True)
+        member_count=Count("teammembership", distinct=True)
     )
 
     if query:
@@ -61,13 +59,14 @@ def team_details(request, team_id, event_id=None):
     event = get_event_or_404(event_id) if event_id is not None else None
 
     if event is None:
+        memberships = TeamMembership.objects.filter(team=team).select_related("user")
         return render(
             request,
             "teams/team_detail.html",
             {
                 "event": event,
                 "team": team,
-                "members": [],
+                "memberships": memberships,
                 "solves": [],
             },
         )
@@ -76,7 +75,7 @@ def team_details(request, team_id, event_id=None):
     if not is_team_in_event:
         raise Http404("Team is not participating in this event.")
 
-    members = EventRoster.objects.filter(event=event, team=team).select_related("user")
+    memberships = TeamMembership.objects.filter(team=team).select_related("user")
     solves = []  # TODO: populate from Scoring app once available
 
     return render(
@@ -85,7 +84,7 @@ def team_details(request, team_id, event_id=None):
         {
             "event": event,
             "team": team,
-            "members": members,
+            "memberships": memberships,
             "solves": solves,
         },
     )
@@ -131,6 +130,7 @@ def manage(request, team_id):
                 if action == "accept":
                     join_request.status = "APPROVED"
                     join_request.save(update_fields=["status"])
+                    TeamMembership.objects.get_or_create(team=team, user=join_request.user)
                     messages.success(
                         request,
                         f"{join_request.user.username} has been accepted to the team.",
@@ -146,7 +146,7 @@ def manage(request, team_id):
         return redirect("team_manage", team_id=team.id)
 
     # GET: load members and pending requests
-    members = EventRoster.objects.filter(team=team).select_related("user", "event")
+    memberships = TeamMembership.objects.filter(team=team).select_related("user")
     pending_requests = TeamJoinRequest.objects.filter(
         team=team, status="PENDING"
     ).select_related("user")
@@ -156,7 +156,7 @@ def manage(request, team_id):
         "teams/team_manage.html",
         {
             "team": team,
-            "members": members,
+            "memberships": memberships,
             "pending_requests": pending_requests,
         },
     )
@@ -176,6 +176,7 @@ def create(request):
         if not errors:
             try:
                 team = Team.objects.create(name=name, is_public=is_public, captain=request.user)
+                TeamMembership.objects.create(team=team, user=request.user)
                 messages.success(request, f'Team "{team.name}" created successfully.')
                 return redirect("team_detail", team_id=team.id)
             except IntegrityError:

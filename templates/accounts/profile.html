@@ -118,7 +118,7 @@
     </div>
     <div class="stat-item">
       <span class="stat-label">Teams</span>
-      <span class="stat-value">{{ teams|length }}</span>
+      <span class="stat-value">{{ memberships|length }}</span>
     </div>
     <div class="stat-item">
       <span class="stat-label">Solves</span>
@@ -126,7 +126,7 @@
     </div>
   </div>
 
-  {% if teams %}
+  {% if memberships %}
   <div class="profile-section">
     <h2>Team Memberships</h2>
     <table class="platform-table">
@@ -137,10 +137,10 @@
         </tr>
       </thead>
       <tbody>
-        {% for team in teams %}
+        {% for membership in memberships %}
           <tr>
-            <td><a href="{% url 'team_detail' team.id %}">{{ team.name }}</a></td>
-            <td>{{ team.global_rating }}</td>
+            <td><a href="{% url 'team_detail' membership.team.id %}">{{ membership.team.name }}</a></td>
+            <td>{{ membership.team.global_rating }}</td>
           </tr>
         {% endfor %}
       </tbody>

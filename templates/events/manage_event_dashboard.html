@@ -92,9 +92,12 @@
       </div>
     {% endif %}
 
-    <div class="dashboard-panels">
+    <!-- <div class="dashboard-panels"> wrapper removed -->
       <section>
-        <h2>Challenges Panel</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h2 style="margin: 0;">Challenges Panel</h2>
+          <button type="button" class="oauthButton oauthButton--small" onclick="toggleCreateChallenge()">Add Challenge</button>
+        </div>
         <table class="platform-table">
         <thead>
           <tr>
@@ -102,7 +105,7 @@
             <th>Release Time</th>
             <th>Solves</th>
             <th>Status</th>
-            <th>Toggle</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -119,18 +122,21 @@
               <td>{{ challenge.solves_count }}</td>
               <td><span class="status-badge"><span>{{ challenge.status|default:challenge.status }}</span></span></td>
               <td>
-                <form method="post" style="max-width:100%;">
-                  {% csrf_token %}
-                  <input type="hidden" name="action" value="toggle_status" />
-                  <input type="hidden" name="challenge_id" value="{{ challenge.id }}" />
-                  {% if challenge.status == "VISIBLE" or challenge.status == "VISIBLE" %}
-                    <input type="hidden" name="new_status" value="HIDDEN" />
-                    <button type="submit" class="oauthButton oauthButton--small">Set Hidden</button>
-                  {% else %}
-                    <input type="hidden" name="new_status" value="VISIBLE" />
-                    <button type="submit" class="oauthButton oauthButton--small">Set Visible</button>
-                  {% endif %}
-                </form>
+                <div style="display: flex; gap: 8px;">
+                  <button type="button" class="oauthButton oauthButton--small" onclick="showEditForm('{{ challenge.id }}')">Modify</button>
+                  <form method="post" style="margin: 0; max-width: 100%;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="toggle_status" />
+                    <input type="hidden" name="challenge_id" value="{{ challenge.id }}" />
+                    {% if challenge.status == "VISIBLE" or challenge.status == "VISIBLE" %}
+                      <input type="hidden" name="new_status" value="HIDDEN" />
+                      <button type="submit" class="oauthButton oauthButton--small">Set Hidden</button>
+                    {% else %}
+                      <input type="hidden" name="new_status" value="VISIBLE" />
+                      <button type="submit" class="oauthButton oauthButton--small">Set Visible</button>
+                    {% endif %}
+                  </form>
+                </div>
               </td>
             </tr>
           {% empty %}
@@ -167,9 +173,9 @@
         </tbody>
         </table>
       </section>
-    </div>
+    <!-- </div> -->
 
-  <section>
+  <section id="create-challenge-section" style="display: none;">
     <h2>Create Challenge</h2>
     <div class="challenge-form-wrapper">
       <form method="post" class="form content-form">
@@ -245,10 +251,10 @@
   </section>
 
   <section>
-    <h2>Edit Existing Challenges</h2>
+    <h2 id="edit-challenges-header" style="display: none;">Edit Existing Challenges</h2>
     {% for challenge in challenges %}
-      <article>
-        <h3>{{ challenge.name }}</h3>
+      <article id="edit-form-{{ challenge.id }}" class="edit-challenge-article" style="display: none;">
+        <h3 style="color: var(--accent-primary);">{{ challenge.name }}</h3>
         <div class="challenge-form-wrapper">
           <form method="post" class="form content-form">
             {% csrf_token %}
@@ -370,4 +376,42 @@
     {% endfor %}
   </section>
   </section>
+
+  <script>
+    function toggleCreateChallenge() {
+      const section = document.getElementById('create-challenge-section');
+      if (section.style.display === 'none' || section.style.display === '') {
+        section.style.display = 'block';
+        section.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        section.style.display = 'none';
+      }
+    }
+    
+    function showEditForm(challengeId) {
+      const target = document.getElementById('edit-form-' + challengeId);
+      
+      if (target && target.style.display === 'block') {
+        target.style.display = 'none';
+        
+        let anyVisible = false;
+        document.querySelectorAll('.edit-challenge-article').forEach(el => {
+          if (el.style.display === 'block') anyVisible = true;
+        });
+        if (!anyVisible) {
+          document.getElementById('edit-challenges-header').style.display = 'none';
+        }
+        return;
+      }
+
+      document.querySelectorAll('.edit-challenge-article').forEach(el => {
+        el.style.display = 'none';
+      });
+      document.getElementById('edit-challenges-header').style.display = 'block';
+      if (target) {
+        target.style.display = 'block';
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  </script>
 {% endblock %}

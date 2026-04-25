@@ -49,8 +49,8 @@
     <h1 class="gradient-heading">{{ event.title }}</h1>
 
     <p class="meta-line"><strong>Organization:</strong> {{ event.organization.name }}</p>
-    <p class="meta-line"><strong>Start:</strong> {{ event.start_time|date:"M d, Y H:i" }}</p>
-    <p class="meta-line"><strong>End:</strong> {{ event.end_time|date:"M d, Y H:i" }}</p>
+    <p class="meta-line"><strong>Start:</strong> {{ event.start_time|display_time }}</p>
+    <p class="meta-line"><strong>End:</strong> {{ event.end_time|display_time }}</p>
 
     <p>
       <strong>Status:</strong>

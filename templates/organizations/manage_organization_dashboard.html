@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 
+{% load ui_extras %}
 {% block title %}Manage {{ organization.name }} — Instant CTF{% endblock %}
 
 {% block extra_css %}
@@ -89,7 +90,7 @@
       <div class="member-row">
         <div class="member-info">
           <strong>{{ membership.user.username }}</strong>
-          <small>Joined {{ membership.joined_at|date:"M d, Y" }}</small>
+          <small>Joined {{ membership.joined_at|display_time }}</small>
         </div>
         <span class="role-badge role-{{ membership.role }}"><span>{{ membership.role }}</span></span>
         {% if membership.role != "OWNER" %}

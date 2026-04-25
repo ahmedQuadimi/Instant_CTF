@@ -169,7 +169,7 @@
               </a>
             </td>
             <td>{{ roster.team.name }}</td>
-            <td>{{ roster.event.start_time|date:"M d, Y" }}</td>
+            <td>{{ roster.event.start_time|display_time }}</td>
             <td>
               <span class="status-badge {{ roster.event.time_status|status_badge_class }}">
                 {{ roster.event.time_status|title }}

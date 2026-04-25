@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load ui_extras %}
 {% block title %}Manage Event Dashboard{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="/static/css/platform.css">
@@ -114,7 +115,7 @@
             <td>{{ challenge.name }}</td>
             <td>
               {% if challenge.release_time %}
-                {{ challenge.release_time }}
+                {{ challenge.release_time|display_time }}
               {% else %}
                 -
               {% endif %}
@@ -167,7 +168,7 @@
           <tr>
             <td>{{ row.user.username }}</td>
             <td>{{ row.team_name }}</td>
-            <td>{{ row.joined_at|date:"M d, Y" }}</td>
+            <td>{{ row.joined_at|display_time }}</td>
             <td>{{ row.role }}</td>
             {% if requester_role == 'OWNER' %}
               <td>

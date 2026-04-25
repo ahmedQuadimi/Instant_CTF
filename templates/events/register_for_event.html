@@ -16,7 +16,7 @@
       <div class="button-row" style="margin-top: 20px;">
         <a href="{% url 'event_dashboard' event.id %}" class="btn-secondary">← Back to Dashboard</a>
       </div>
-    {% if is_captain %}
+    {% else %}
       <p class="meta-line">
         Select members from <strong>{{ captain_team.name }}</strong> to include in the event roster.
         <br>

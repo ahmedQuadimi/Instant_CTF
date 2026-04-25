@@ -11,6 +11,10 @@ class EventForm(forms.ModelForm):
             'start_time', 'end_time', 'max_team_size', 'base_points',
             'minimum_points', 'decay_parameter'
         ]
+        widgets = {
+            'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+            'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+        }
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)

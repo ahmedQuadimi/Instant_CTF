@@ -8,6 +8,9 @@ class ChallengeForm(forms.ModelForm):
     class Meta:
         model = Challenge
         fields = ['name', 'category', 'description', 'connection_info', 'status', 'release_time']
+        widgets = {
+            'release_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+        }
 
     def __init__(self, *args, **kwargs):
         self.event = kwargs.pop('event', None)

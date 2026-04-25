@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
+from Challenges.forms import ChallengeForm
 from Challenges.models import Challenge
 from Organizations.models import OrganizationMembership
 from Teams.models import Team, TeamJoinRequest
@@ -442,7 +443,7 @@ def request_join_team(request, event_id, team_id):
         return redirect("event_teams", event_id=event.id)
 
     if request.method == "POST":
-        form = TeamJoinRequestForm(request.POST)
+        form = TeamJoinRequestForm(request.POST, user=request.user, team=team)
         if form.is_valid():
             _, created = TeamJoinRequest.objects.get_or_create(
                 user=request.user,
@@ -457,7 +458,7 @@ def request_join_team(request, event_id, team_id):
                 )
             return redirect("my_join_requests", event_id=event.id)
     else:
-        form = TeamJoinRequestForm()
+        form = TeamJoinRequestForm(user=request.user, team=team)
 
     return render(
         request,

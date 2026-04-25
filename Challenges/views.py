@@ -21,7 +21,7 @@ from Events.utils import (
 )
 from Scoring.models import Solve, Submission
 from .models import Challenge
-from .forms import ChallengeForm
+from .forms import ChallengeForm, FlagSubmissionForm
 
 # Create your views here.
 

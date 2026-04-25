@@ -102,7 +102,7 @@
   <div class="stat-row">
     <div class="stat-item">
       <span class="stat-label">Teams</span>
-      <span class="stat-value">{{ memberships|length }}</span>
+      <span class="stat-value">{{ total_team_count }}</span>
     </div>
     <div class="stat-item">
       <span class="stat-label">Solves</span>
@@ -110,40 +110,45 @@
     </div>
   </div>
 
-  {% if memberships %}
-  <div class="profile-section">
-    <h2>Team Memberships</h2>
-    <table class="platform-table">
-      <thead>
-        <tr>
-          <th>Team</th>
-          <th>Rating</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for membership in memberships %}
-          <tr>
-            <td><a href="{% url 'team_detail' membership.team.id %}">{{ membership.team.name }}</a></td>
-            <td>{{ membership.team.global_rating }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% endif %}
+  <!-- Hidden radio inputs — must be outside the tab container for sibling selector -->
+  <input type="radio" name="profile-tab" id="tab-events" class="tab-radio" checked>
+  <input type="radio" name="profile-tab" id="tab-teams" class="tab-radio">
+  <input type="radio" name="profile-tab" id="tab-orgs" class="tab-radio">
 
-  <div class="profile-section">
-    <h2 class="gradient-heading">Event History</h2>
-    <table class="platform-table">
-      <thead>
-        <tr>
-          <th>Event</th>
-          <th>Team</th>
-          <th>Start</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
+  <div class="profile-tabs">
+    <div class="tab-headers">
+      <label for="tab-events" class="tab-label">
+        Events
+        <span class="tab-count">
+          {{ event_rosters|length }}
+        </span>
+      </label>
+      <label for="tab-teams" class="tab-label">
+        Teams
+        <span class="tab-count">
+          {{ total_team_count }}
+        </span>
+      </label>
+      <label for="tab-orgs" class="tab-label">
+        Organizations
+        <span class="tab-count">
+          {{ org_memberships|length }}
+        </span>
+      </label>
+    </div>
+
+    <div class="tab-content" id="content-events">
+      <!-- Events table -->
+      <table class="platform-table">
+        <thead>
+          <tr>
+            <th>Event</th>
+            <th>Team</th>
+            <th>Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
         {% for roster in event_rosters %}
           <tr>
             <td>
@@ -152,7 +157,9 @@
               </a>
             </td>
             <td>{{ roster.team.name }}</td>
-            <td>{{ roster.event.start_time|date:"M d, Y" }}</td>
+            <td>
+              {{ roster.event.start_time|date:"M d, Y" }}
+            </td>
             <td>
               <span class="status-badge {{ roster.event.time_status|status_badge_class }}">
                 {{ roster.event.time_status|title }}
@@ -161,13 +168,123 @@
           </tr>
         {% empty %}
           <tr>
-            <td colspan="4" class="empty-state">
-              No events yet.
+            <td colspan="4">
+              <div class="empty-state">
+                No events yet.
+              </div>
             </td>
           </tr>
         {% endfor %}
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tab-content" id="content-teams">
+      <!-- Teams table -->
+      <table class="platform-table">
+        <thead>
+          <tr>
+            <th>Team</th>
+            <th>Role</th>
+            <th>Members</th>
+          </tr>
+        </thead>
+        <tbody>
+        <!-- Captained teams first -->
+        {% for team in captained_teams %}
+          <tr>
+            <td>
+              <a href="{% url 'team_detail' team.pk %}">
+                {{ team.name }}
+              </a>
+            </td>
+            <td>
+              <span class="status-badge badge-active">
+                Captain
+              </span>
+            </td>
+            <td>
+              {{ team.teammembership_set.count }}
+            </td>
+          </tr>
+        {% endfor %}
+        <!-- Other memberships -->
+        {% for membership in team_memberships %}
+          {% if membership.team not in captained_teams %}
+          <tr>
+            <td>
+              <a href="{% url 'team_detail' membership.team.pk %}">
+                {{ membership.team.name }}
+              </a>
+            </td>
+            <td>
+              <span class="status-badge badge-upcoming">
+                Member
+              </span>
+            </td>
+            <td>
+              {{ membership.team.teammembership_set.count }}
+            </td>
+          </tr>
+          {% endif %}
+        {% endfor %}
+        {% if not team_memberships and not captained_teams %}
+          <tr>
+            <td colspan="3">
+              <div class="empty-state">
+                No teams yet.
+              </div>
+            </td>
+          </tr>
+        {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tab-content" id="content-orgs">
+      <!-- Orgs table -->
+      <table class="platform-table">
+        <thead>
+          <tr>
+            <th>Organization</th>
+            <th>Role</th>
+            <th>Members</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for membership in org_memberships %}
+          <tr>
+            <td>
+              <a href="{% url 'organization_detail' membership.organization.pk %}">
+                {{ membership.organization.name }}
+              </a>
+            </td>
+            <td>
+              <span class="status-badge
+                {% if membership.role == 'OWNER' %}
+                badge-active
+                {% elif membership.role == 'ADMIN' %}
+                badge-upcoming
+                {% else %}badge-ended{% endif %}">
+                {{ membership.role|title }}
+              </span>
+            </td>
+            <td>
+              {{ membership.organization.organizationmembership_set.count }}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="3">
+              <div class="empty-state">
+                No organizations yet.
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </section>
 {% endblock %}

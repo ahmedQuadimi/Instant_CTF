@@ -14,36 +14,54 @@ User = get_user_model()
 def profile_view(request, user_id):
     profile_user = get_object_or_404(User, pk=user_id)
 
-    from Teams.models import TeamMembership
-    # Team memberships
-    memberships = TeamMembership.objects.filter(user=profile_user).select_related('team')
-
-    # Events participated in
+    # Events — all EventRoster entries
     event_rosters = EventRoster.objects.filter(
         user=profile_user
     ).select_related('event', 'team').order_by(
         '-event__start_time'
     )
 
+    # Teams — all TeamMembership entries plus teams where user is captain
+    from Teams.models import TeamMembership, Team
+    team_memberships = TeamMembership.objects.filter(
+        user=profile_user
+    ).select_related('team')
+
+    captained_teams = Team.objects.filter(
+        captain=profile_user
+    )
+
+    # Orgs — all OrganizationMembership entries
+    from Organizations.models import OrganizationMembership
+    org_memberships = OrganizationMembership.objects.filter(
+        user=profile_user
+    ).select_related('organization')
+
+    # Total unique teams count for the tab label and stat box
+    total_team_count = captained_teams.count() + team_memberships.exclude(
+        team__in=captained_teams
+    ).count()
+
     # Solve count
     solve_count = Solve.objects.filter(
-        team_id__in=memberships.values_list('team_id', flat=True),
+        team_id__in=team_memberships.values_list('team_id', flat=True),
         submission__user=profile_user,
     ).count()
 
     is_own_profile = request.user.is_authenticated and request.user.id == profile_user.id
 
-    return render(
-        request,
-        "accounts/profile.html",
-        {
-            "profile_user": profile_user,
-            "memberships": memberships,
-            "event_rosters": event_rosters,
-            "solve_count": solve_count,
-            "is_own_profile": is_own_profile,
-        },
-    )
+    context = {
+        "profile_user": profile_user,
+        "event_rosters": event_rosters,
+        "team_memberships": team_memberships,
+        "captained_teams": captained_teams,
+        "total_team_count": total_team_count,
+        "org_memberships": org_memberships,
+        "solve_count": solve_count,
+        "is_own_profile": is_own_profile,
+    }
+
+    return render(request, "accounts/profile.html", context)
 
 
 @login_required

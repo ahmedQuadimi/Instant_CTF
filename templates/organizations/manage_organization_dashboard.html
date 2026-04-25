@@ -96,11 +96,13 @@
           <div class="member-actions">
             <form method="POST" style="display:inline-flex;gap:6px;align-items:center;max-width:100%;">
               {% csrf_token %}
-              <input type="hidden" name="action" value="role_change" />
-              <input type="hidden" name="member_id" value="{{ membership.id }}" />
-              <select name="new_role" class="role-select">
-                <option value="ADMIN" {% if membership.role == "ADMIN" %}selected{% endif %}>Admin</option>
+              <input type="hidden" name="membership_id" value="{{ membership.id }}" />
+              <select name="role" class="role-select">
                 <option value="MEMBER" {% if membership.role == "MEMBER" %}selected{% endif %}>Member</option>
+                <option value="ADMIN" {% if membership.role == "ADMIN" %}selected{% endif %}>Admin</option>
+                {% if requester_role == 'OWNER' %}
+                <option value="OWNER" {% if membership.role == "OWNER" %}selected{% endif %}>Owner</option>
+                {% endif %}
               </select>
               <button type="submit" class="oauthButton oauthButton--small">Update</button>
             </form>

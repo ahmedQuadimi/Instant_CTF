@@ -91,3 +91,16 @@ def players_list(request):
             "role_choices": User.ROLE_CHOICES,
         },
     )
+
+from Accounts.utils import site_admin_required
+from django.contrib import messages
+
+@site_admin_required
+def admin_promote(request, user_id):
+    target = get_object_or_404(User, pk=user_id)
+    if request.method == 'POST':
+        target.site_role = 'SITE_ADMIN'
+        target.save(update_fields=['site_role'])
+        messages.success(request, f"{target.username} is now a Site Admin.")
+        return redirect('profile', user_id)
+    return redirect('profile', user_id)

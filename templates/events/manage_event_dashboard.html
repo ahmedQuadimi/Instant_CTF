@@ -149,25 +149,44 @@
       </section>
 
       <section>
-        <h2>Teams Panel (Read-Only)</h2>
+        <h2>Users Panel (Read-Only)</h2>
         <table class="platform-table">
         <thead>
           <tr>
+            <th>User</th>
             <th>Team</th>
-            <th>Member Count</th>
             <th>Joined At</th>
+            <th>Role</th>
+            {% if requester_role == 'OWNER' %}
+              <th>Actions</th>
+            {% endif %}
           </tr>
         </thead>
         <tbody>
           {% for row in team_panel_rows %}
             <tr>
+              <td>{{ row.user.username }}</td>
               <td>{{ row.team_name }}</td>
-              <td>{{ row.member_count }}</td>
-              <td>{{ row.joined_at }}</td>
+              <td>{{ row.joined_at|date:"M d, Y" }}</td>
+              <td>{{ row.role }}</td>
+              {% if requester_role == 'OWNER' %}
+                <td>
+                  <form method="POST" style="display:inline-flex;gap:6px;align-items:center;max-width:100%;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="assign_role" />
+                    <input type="hidden" name="user_id" value="{{ row.user.id }}" />
+                    <select name="event_role" style="min-height:30px;padding:2px 8px;font-size:0.85rem;border-radius:var(--radius);border:var(--border);background:var(--bg-surface);color:var(--text-primary);">
+                      <option value="PLAYER" {% if row.role == 'PLAYER' %}selected{% endif %}>Player</option>
+                      <option value="ADMIN" {% if row.role == 'ADMIN' %}selected{% endif %}>Admin</option>
+                    </select>
+                    <button type="submit" class="oauthButton oauthButton--small" style="min-height:30px;padding:4px 8px;">Set Role</button>
+                  </form>
+                </td>
+              {% endif %}
             </tr>
           {% empty %}
             <tr>
-              <td colspan="3"><div class="empty-state">No teams are registered yet.</div></td>
+              <td colspan="{% if requester_role == 'OWNER' %}5{% else %}4{% endif %}"><div class="empty-state">No users are registered yet.</div></td>
             </tr>
           {% endfor %}
         </tbody>

@@ -92,14 +92,22 @@
     <div class="profile-info">
       <div class="profile-title-row">
         <h1>{{ profile_user.username }}</h1>
-        <span class="role-badge {% if profile_user.site_role == 'SITE_ADMIN' %}role-site-admin{% elif profile_user.site_role == 'EVENT_OWNER' %}role-event-owner{% elif profile_user.site_role == 'EVENT_ADMIN' %}role-event-admin{% else %}role-player{% endif %}">
-          {{ profile_user.get_site_role_display }}
-        </span>
+        {% if profile_user.site_role == "SITE_ADMIN" %}
+        <span class="role-badge role-site-admin">Site Admin</span>
+      {% else %}
+        <span class="role-badge role-player">Player</span>
+      {% endif %}
       </div>
       <div class="elo-badge"><span>⚡ ELO: {{ profile_user.elo }}</span></div>
     </div>
     {% if is_own_profile %}
       <a class="edit-link" href="{% url 'profile_edit' %}">Edit Profile</a>
+    {% endif %}
+    {% if request.user.site_role == "SITE_ADMIN" and profile_user.site_role == "PLAYER" %}
+      <form method="POST" action="{% url 'admin_promote' profile_user.id %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn-primary" style="padding: 8px 16px; min-height: 44px; font-size: 0.9rem;">Promote to Admin</button>
+      </form>
     {% endif %}
   </div>
 

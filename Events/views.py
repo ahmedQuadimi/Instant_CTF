@@ -17,7 +17,7 @@ from Organizations.models import OrganizationMembership
 from Teams.models import Team, TeamJoinRequest
 
 from .forms import CreateTeamForm, JoinEventForm, TeamJoinRequestForm
-from .models import Event, EventRoster
+from .models import Event, EventRoster, EventRole
 from .utils import (
     event_has_started,
     get_event_or_404,
@@ -41,6 +41,14 @@ def _has_manage_access(user, event):
 
     if user.site_role == "SITE_ADMIN":
         return True
+
+    from .models import EventRole
+    try:
+        er = EventRole.objects.get(user=user, event=event)
+        if er.role in ('OWNER', 'ADMIN'):
+            return True
+    except EventRole.DoesNotExist:
+        pass
 
     return OrganizationMembership.objects.filter(
         user=user,
@@ -206,15 +214,24 @@ def manage_event_dashboard(request, event_id):
         .order_by("team__name", "joined_at")
     )
 
-    team_counts = {}
-    for roster in rosters:
-        team_counts[roster.team_id] = team_counts.get(roster.team_id, 0) + 1
+    from Events.templatetags.ui_extras import get_event_role
+    requester_role = get_event_role(request.user, event)
+    if not requester_role:
+        # Check org level if no event level
+        from Organizations.models import OrganizationMembership
+        if OrganizationMembership.objects.filter(user=request.user, organization=event.organization, role__in=("OWNER", "ADMIN")).exists():
+            requester_role = "OWNER" # Effectively OWNER for event manage dashboard
+
+    user_roles = {
+        role.user_id: role.role for role in EventRole.objects.filter(event=event)
+    }
 
     team_panel_rows = [
         {
+            "user": roster.user,
             "team_name": roster.team.name,
-            "member_count": team_counts.get(roster.team_id, 0),
             "joined_at": roster.joined_at,
+            "role": user_roles.get(roster.user_id, "PLAYER"),
         }
         for roster in rosters
     ]
@@ -231,10 +248,29 @@ def manage_event_dashboard(request, event_id):
         ).choices,
         "form_errors": [],
         "saved": request.GET.get("saved") == "1",
+        "requester_role": requester_role,
     }
 
     if request.method == "POST":
         action = (request.POST.get("action") or "create").lower()
+
+        if action == "assign_role":
+            target_user_id = request.POST.get('user_id')
+            new_role = request.POST.get('event_role')
+            if requester_role not in ['OWNER', 'ADMIN']:
+                from django.core.exceptions import PermissionDenied
+                raise PermissionDenied()
+            
+            if new_role == "PLAYER":
+                EventRole.objects.filter(user_id=target_user_id, event=event).delete()
+            else:
+                EventRole.objects.update_or_create(
+                    user_id=target_user_id,
+                    event=event,
+                    defaults={'role': new_role}
+                )
+            messages.success(request, "Event role updated.")
+            return redirect('manage_event_dashboard', event.id)
 
         if action == "toggle_status":
             challenge_id = request.POST.get("challenge_id")
@@ -657,9 +693,11 @@ def create_event(request):
                 minimum_points=int(minimum_points or 100),
                 decay_parameter=decay_parameter or 0.05,
             )
-            if request.user.site_role == "PLAYER":
-                request.user.site_role = "EVENT_OWNER"
-                request.user.save(update_fields=["site_role"])
+            EventRole.objects.create(
+                user=request.user,
+                event=new_event,
+                role='OWNER'
+            )
             messages.success(request, f'Event "{new_event.title}" created successfully.')
             return redirect("manage_event_dashboard", event_id=new_event.id)
 

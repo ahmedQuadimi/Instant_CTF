@@ -65,3 +65,34 @@ class EventRoster(models.Model):
                 fields=["user", "event"], name="unique_event_roster"
             )
         ]
+
+class EventRole(models.Model):
+    EVENT_ROLE_CHOICES = [
+        ('OWNER', 'Owner'),
+        ('ADMIN', 'Admin'),
+    ]
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='event_roles'
+    )
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name='event_roles'
+    )
+    role = models.CharField(
+        max_length=10,
+        choices=EVENT_ROLE_CHOICES
+    )
+    assigned_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'event'],
+                name='unique_event_role'
+            )
+        ]

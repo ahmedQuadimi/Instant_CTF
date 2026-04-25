@@ -26,11 +26,11 @@
       <div class="filter-row">
         <select name="role" class="filter-select">
           <option value="">All roles</option>
-          {% for role_value, role_label in role_choices %}
-            <option value="{{ role_value }}" {% if role_filter == role_value %}selected{% endif %}>
-              {{ role_label }}
-            </option>
-          {% endfor %}
+            {% for value, label in role_choices %}
+              {% if value in "SITE_ADMIN,PLAYER" %}
+                <option value="{{ value }}" {% if role_filter == value %}selected{% endif %}>{{ label }}</option>
+              {% endif %}
+            {% endfor %}
         </select>
         {% if query or role_filter %}
           <a href="{% url 'players_list' %}" class="clear-filters">Clear filters</a>

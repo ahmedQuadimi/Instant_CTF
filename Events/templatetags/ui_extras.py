@@ -26,3 +26,16 @@ def get_org_role(user, organization):
 @register.simple_tag(name="get_org_role")
 def get_org_role_assignment(user, organization):
     return _resolve_org_role(user, organization)
+
+from Events.models import EventRole
+
+@register.filter
+def get_event_role(user, event):
+    if not user or not getattr(user, "is_authenticated", False) or event is None:
+        return None
+    try:
+        return EventRole.objects.get(
+            user=user, event=event
+        ).role
+    except EventRole.DoesNotExist:
+        return None

@@ -59,36 +59,64 @@
     </div>
     <p style="color:var(--text-secondary); margin-bottom: 2rem;">Define the parameters of your new ordeal.</p>
 
+    {% if form.non_field_errors %}
+      <div class="message message-error" style="margin-bottom: 2rem;">
+        {{ form.non_field_errors|join:", " }}
+      </div>
+    {% endif %}
+
     <form method="post" class="platform-form">
       {% csrf_token %}
 
       <div class="challenge-form-grid">
         <div class="field-group">
-          <label for="name">Challenge Name</label>
-          <input id="name" name="name" type="text" placeholder="e.g. Broken Cipher" required>
+          <label for="{{ form.name.id_for_label }}">Challenge Name</label>
+          {{ form.name }}
+          {% if form.name.errors %}
+            <div class="field-error">
+              {{ form.name.errors|join:", " }}
+            </div>
+          {% endif %}
         </div>
 
         <div class="field-group">
-          <label for="category">Category</label>
-          <input id="category" name="category" type="text" placeholder="e.g. Webb" required>
+          <label for="{{ form.category.id_for_label }}">Category</label>
+          {{ form.category }}
+          {% if form.category.errors %}
+            <div class="field-error">
+              {{ form.category.errors|join:", " }}
+            </div>
+          {% endif %}
         </div>
 
         <div class="field-group">
-          <label for="status">Initial Status</label>
-          <select id="status" name="status" required>
-            <option value="HIDDEN">Hidden</option>
-            <option value="VISIBLE">Visible</option>
-          </select>
+          <label for="{{ form.status.id_for_label }}">Initial Status</label>
+          {{ form.status }}
+          {% if form.status.errors %}
+            <div class="field-error">
+              {{ form.status.errors|join:", " }}
+            </div>
+          {% endif %}
         </div>
 
         <div class="field-group">
-          <label for="release_time">Scheduled Release</label>
-          <input id="release_time" name="release_time" type="datetime-local">
+          <label for="{{ form.release_time.id_for_label }}">Scheduled Release</label>
+          {{ form.release_time }}
+          {% if form.release_time.errors %}
+            <div class="field-error">
+              {{ form.release_time.errors|join:", " }}
+            </div>
+          {% endif %}
         </div>
 
         <div class="field-group">
-          <label for="flag">Secret Flag</label>
-          <input id="flag" name="flag" type="text" placeholder="CTF{...}" required>
+          <label for="{{ form.flag.id_for_label }}">Secret Flag</label>
+          {{ form.flag }}
+          {% if form.flag.errors %}
+            <div class="field-error">
+              {{ form.flag.errors|join:", " }}
+            </div>
+          {% endif %}
         </div>
 
         <div class="field-group">
@@ -97,8 +125,13 @@
         </div>
 
         <div class="field-group full-width">
-          <label for="description">Ordeal Description (Markdown supported)</label>
-          <textarea id="description" name="description" rows="5" placeholder="Describe the challenge..." required></textarea>
+          <label for="{{ form.description.id_for_label }}">Ordeal Description (Markdown supported)</label>
+          {{ form.description }}
+          {% if form.description.errors %}
+            <div class="field-error">
+              {{ form.description.errors|join:", " }}
+            </div>
+          {% endif %}
         </div>
 
         <div class="field-group full-width form-submit-row">

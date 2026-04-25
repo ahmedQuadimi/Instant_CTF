@@ -14,9 +14,9 @@
       <p class="meta-line">Welcome back, hacker. Authenticate to continue.</p>
 
     {% if form.non_field_errors %}
-      {% for error in form.non_field_errors %}
-        <span class="field-error">{{ error }}</span>
-      {% endfor %}
+      <div class="message message-error" style="margin-bottom: 1.5rem;">
+        {{ form.non_field_errors|join:", " }}
+      </div>
     {% endif %}
 
     <form method="POST" action="{% url 'account_login' %}" id="login-form">
@@ -26,38 +26,44 @@
         <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
       {% endif %}
 
-      <label for="id_login">Email Address</label>
-      <input
-        type="email"
-        id="id_login"
-        name="login"
-        value="{{ form.login.value|default:'' }}"
-        placeholder="hacker@example.com"
-        autocomplete="email"
-        required
-      />
-      {% if form.login.errors %}
-        <span class="field-error">{{ form.login.errors }}</span>
-      {% endif %}
+      <div class="field-group">
+        <label for="id_login">Email Address</label>
+        <input
+          type="email"
+          id="id_login"
+          name="login"
+          value="{{ form.login.value|default:'' }}"
+          placeholder="hacker@example.com"
+          autocomplete="email"
+          required
+        />
+        {% if form.login.errors %}
+          <div class="field-error">{{ form.login.errors|join:", " }}</div>
+        {% endif %}
+      </div>
 
-      <label for="id_password">Password</label>
-      <input
-        type="password"
-        id="id_password"
-        name="password"
-        placeholder="••••••••••••"
-        autocomplete="current-password"
-        required
-      />
-      {% if form.password.errors %}
-        <span class="field-error">{{ form.password.errors }}</span>
-      {% endif %}
+      <div class="field-group">
+        <label for="id_password">Password</label>
+        <input
+          type="password"
+          id="id_password"
+          name="password"
+          placeholder="••••••••••••"
+          autocomplete="current-password"
+          required
+        />
+        {% if form.password.errors %}
+          <div class="field-error">{{ form.password.errors|join:", " }}</div>
+        {% endif %}
+      </div>
 
-      <label class="checkbox-wrapper remember-me-row" for="id_remember">
-        <input type="checkbox" id="id_remember" name="remember" checked />
-        <span class="checkbox-box" aria-hidden="true"></span>
-        <span class="checkbox-label">Keep me signed in</span>
-      </label>
+      <div class="field-group">
+        <label class="container">
+          <input type="checkbox" id="id_remember" name="remember" checked />
+          <div class="checkmark"></div>
+          <span style="margin-left: 2.5rem; font-size: 0.9rem; color: var(--text-secondary);">Keep me signed in</span>
+        </label>
+      </div>
 
       <button type="submit" class="oauthButton" id="login-submit-btn">→ SIGN IN</button>
     </form>

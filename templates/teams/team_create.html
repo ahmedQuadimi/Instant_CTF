@@ -14,26 +14,37 @@
       <div class="message-card success">Team created successfully.</div>
     {% endif %}
 
-    {% if errors %}
-      <div class="message-card error">
-        <ul>
-          {% for error in errors %}
-            <li>{{ error }}</li>
-          {% endfor %}
-        </ul>
+    {% if form.non_field_errors %}
+      <div class="message message-error">
+        {{ form.non_field_errors|join:", " }}
       </div>
     {% endif %}
 
     <form method="post" class="form">
       {% csrf_token %}
-      <label for="name">Team name</label>
-      <input id="name" name="name" type="text" required>
+      
+      <div class="field-group">
+        <label for="{{ form.name.id_for_label }}">Team name</label>
+        {{ form.name }}
+        {% if form.name.errors %}
+          <div class="field-error">
+            {{ form.name.errors|join:", " }}
+          </div>
+        {% endif %}
+      </div>
 
-      <label class="checkbox-wrapper" for="team-public">
-        <input type="checkbox" id="team-public" name="is_public" checked>
-        <span class="checkbox-box" aria-hidden="true"></span>
-        <span class="checkbox-label">Public team</span>
-      </label>
+      <div class="field-group">
+        <label class="container">
+          <input type="checkbox" name="{{ form.is_public.name }}" id="{{ form.is_public.id_for_label }}" {% if form.is_public.value %}checked{% endif %} />
+          <div class="checkmark"></div>
+          <span style="margin-left: 2.5rem; font-size: 1rem; color: var(--text-primary);">Public team</span>
+        </label>
+        {% if form.is_public.errors %}
+          <div class="field-error">
+            {{ form.is_public.errors|join:", " }}
+          </div>
+        {% endif %}
+      </div>
 
       <button class="oauthButton" type="submit">Create Team</button>
     </form>

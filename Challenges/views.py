@@ -21,6 +21,7 @@ from Events.utils import (
 )
 from Scoring.models import Solve, Submission
 from .models import Challenge
+from .forms import ChallengeForm
 
 # Create your views here.
 
@@ -29,7 +30,6 @@ from .models import Challenge
 def create_challenge(request, event_id):
     event = get_event_or_404(event_id)
     
-    # organization check: user must be OWNER or ADMIN of event.organization
     from Organizations.models import OrganizationMembership
     membership = OrganizationMembership.objects.filter(
         user=request.user,
@@ -38,52 +38,19 @@ def create_challenge(request, event_id):
     ).first()
     
     if not membership:
-        from django.contrib import messages
         messages.error(request, "Only event organizers can add challenges.")
         return redirect('event_dashboard', event_id=event.id)
 
     if request.method == 'POST':
-        name = request.POST.get('name','').strip()
-        category = request.POST.get('category','').strip()
-        description = request.POST.get('description','').strip()
-        raw_flag = request.POST.get('flag','').strip()
-        status = request.POST.get('status','HIDDEN')
-        release_time_str = request.POST.get('release_time','')
+        form = ChallengeForm(request.POST, event=event)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Challenge created.")
+            return redirect('manage_event_dashboard', event_id=event.id)
+    else:
+        form = ChallengeForm(event=event)
 
-        # validation
-        errors = []
-        if not name: errors.append("Name is required.")
-        if not raw_flag: errors.append("Flag is required.")
-        
-        if errors:
-            from django.contrib import messages
-            for e in errors:
-                messages.error(request, e)
-            return redirect('create_challenge', event_id=event.id)
-
-        flag_hash = hashlib.sha256(raw_flag.encode()).hexdigest()
-
-        release_time = None
-        if release_time_str:
-            from django.utils.dateparse import parse_datetime
-            release_time = parse_datetime(release_time_str)
-            if release_time and timezone.is_naive(release_time):
-                release_time = timezone.make_aware(release_time, timezone.get_current_timezone())
-
-        Challenge.objects.create(
-            event=event,
-            name=name,
-            category=category,
-            description=description,
-            flag_hash=flag_hash,
-            status=status,
-            release_time=release_time,
-        )
-        from django.contrib import messages
-        messages.success(request, f"Challenge '{name}' created.")
-        return redirect('manage_event_dashboard', event_id=event.id)
-
-    return render(request, 'challenges/create_challenge.html', {'event': event})
+    return render(request, 'challenges/create_challenge.html', {'event': event, 'form': form})
 
 
 @login_required
@@ -128,42 +95,51 @@ def submit_flag(request, event_id, challenge_id):
         messages.error(request, f"Too many failures. Please try again in {retry_after} seconds.")
         return redirect(reverse("event_challenges", args=[event.id]) + f"#challenge-{challenge.id}")
 
-    provided_flag = (request.POST.get("flag") or "").strip()
-    submitted_hash = hashlib.sha256(provided_flag.encode()).hexdigest()
-    is_correct = submitted_hash == challenge.flag_hash
+    if request.method == "POST":
+        form = FlagSubmissionForm(request.POST)
+        if form.is_valid():
+            provided_flag = form.cleaned_data['flag'].strip()
+            submitted_hash = hashlib.sha256(provided_flag.encode()).hexdigest()
+            is_correct = submitted_hash == challenge.flag_hash
 
-    submission = Submission.objects.create(
-        user=request.user,
-        team_id=roster.team_id,
-        challenge_id=challenge.id,
-        provided_flag=provided_flag,
-        is_correct=is_correct,
-    )
-
-    if is_correct:
-        Challenge.objects.filter(pk=challenge.id).update(solves_count=F("solves_count") + 1)
-        try:
-            _, created = Solve.objects.get_or_create(
+            submission = Submission.objects.create(
+                user=request.user,
                 team_id=roster.team_id,
                 challenge_id=challenge.id,
-                defaults={
-                    "submission": submission,
-                    "awarded_points": getattr(challenge, "points", 0),
-                    "timestamp": now,
-                },
+                provided_flag=provided_flag,
+                is_correct=is_correct,
             )
-        except IntegrityError:
-            messages.info(request, "Challenge already solved by your team.")
+
+            if is_correct:
+                Challenge.objects.filter(pk=challenge.id).update(solves_count=F("solves_count") + 1)
+                try:
+                    _, created = Solve.objects.get_or_create(
+                        team_id=roster.team_id,
+                        challenge_id=challenge.id,
+                        defaults={
+                            "submission": submission,
+                            "awarded_points": getattr(challenge, "points", 0),
+                            "timestamp": now,
+                        },
+                    )
+                    if not created:
+                        messages.info(request, "Challenge already solved by your team.")
+                        return redirect(reverse("event_challenges", args=[event.id]) + f"#challenge-{challenge.id}")
+                except IntegrityError:
+                    messages.info(request, "Challenge already solved by your team.")
+                    return redirect(reverse("event_challenges", args=[event.id]) + f"#challenge-{challenge.id}")
+
+                messages.success(request, "Correct! Challenge solved.")
+                return redirect(reverse("event_challenges", args=[event.id]) + f"#challenge-{challenge.id}")
+
+            messages.error(request, f"Incorrect flag. {4 - recent_fail_count} attempts remaining this minute.")
+            return redirect(reverse("event_challenges", args=[event.id]) + f"#challenge-{challenge.id}")
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{error}")
             return redirect(reverse("event_challenges", args=[event.id]) + f"#challenge-{challenge.id}")
 
-        if not created:
-            messages.info(request, "Challenge already solved by your team.")
-            return redirect(reverse("event_challenges", args=[event.id]) + f"#challenge-{challenge.id}")
-
-        messages.success(request, "Correct! Challenge solved.")
-        return redirect(reverse("event_challenges", args=[event.id]) + f"#challenge-{challenge.id}")
-
-    messages.error(request, f"Incorrect flag. {4 - recent_fail_count} attempts remaining this minute.")
     return redirect(reverse("event_challenges", args=[event.id]) + f"#challenge-{challenge.id}")
 
 

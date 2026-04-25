@@ -6,6 +6,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import Organization, OrganizationMembership
+from .forms import OrganizationForm
 from Events.models import Event
 
 # Create your views here.
@@ -113,34 +114,24 @@ def manage_org_dashboard(request, org_id):
 
 @login_required
 def org_create(request):
-    errors = []
-    saved = False
-
     if request.method == "POST":
-        name = (request.POST.get("name") or "").strip()
-        description = (request.POST.get("description") or "").strip()
-
-        if not name:
-            errors.append("Organization name is required.")
-
-        if not errors:
-            try:
-                organization = Organization.objects.create(name=name, description=description)
-                OrganizationMembership.objects.create(
-                    user=request.user,
-                    organization=organization,
-                    role="OWNER",
-                )
-                saved = True
-                messages.success(request, "Organization created successfully.")
-                return redirect("organization_details", org_id=organization.id)
-            except IntegrityError:
-                errors.append("An organization with this name already exists.")
+        form = OrganizationForm(request.POST)
+        if form.is_valid():
+            organization = form.save()
+            OrganizationMembership.objects.create(
+                user=request.user,
+                organization=organization,
+                role="OWNER",
+            )
+            messages.success(request, "Organization created successfully.")
+            return redirect("organization_details", org_id=organization.id)
+    else:
+        form = OrganizationForm()
 
     return render(
         request,
         "organizations/organization_create.html",
-        {"errors": errors, "saved": saved},
+        {"form": form},
     )
 
 

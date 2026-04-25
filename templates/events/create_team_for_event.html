@@ -10,15 +10,38 @@
     <h1>Create Team for {{ event.title }}</h1>
     <p class="meta-line">Pick a team name to complete registration for this event.</p>
 
+    {% if form.non_field_errors %}
+      <div class="message message-error" style="margin-bottom: 1.5rem;">
+        {{ form.non_field_errors|join:", " }}
+      </div>
+    {% endif %}
+
     <form method="post" class="form">
       {% csrf_token %}
-      {% for field in form %}
-        {{ field.label_tag }}
-        {{ field }}
-        {% if field.errors %}
-          <span class="field-error">{{ field.errors }}</span>
+      
+      <div class="field-group">
+        <label for="{{ form.name.id_for_label }}">Team Name</label>
+        {{ form.name }}
+        {% if form.name.errors %}
+          <div class="field-error">
+            {{ form.name.errors|join:", " }}
+          </div>
         {% endif %}
-      {% endfor %}
+      </div>
+
+      <div class="field-group">
+        <label class="container">
+          <input type="checkbox" name="is_public" id="id_is_public" {% if form.is_public.value %}checked{% endif %}>
+          <div class="checkmark"></div>
+          <span style="margin-left: 2.5rem; font-size: 0.9rem; color: var(--text-secondary);">Public Team (Others can request to join)</span>
+        </label>
+        {% if form.is_public.errors %}
+          <div class="field-error">
+            {{ form.is_public.errors|join:", " }}
+          </div>
+        {% endif %}
+      </div>
+
       <button class="oauthButton" type="submit">Create Team and Join Event</button>
     </form>
   </section>

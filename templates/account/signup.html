@@ -14,9 +14,9 @@
       <p class="meta-line">Register your identity and join the competition.</p>
 
     {% if form.non_field_errors %}
-      {% for error in form.non_field_errors %}
-        <span class="field-error">{{ error }}</span>
-      {% endfor %}
+      <div class="message message-error" style="margin-bottom: 1.5rem;">
+        {{ form.non_field_errors|join:", " }}
+      </div>
     {% endif %}
 
     {% get_providers as socialaccount_providers %}
@@ -50,7 +50,7 @@
         <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
       {% endif %}
 
-      <div class="signup-field-group">
+      <div class="field-group">
         <label for="id_username">Hacker Tag (username)</label>
         <input
           type="text"
@@ -62,11 +62,11 @@
           required
         />
         {% if form.username.errors %}
-          <span class="field-error">{{ form.username.errors }}</span>
+          <div class="field-error">{{ form.username.errors|join:", " }}</div>
         {% endif %}
       </div>
 
-      <div class="signup-field-group">
+      <div class="field-group">
         <label for="id_email">Email Address</label>
         <input
           type="email"
@@ -78,11 +78,11 @@
           required
         />
         {% if form.email.errors %}
-          <span class="field-error">{{ form.email.errors }}</span>
+          <div class="field-error">{{ form.email.errors|join:", " }}</div>
         {% endif %}
       </div>
 
-      <div class="signup-field-group">
+      <div class="field-group">
         <label for="id_password1">Password</label>
         <input
           type="password"
@@ -93,11 +93,11 @@
           required
         />
         {% if form.password1.errors %}
-          <span class="field-error">{{ form.password1.errors }}</span>
+          <div class="field-error">{{ form.password1.errors|join:", " }}</div>
         {% endif %}
       </div>
 
-      <div class="signup-field-group">
+      <div class="field-group">
         <label for="id_password2">Confirm Password</label>
         <input
           type="password"
@@ -108,7 +108,7 @@
           required
         />
         {% if form.password2.errors %}
-          <span class="field-error">{{ form.password2.errors }}</span>
+          <div class="field-error">{{ form.password2.errors|join:", " }}</div>
         {% endif %}
       </div>
 

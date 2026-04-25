@@ -202,6 +202,11 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 # Prevent allauth from hijacking session on every request (performance)
 ACCOUNT_SESSION_REMEMBER = True
 
+ACCOUNT_FORMS = {
+    'login': 'Accounts.forms.StandardLoginForm',
+    'signup': 'Accounts.forms.StandardSignupForm',
+}
+
 # ---------------------------------------------------------------------------
 # Google OAuth2 Provider
 # Credentials are read directly from the .env file – never hard-coded.

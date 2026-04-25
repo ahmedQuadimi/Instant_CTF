@@ -8,6 +8,7 @@ from django.db import IntegrityError
 from Events.models import EventRoster
 from Events.utils import get_event_or_404
 from .models import Team, TeamJoinRequest, TeamMembership
+from .forms import TeamForm, TeamJoinRequestForm
 
 
 def event_teams(request, event_id):
@@ -117,14 +118,15 @@ def request_join(request, team_id):
     team = get_object_or_404(Team, pk=team_id)
 
     if request.method == "POST":
-        try:
+        form = TeamJoinRequestForm(request.POST, user=request.user, team=team)
+        if form.is_valid():
             TeamJoinRequest.objects.create(user=request.user, team=team, status="PENDING")
             messages.success(request, "Join request submitted.")
-        except IntegrityError:
-            messages.info(request, "You already have a pending request for this team.")
-        return redirect("team_detail", team_id=team.id)
+            return redirect("team_detail", team_id=team.id)
+    else:
+        form = TeamJoinRequestForm(user=request.user, team=team)
 
-    return render(request, "teams/request_join.html", {"team": team})
+    return render(request, "teams/request_join.html", {"team": team, "form": form})
 
 
 @login_required
@@ -189,22 +191,16 @@ def manage(request, team_id):
 
 @login_required
 def create(request):
-    errors = []
-
     if request.method == "POST":
-        name = (request.POST.get("name") or "").strip()
-        is_public = request.POST.get("is_public") == "on"
+        form = TeamForm(request.POST)
+        if form.is_valid():
+            team = form.save(commit=False)
+            team.captain = request.user
+            team.save()
+            TeamMembership.objects.create(team=team, user=request.user)
+            messages.success(request, f'Team "{team.name}" created successfully.')
+            return redirect("team_detail", team_id=team.id)
+    else:
+        form = TeamForm()
 
-        if not name:
-            errors.append("Team name is required.")
-
-        if not errors:
-            try:
-                team = Team.objects.create(name=name, is_public=is_public, captain=request.user)
-                TeamMembership.objects.create(team=team, user=request.user)
-                messages.success(request, f'Team "{team.name}" created successfully.')
-                return redirect("team_detail", team_id=team.id)
-            except IntegrityError:
-                errors.append("A team with this name already exists.")
-
-    return render(request, "teams/team_create.html", {"errors": errors})
+    return render(request, "teams/team_create.html", {"form": form})

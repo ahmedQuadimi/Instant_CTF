@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from Events.models import EventRoster
 from Scoring.models import Solve
 from Teams.models import Team
+from .forms import ProfileForm
 
 User = get_user_model()
 
@@ -48,16 +49,17 @@ def profile_view(request, user_id):
 @login_required
 def profile_edit(request):
     if request.method == "POST":
-        new_username = (request.POST.get("username") or "").strip()
-        if new_username:
-            request.user.username = new_username
-            request.user.save(update_fields=["username"])
+        form = ProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
             return redirect("profile", user_id=request.user.id)
+    else:
+        form = ProfileForm(instance=request.user)
 
     return render(
         request,
         "accounts/profile_edit.html",
-        {"profile_user": request.user},
+        {"profile_user": request.user, "form": form},
     )
 
 

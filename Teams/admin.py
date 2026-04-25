@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Team, TeamJoinRequest
+from .models import Team, TeamJoinRequest, TeamMembership
 
 
 # Register your models here.
@@ -15,3 +15,9 @@ class TeamAdmin(admin.ModelAdmin):
 class TeamJoinRequestAdmin(admin.ModelAdmin):
     list_display = ("user", "team", "status")
     list_filter = ("status",)
+
+
+@admin.register(TeamMembership)
+class TeamMembershipAdmin(admin.ModelAdmin):
+    list_display = ("user", "team")
+    list_filter = ("team",)

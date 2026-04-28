@@ -89,7 +89,7 @@
       </div>
     {% endif %}
 
-    <form method="POST" action="{% url 'profile_edit' %}" class="form">
+    <form method="POST" action="{% url 'profile_edit' %}" class="form" enctype="multipart/form-data">
       {% csrf_token %}
       <div style="display:grid;gap:16px;">
         <div>
@@ -101,6 +101,22 @@
             </div>
           {% endif %}
           <p class="hint">This is your public display name on scoreboards.</p>
+        </div>
+        <div>
+          <label for="{{ form.profile_image.id_for_label }}">Profile Picture</label>
+          {% if profile_user.profile_image %}
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+              <img src="{{ profile_user.profile_image.url }}" alt="Current profile picture" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:1px solid var(--accent-cyan);" />
+              <span class="hint">Current image</span>
+            </div>
+          {% endif %}
+          {{ form.profile_image }}
+          {% if form.profile_image.errors %}
+            <div class="field-error">
+              {{ form.profile_image.errors|join:", " }}
+            </div>
+          {% endif %}
+          <p class="hint">Optional. PNG or JPG recommended.</p>
         </div>
         <div>
           <label>Email</label>

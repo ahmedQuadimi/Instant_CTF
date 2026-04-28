@@ -78,7 +78,11 @@
 {% block content %}
 <section class="platform-stack content-single">
   <div class="profile-header">
-    <div class="profile-avatar">{{ profile_user.username|first|upper }}</div>
+    {% if profile_user.profile_image %}
+      <img class="profile-avatar" src="{{ profile_user.profile_image.url }}" alt="{{ profile_user.username }} profile picture" />
+    {% else %}
+      <div class="profile-avatar">{{ profile_user.username|first|upper }}</div>
+    {% endif %}
     <div class="profile-info">
       <div class="profile-title-row">
         <h1>{{ profile_user.username }}</h1>

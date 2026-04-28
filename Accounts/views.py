@@ -50,6 +50,27 @@ def profile_view(request, user_id):
 
     is_own_profile = request.user.is_authenticated and request.user.id == profile_user.id
 
+    # Manageable Orgs (where requester is OWNER/ADMIN and target is NOT a member)
+    manageable_orgs = []
+    if request.user.is_authenticated and not is_own_profile:
+        from Organizations.models import Organization, OrganizationMembership
+        
+        # Orgs the requester can manage
+        requester_org_ids = OrganizationMembership.objects.filter(
+            user=request.user, 
+            role__in=['OWNER', 'ADMIN']
+        ).values_list('organization_id', flat=True)
+        
+        # Orgs the target is already in
+        target_org_ids = OrganizationMembership.objects.filter(
+            user=profile_user
+        ).values_list('organization_id', flat=True)
+        
+        # Difference
+        promotable_ids = set(requester_org_ids) - set(target_org_ids)
+        if promotable_ids:
+            manageable_orgs = Organization.objects.filter(id__in=promotable_ids)
+
     context = {
         "profile_user": profile_user,
         "event_rosters": event_rosters,
@@ -59,6 +80,7 @@ def profile_view(request, user_id):
         "org_memberships": org_memberships,
         "solve_count": solve_count,
         "is_own_profile": is_own_profile,
+        "manageable_orgs": manageable_orgs,
     }
 
     return render(request, "accounts/profile.html", context)

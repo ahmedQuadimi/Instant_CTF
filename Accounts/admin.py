@@ -10,4 +10,4 @@ class CustomUserAdmin(UserAdmin):
     search_fields = ("username", "email")
 
     # Adds global_score to the admin edit screen safely
-    fieldsets = UserAdmin.fieldsets + (("CTF Stats", {"fields": ("site_role",)}),)
+    fieldsets = UserAdmin.fieldsets + (("CTF Stats", {"fields": ("site_role", "profile_image")}),)

@@ -4,7 +4,7 @@ from .models import User
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['username']
+        fields = ['username', 'profile_image']
 
     def clean_username(self):
         username = self.cleaned_data.get('username')
@@ -30,6 +30,8 @@ class StandardLoginForm(LoginForm):
             raise forms.ValidationError("Invalid email or password.")
 
 class StandardSignupForm(SignupForm):
+    profile_image = forms.ImageField(required=False)
+
     def clean(self):
         cleaned_data = super().clean()
         p1 = cleaned_data.get('password1')
@@ -41,3 +43,11 @@ class StandardSignupForm(SignupForm):
             self.add_error('password1', "Password must be at least 8 characters long.")
             
         return cleaned_data
+
+    def save(self, request):
+        user = super().save(request)
+        profile_image = self.cleaned_data.get("profile_image")
+        if profile_image:
+            user.profile_image = profile_image
+            user.save(update_fields=["profile_image"])
+        return user

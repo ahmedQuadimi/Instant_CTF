@@ -44,7 +44,7 @@
 
     <div class="separator signup-separator">OR</div>
 
-    <form method="POST" action="{% url 'account_signup' %}" id="signup-form" class="signup-form" style="margin-top: 20px;">
+    <form method="POST" action="{% url 'account_signup' %}" id="signup-form" class="signup-form" style="margin-top: 20px;" enctype="multipart/form-data">
       {% csrf_token %}
 
       {% if redirect_field_value %}
@@ -110,6 +110,19 @@
         />
         {% if form.password2.errors %}
           <div class="field-error">{{ form.password2.errors|join:", " }}</div>
+        {% endif %}
+      </div>
+
+      <div class="field-group">
+        <label for="id_profile_image">Profile Picture (optional)</label>
+        <input
+          type="file"
+          id="id_profile_image"
+          name="profile_image"
+          accept="image/*"
+        />
+        {% if form.profile_image.errors %}
+          <div class="field-error">{{ form.profile_image.errors|join:", " }}</div>
         {% endif %}
       </div>
 

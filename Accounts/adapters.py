@@ -28,12 +28,16 @@ fire a post-registration signal or create a placeholder record.  The
 add that logic.
 """
 
+import os
 import re
+from urllib.parse import urlparse
 
 from allauth.account.models import EmailAddress
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+from django.core.files.base import ContentFile
 from django.contrib.auth import get_user_model
 from django.shortcuts import redirect
+import requests
 
 
 class CTFSocialAccountAdapter(DefaultSocialAccountAdapter):
@@ -118,5 +122,19 @@ class CTFSocialAccountAdapter(DefaultSocialAccountAdapter):
         #   from django.db.models.signals import post_save
         #   # connect your handler in Accounts/apps.py ready()
         # ----------------------------------------------------------------
+
+        if not getattr(user, "profile_image", None):
+            picture_url = sociallogin.account.extra_data.get("picture")
+            if picture_url:
+                try:
+                    response = requests.get(picture_url, timeout=10)
+                    response.raise_for_status()
+                    parsed = urlparse(picture_url)
+                    filename = os.path.basename(parsed.path) or "profile"
+                    if "." not in filename:
+                        filename = f"{filename}.jpg"
+                    user.profile_image.save(filename, ContentFile(response.content), save=True)
+                except requests.RequestException:
+                    pass
 
         return user

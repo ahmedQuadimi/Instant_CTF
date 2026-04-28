@@ -305,6 +305,28 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       pointer-events: auto;
+      }
+
+      .nav-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1px solid color-mix(in srgb, var(--accent-cyan) 50%, transparent);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--bg-base);
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-magenta));
+        overflow: hidden;
+      }
+
+      .nav-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
     }
 
     .admin-chip {
@@ -677,6 +699,13 @@
 
       <div class="nav-right">
         {% if request.user.is_authenticated %}
+          <span class="nav-avatar" aria-hidden="true">
+            {% if request.user.profile_image %}
+              <img src="{{ request.user.profile_image.url }}" alt="" />
+            {% else %}
+              {{ request.user.username|first|upper }}
+            {% endif %}
+          </span>
           <span class="username">{{ request.user.username }}</span>
           {% if request.user.site_role == 'SITE_ADMIN' %}
             <span class="admin-chip">ADMIN</span>

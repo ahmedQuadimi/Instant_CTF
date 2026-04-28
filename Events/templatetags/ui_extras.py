@@ -60,4 +60,4 @@ def status_badge_class(status):
 def display_time(dt):
     if not dt:
         return ''
-    return dt.strftime('%b %d, %Y %H:%M') + ' UTC'
+    return dt.strftime('%B %d, %Y %H:%M') + ' UTC'

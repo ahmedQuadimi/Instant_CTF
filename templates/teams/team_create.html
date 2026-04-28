@@ -38,7 +38,7 @@
         <label class="container">
           <input type="checkbox" name="{{ form.is_public.name }}" id="{{ form.is_public.id_for_label }}" {% if form.is_public.value %}checked{% endif %} />
           <div class="checkmark"></div>
-          <span style="margin-left: 2.5rem; font-size: 1rem; color: var(--text-primary);">Public team</span>
+          <span style="font-size: 1rem; color: var(--text-primary);">Public team</span>
         </label>
         {% if form.is_public.errors %}
           <div class="field-error">

@@ -770,15 +770,15 @@
       <form method="POST" action="{% url 'account_login' %}" class="platform-form" style="margin-top: 20px;">
         {% csrf_token %}
         <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
-        <div class="field-group" style="display:grid; gap:8px;">
+        <div class="field-group">
           <input type="email" name="login" placeholder="Email Address" required>
         </div>
-        <div class="field-group" style="display:grid; gap:8px;">
+        <div class="field-group">
           <input type="password" name="password" placeholder="Password" required>
         </div>
-        <label class="checkbox-wrapper remember-me-row" for="modal-id-remember">
+        <label class="container remember-me-row">
           <input type="checkbox" id="modal-id-remember" name="remember" checked>
-          <span class="checkbox-box" aria-hidden="true"></span>
+          <div class="checkmark"></div>
           <span class="checkbox-label">Keep me signed in</span>
         </label>
         <button type="submit" class="oauthButton">
@@ -815,16 +815,16 @@
         {% if redirect_field_value %}
           <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
         {% endif %}
-        <div class="field-group" style="display:grid; gap:8px;">
+        <div class="field-group">
           <input type="text" name="username" placeholder="Hacker Tag (username)" required>
         </div>
-        <div class="field-group" style="display:grid; gap:8px;">
+        <div class="field-group">
           <input type="email" name="email" placeholder="Email Address" required>
         </div>
-        <div class="field-group" style="display:grid; gap:8px;">
+        <div class="field-group">
           <input type="password" name="password1" placeholder="Password" required>
         </div>
-        <div class="field-group" style="display:grid; gap:8px;">
+        <div class="field-group">
           <input type="password" name="password2" placeholder="Confirm Password" required>
         </div>
         <button type="submit" class="oauthButton">

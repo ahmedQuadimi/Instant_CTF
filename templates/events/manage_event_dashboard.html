@@ -124,7 +124,7 @@
             <td>{{ challenge.name }}</td>
             <td>
               {% if challenge.release_time %}
-                {{ challenge.release_time|date:'Y-m-d\TH:i' }}
+                {{ challenge.release_time|display_time }}
               {% else %}
                 -
               {% endif %}
@@ -382,7 +382,7 @@
                   </div>
                   <div>
                     <label>Points</label>
-                    <input type="number" name="points" value="{{ challenge.points|default:100 }}" min="1" required />
+                    <input type="number" name="points" value="{{ challenge.points|default:100 }}" required />
                   </div>
                   <div>
                     <label>Status</label>

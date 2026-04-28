@@ -33,8 +33,8 @@
     }
 
     .locked-field {
-      background: var(--bg-base);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: color-mix(in srgb, var(--bg-base) 80%, black);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: var(--radius);
       padding: 10px 14px;
       color: var(--text-secondary);
@@ -43,6 +43,8 @@
       cursor: not-allowed;
       display: grid;
       gap: 6px;
+      filter: grayscale(0.6);
+      opacity: 0.85;
     }
 
     .locked-label {

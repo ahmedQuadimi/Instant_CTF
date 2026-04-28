@@ -1,20 +1,20 @@
 # Visual Audit Report — Instant CTF
-Generated: 2026-04-08 07:54:24
+Generated: 2026-04-28 14:32:59
 
 ## Summary
 - Pages audited: 28
-- Pages with issues: 1
-- Total issues found: 1
+- Pages with issues: 4
+- Total issues found: 4
 
 ## Results by Page
 
 ### home_public — http://127.0.0.1:8000/
 Screenshot: screenshots/home_public.png
 Mobile screenshot: screenshots/mobile_home_public.png
-Status: PASS
+Status: FAIL
 
 Issues found:
-No issues detected.
+- [SPACING] Horizontal overflow in elements: FORM, field-group, container.
 
 ---
 
@@ -61,10 +61,10 @@ No issues detected.
 ### accounts_login — http://127.0.0.1:8000/accounts/login/
 Screenshot: screenshots/accounts_login.png
 Mobile screenshot: screenshots/mobile_accounts_login.png
-Status: PASS
+Status: FAIL
 
 Issues found:
-No issues detected.
+- [SPACING] Horizontal overflow in elements: FORM, field-group, container.
 
 ---
 
@@ -191,10 +191,10 @@ No issues detected.
 ### teams_create — http://127.0.0.1:8000/teams/create/
 Screenshot: screenshots/teams_create.png
 Mobile screenshot: screenshots/mobile_teams_create.png
-Status: PASS
+Status: FAIL
 
 Issues found:
-No issues detected.
+- [SPACING] Horizontal overflow in elements: field-group, container.
 
 ---
 
@@ -291,3 +291,7 @@ No issues detected.
 ## All Issues Summary (for fixing)
 ### LAYOUT
 - Access restricted (HTTP 403) for this account; known acceptable for non-organizer audit users. | Affected pages: event_2_manage
+
+### SPACING
+- Horizontal overflow in elements: FORM, field-group, container. | Affected pages: accounts_login, home_public
+- Horizontal overflow in elements: field-group, container. | Affected pages: teams_create

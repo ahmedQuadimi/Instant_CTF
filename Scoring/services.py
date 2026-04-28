@@ -8,6 +8,7 @@ from django.utils import timezone
 from Challenges.models import Challenge
 from Events.models import EventRoster
 from Scoring.models import Solve
+from Scoring.utils import calculate_event_points
 
 SCOREBOARD_CACHE_TIMEOUT = 300
 
@@ -20,17 +21,6 @@ def invalidate_event_scoreboard_cache(event_id):
     cache.delete(get_event_scoreboard_cache_key(event_id))
 
 
-def _dynamic_points(base_points, min_points, decay_factor, solves_count):
-    """
-    Dynamic scoring formula:
-    max(min_points, round(base_points * exp(-decay * solves_count)))
-
-    As more teams solve a challenge, its point value drops from base_points
-    toward min_points.
-    """
-    if solves_count <= 0:
-        return base_points
-    return max(min_points, round(base_points * math.exp(-decay_factor * solves_count)))
 
 
 def _compute_ranked_teams(event):
@@ -57,9 +47,9 @@ def _compute_ranked_teams(event):
     min_points = getattr(event, "min_points", 50)
     decay_factor = getattr(event, "decay_factor", 0.08)
 
-    # Count total solves per challenge (for dynamic scoring)
+    # Count total solves per challenge (for dynamic recomputation)
     challenge_solve_counts = {}
-    if scoring_strategy == "DYNAMIC":
+    if scoring_strategy in ("EXPONENTIAL", "LINEAR"):
         challenge_solve_counts = dict(
             Solve.objects.filter(challenge__event=event)
             .values_list("challenge_id")
@@ -82,9 +72,11 @@ def _compute_ranked_teams(event):
         if solves:
             total_score = 0
             for solve in solves:
-                if scoring_strategy == "DYNAMIC":
+                if scoring_strategy in ("EXPONENTIAL", "LINEAR"):
                     sc = challenge_solve_counts.get(solve.challenge_id, 1)
-                    total_score += _dynamic_points(base_points, min_points, decay_factor, sc)
+                    total_score += calculate_event_points(
+                        scoring_strategy, base_points, min_points, decay_factor, sc
+                    )
                 else:
                     total_score += solve.awarded_points
 

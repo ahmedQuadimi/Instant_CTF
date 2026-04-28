@@ -132,10 +132,12 @@
         </div>
 
         <div>
-          <label class="locked-label">Scoring Strategy</label>
-          <div class="locked-field">
-            <span class="status-badge info">{{ event.scoring_strategy }}</span>
-          </div>
+          <label for="scoring_strategy">Scoring Strategy</label>
+          <select id="scoring_strategy" name="scoring_strategy" required>
+            <option value="STATIC" {% if event.scoring_strategy == 'STATIC' %}selected{% endif %}>Static</option>
+            <option value="LINEAR" {% if event.scoring_strategy == 'LINEAR' %}selected{% endif %}>Linear</option>
+            <option value="EXPONENTIAL" {% if event.scoring_strategy == 'EXPONENTIAL' %}selected{% endif %}>Exponential</option>
+          </select>
         </div>
 
         <div>

@@ -11,7 +11,6 @@ class Event(models.Model):
     VISIBILITY_CHOICES = [("PUBLIC", "Public"), ("PRIVATE", "Private")]
     SCORING_STRATEGIES = [
         ("STATIC", "Static"),
-        ("DYNAMIC", "Dynamic"),
         ("LINEAR", "Linear"),
         ("EXPONENTIAL", "Exponential"),
     ]

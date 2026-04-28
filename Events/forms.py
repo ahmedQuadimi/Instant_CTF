@@ -8,7 +8,7 @@ class EventForm(forms.ModelForm):
         model = Event
         fields = [
             'title', 'organization', 'visibility',
-            'start_time', 'end_time', 'max_team_size', 'base_points'
+            'start_time', 'end_time', 'max_team_size', 'base_points', 'scoring_strategy'
         ]
         widgets = {
             'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),

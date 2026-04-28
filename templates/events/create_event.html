@@ -83,10 +83,13 @@
           </div>
 
           <div class="field-group">
-            <label for="scoring_strategy">Scoring Strategy</label>
-            <select id="scoring_strategy" name="scoring_strategy">
-              <option value="STATIC" selected>Static (flat points)</option>
-            </select>
+            <label for="{{ form.scoring_strategy.id_for_label }}">Scoring Strategy</label>
+            {{ form.scoring_strategy }}
+            {% if form.scoring_strategy.errors %}
+              <div class="field-error">
+                {{ form.scoring_strategy.errors|join:", " }}
+              </div>
+            {% endif %}
           </div>
 
           <div class="field-group">

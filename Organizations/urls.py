@@ -12,4 +12,9 @@ urlpatterns = [
         views.manage_org_dashboard,
         name="manage_organization_dashboard",
     ),
+    path(
+        "<int:org_id>/promote/<int:user_id>/",
+        views.quick_promote_to_admin,
+        name="quick_promote_to_admin",
+    ),
 ]

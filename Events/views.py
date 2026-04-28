@@ -29,6 +29,7 @@ from .utils import (
 from .access import get_roster_or_403, check_event_access
 from Scoring.models import Solve
 from Accounts.utils import site_admin_required
+from Scoring.utils import calculate_event_points
 
 # Create your views here.
 
@@ -329,15 +330,13 @@ def event_challenges(request, event_id):
     import math
 
     def get_current_worth(challenge, event):
-        if event.scoring_strategy == "DYNAMIC":
-            return max(
-                event.minimum_points or 0,
-                round(
-                    (event.base_points or 0)
-                    * math.exp(-(event.decay_parameter or 0) * challenge.solves_count)
-                ),
-            )
-        return getattr(challenge, "points", 0)
+        return calculate_event_points(
+            event.scoring_strategy,
+            event.base_points,
+            event.minimum_points,
+            event.decay_parameter,
+            challenge.solves_count
+        )
 
     challenges = list(Challenge.objects.filter(
         event=event,
@@ -519,7 +518,6 @@ def create_event(request):
         if form.is_valid():
             new_event = form.save(commit=False)
             new_event.creator = request.user
-            new_event.scoring_strategy = "STATIC"
             new_event.save()
             
             EventRole.objects.create(
@@ -579,11 +577,17 @@ def edit_event(request, event_id):
         event.description = description
         event.visibility = visibility
         event.max_team_size = max_team_size
+        
+        scoring_strategy = request.POST.get("scoring_strategy")
+        if scoring_strategy in dict(event.SCORING_STRATEGIES):
+            event.scoring_strategy = scoring_strategy
+
         event.save(update_fields=[
             "title",
             "description",
             "visibility",
             "max_team_size",
+            "scoring_strategy",
         ])
         messages.success(request, "Event updated successfully.")
         return redirect("event_dashboard", event_id)

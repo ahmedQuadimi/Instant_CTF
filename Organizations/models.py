@@ -17,10 +17,10 @@ class Organization(models.Model):
 
 
 class OrganizationMembership(models.Model):
-    ROLE_CHOICES = [("OWNER", "Owner"), ("ADMIN", "Admin"), ("AUTHOR", "Author")]
+    ROLE_CHOICES = [("OWNER", "Owner"), ("ADMIN", "Admin")]
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="AUTHOR")
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="ADMIN")
     joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

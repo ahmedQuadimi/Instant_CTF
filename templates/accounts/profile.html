@@ -72,6 +72,83 @@
     border-color: var(--accent-primary);
     text-decoration: none;
   }
+
+  /* Dropdown Styles */
+  .promo-dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  .promo-toggle-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .promo-toggle-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 8px 16px;
+    background: var(--bg-elevated);
+    border: var(--border);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+  }
+  .promo-toggle-label:hover {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--accent-primary) 20%, transparent);
+  }
+  .promo-toggle-label::after {
+    content: "▼";
+    font-size: 0.6rem;
+    transition: transform 0.2s ease;
+  }
+  .promo-toggle-input:checked + .promo-toggle-label::after {
+    transform: rotate(180deg);
+  }
+  .promo-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 200px;
+    background: var(--bg-surface);
+    border: var(--border);
+    border-radius: var(--radius);
+    padding: 8px;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    backdrop-filter: blur(8px);
+  }
+  .promo-toggle-input:checked ~ .promo-menu {
+    display: block;
+    animation: fadeInDown 0.2s ease-out;
+  }
+  .promo-item-btn {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .promo-item-btn:hover {
+    background: color-mix(in srgb, var(--accent-primary) 15%, transparent);
+    color: var(--accent-primary);
+  }
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 </style>
 {% endblock %}
 
@@ -99,8 +176,23 @@
     {% if request.user.site_role == "SITE_ADMIN" and profile_user.site_role == "PLAYER" %}
       <form method="POST" action="{% url 'admin_promote' profile_user.id %}" style="display:inline;">
         {% csrf_token %}
-        <button type="submit" class="btn-primary" style="padding: 8px 16px; min-height: 44px; font-size: 0.9rem;">Promote to Admin</button>
+        <button type="submit" class="btn-primary" style="padding: 8px 16px; min-height: 44px; font-size: 0.9rem;">Promote to Site Admin</button>
       </form>
+    {% endif %}
+
+    {% if manageable_orgs %}
+      <div class="promo-dropdown">
+        <input type="checkbox" id="promo-toggle" class="promo-toggle-input">
+        <label for="promo-toggle" class="promo-toggle-label">Promote to Org Admin</label>
+        <div class="promo-menu">
+          {% for org in manageable_orgs %}
+            <form method="POST" action="{% url 'quick_promote_to_admin' org.id profile_user.id %}">
+              {% csrf_token %}
+              <button type="submit" class="promo-item-btn">{{ org.name }}</button>
+            </form>
+          {% endfor %}
+        </div>
+      </div>
     {% endif %}
   </div>
 

@@ -206,7 +206,7 @@
     <section id="create-challenge-section" style="{% if active_action == 'create' %}display: block;{% else %}display: none;{% endif %}">
       <h2>Create Challenge</h2>
       <div class="challenge-form-wrapper">
-        <form method="post" class="form content-form">
+        <form method="post" class="form content-form" enctype="multipart/form-data">
           {% csrf_token %}
           <input type="hidden" name="action" value="create" />
 
@@ -280,6 +280,14 @@
               {% endif %}
             </div>
 
+            <div class="full-width">
+              <label for="{{ create_form.attachment.id_for_label }}">Attachment</label>
+              {{ create_form.attachment }}
+              {% if create_form.attachment.errors %}
+                <div class="field-error">{{ create_form.attachment.errors|join:", " }}</div>
+              {% endif %}
+            </div>
+
             <div class="full-width challenge-submit-row">
               <button type="submit" class="oauthButton">Create Challenge</button>
             </div>
@@ -294,7 +302,7 @@
       <article id="edit-form-{{ challenge.id }}" class="edit-challenge-article" style="{% if active_action == 'edit' and editing_challenge_id|add:0 == challenge.id %}display: block;{% else %}display: none;{% endif %}">
         <h3 style="color: var(--accent-primary);">{{ challenge.name }}</h3>
         <div class="challenge-form-wrapper">
-          <form method="post" class="form content-form">
+          <form method="post" class="form content-form" enctype="multipart/form-data">
             {% csrf_token %}
             <input type="hidden" name="action" value="edit" />
             <input type="hidden" name="challenge_id" value="{{ challenge.id }}" />
@@ -370,6 +378,14 @@
                       <div class="field-error">{{ form.connection_info.errors|join:", " }}</div>
                     {% endif %}
                   </div>
+
+                  <div class="full-width">
+                    <label for="{{ form.attachment.id_for_label }}">Attachment</label>
+                    {{ form.attachment }}
+                    {% if form.attachment.errors %}
+                      <div class="field-error">{{ form.attachment.errors|join:", " }}</div>
+                    {% endif %}
+                  </div>
                 {% else %}
                   {# Default static fields for challenges not currently being edited with errors #}
                   <div>
@@ -410,6 +426,10 @@
                   <div class="full-width">
                     <label>Connection Info</label>
                     <textarea name="connection_info">{{ challenge.connection_info }}</textarea>
+                  </div>
+                  <div class="full-width">
+                    <label>Attachment</label>
+                    <input type="file" name="attachment" />
                   </div>
                 {% endif %}
               {% endwith %}

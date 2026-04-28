@@ -66,7 +66,7 @@
       </div>
     {% endif %}
 
-    <form method="post" class="platform-form">
+    <form method="post" class="platform-form" enctype="multipart/form-data">
       {% csrf_token %}
 
       <div class="challenge-form-grid">
@@ -141,6 +141,16 @@
           {% if form.description.errors %}
             <div class="field-error">
               {{ form.description.errors|join:", " }}
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="field-group full-width">
+          <label for="{{ form.attachment.id_for_label }}">Attachment</label>
+          {{ form.attachment }}
+          {% if form.attachment.errors %}
+            <div class="field-error">
+              {{ form.attachment.errors|join:", " }}
             </div>
           {% endif %}
         </div>

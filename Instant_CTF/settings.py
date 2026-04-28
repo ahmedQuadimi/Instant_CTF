@@ -29,6 +29,22 @@ env = environ.Env(
 )
 environ.Env.read_env(BASE_DIR / ".env")
 
+SUPABASE_URL = env("SUPABASE_URL")
+SUPABASE_KEY = env("SUPABASE_SERVICE_KEY")
+SUPABASE_STORAGE_BUCKET_NAME = env("SUPABASE_STORAGE_BUCKET_NAME")
+SUPABASE_BUCKET = SUPABASE_STORAGE_BUCKET_NAME
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django_supabase_storage.storage_backends.SupabaseStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+MEDIA_URL = f"{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_STORAGE_BUCKET_NAME}/"
+
 # ---------------------------------------------------------------------------
 # Core Security
 # ---------------------------------------------------------------------------

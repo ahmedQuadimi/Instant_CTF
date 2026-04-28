@@ -4,12 +4,13 @@ import hashlib
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.db.models import F
-from django.http import JsonResponse
-from django.shortcuts import render, redirect
+from django.http import FileResponse, Http404, JsonResponse
+from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.urls import reverse
+from urllib.parse import quote
 
 from Events.access import get_roster_or_403
 from Events.models import EventRoster
@@ -18,6 +19,7 @@ from Events.utils import (
     compute_retry_after_seconds,
     event_is_active,
     get_event_or_404,
+    event_has_started,
 )
 from Scoring.models import Solve, Submission
 from .models import Challenge
@@ -42,7 +44,7 @@ def create_challenge(request, event_id):
         return redirect('event_dashboard', event_id=event.id)
 
     if request.method == 'POST':
-        form = ChallengeForm(request.POST, event=event)
+        form = ChallengeForm(request.POST, request.FILES, event=event)
         if form.is_valid():
             challenge = form.save(commit=False)
             points = int(request.POST.get('points', form.cleaned_data.get('points', 100)))
@@ -172,3 +174,28 @@ def challenge_details_json(request, event_id, challenge_id):
             "attachment_url": attachment_url,
         }
     )
+
+
+@login_required
+def download_challenge_attachment(request, event_id, challenge_id):
+    roster_or_response = get_roster_or_403(request, event_id, json=False, with_team=False)
+    if not isinstance(roster_or_response, EventRoster):
+        return roster_or_response
+
+    event = get_event_or_404(event_id)
+    if not event_has_started(event):
+        raise Http404("Challenge not available")
+
+    challenge = get_object_or_404(Challenge, pk=challenge_id, event_id=event_id)
+    if not challenge.is_visible_and_released:
+        raise Http404("Challenge not available")
+
+    if not challenge.attachment:
+        raise Http404("Attachment not found")
+
+    attachment_file = challenge.attachment.open("rb")
+    filename = challenge.attachment.name.rsplit("/", 1)[-1]
+    response = FileResponse(attachment_file, as_attachment=True)
+    quoted_name = quote(filename)
+    response["Content-Disposition"] = f"attachment; filename=\"{filename}\"; filename*=UTF-8''{quoted_name}"
+    return response

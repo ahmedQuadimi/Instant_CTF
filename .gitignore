@@ -6,3 +6,7 @@ __pycache__/
 .claude
 .gitignore
 screenshots/
+scripts/screenshots/
+scripts/visual_audit_report.md
+db.sqlite3
+media/

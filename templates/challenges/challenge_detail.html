@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load ui_extras %}
 {% load static %}
+{% load challenges_extras %}
 
 {% block title %}{{ challenge.name }}{% endblock %}
 
@@ -16,6 +17,13 @@
     <h1>{{ challenge.name }}</h1>
     <p class="meta-line">Category: {{ challenge.category }}</p>
     <p>{{ challenge.description }}</p>
+
+    {% if challenge.attachment %}
+      <div class="message-card info">
+        Attachment:
+        <a href="{% url 'challenge_attachment' event.id challenge.id %}" target="_blank" rel="noopener noreferrer">Download</a>
+      </div>
+    {% endif %}
 
     {% if challenge.connection_info %}
       <div class="message-card info">Connection info: {{ challenge.connection_info }}</div>

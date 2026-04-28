@@ -281,7 +281,7 @@ def manage_event_dashboard(request, event_id):
                 return redirect(f"/events/{event.id}/manage/?saved=1")
 
         if action == "create":
-            form = ChallengeForm(request.POST, event=event)
+            form = ChallengeForm(request.POST, request.FILES, event=event)
             if form.is_valid():
                 form.save()
                 return redirect(f"/events/{event.id}/manage/?saved=1")
@@ -291,7 +291,7 @@ def manage_event_dashboard(request, event_id):
         elif action == "edit":
             challenge_id = request.POST.get("challenge_id")
             challenge = get_object_or_404(Challenge, pk=challenge_id, event=event)
-            form = ChallengeForm(request.POST, instance=challenge, event=event)
+            form = ChallengeForm(request.POST, request.FILES, instance=challenge, event=event)
             if form.is_valid():
                 form.save()
                 return redirect(f"/events/{event.id}/manage/?saved=1")

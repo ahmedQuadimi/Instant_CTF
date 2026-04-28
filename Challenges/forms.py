@@ -2,12 +2,14 @@ from django import forms
 import hashlib
 from .models import Challenge
 
+MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024  # 10 MB
+
 class ChallengeForm(forms.ModelForm):
     flag = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder': 'Enter flag'}))
 
     class Meta:
         model = Challenge
-        fields = ['name', 'category', 'points', 'description', 'connection_info', 'status', 'release_time']
+        fields = ['name', 'category', 'points', 'description', 'connection_info', 'attachment', 'status', 'release_time']
         widgets = {
             'release_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
             'points': forms.NumberInput(attrs={'min': 1}),
@@ -40,6 +42,12 @@ class ChallengeForm(forms.ModelForm):
         if points is None or points < 1:
             raise forms.ValidationError("Points must be a positive integer.")
         return points
+
+    def clean_attachment(self):
+        attachment = self.cleaned_data.get('attachment')
+        if attachment and attachment.size > MAX_ATTACHMENT_SIZE:
+            raise forms.ValidationError("Attachment must be 10 MB or smaller.")
+        return attachment
 
     def clean(self):
         cleaned_data = super().clean()

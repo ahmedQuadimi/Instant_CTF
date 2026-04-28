@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load ui_extras %}
 {% load static %}
+{% load challenges_extras %}
 {% block title %}Event Challenges{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="{% static 'challenges.css' %}">
@@ -59,6 +60,12 @@
                   <div class="modal-connection">
                     <span class="connection-label">Connection</span>
                     <pre><code>{{ challenge.connection_info }}</code></pre>
+                  </div>
+                  {% endif %}
+                  {% if challenge.attachment %}
+                  <div class="message-card info" style="margin-top: 1rem;">
+                    Attachment:
+                    <a href="{% url 'challenge_attachment' event.pk challenge.pk %}" target="_blank" rel="noopener noreferrer">Download</a>
                   </div>
                   {% endif %}
                   {% if challenge.is_solved %}

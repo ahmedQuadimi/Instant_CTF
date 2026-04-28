@@ -13,6 +13,12 @@ class Challenge(models.Model):
     category = models.CharField(max_length=50)
     description = models.TextField()
     connection_info = models.TextField(blank=True)
+    attachment = models.FileField(
+        upload_to="challenges/attachments/",
+        blank=True,
+        null=True,
+        help_text="Private attachment for the challenge.",
+    )
     status = models.CharField(
         max_length=20,
         choices=[("HIDDEN", "Hidden"), ("VISIBLE", "Visible")],

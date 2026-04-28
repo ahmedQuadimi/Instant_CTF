@@ -21,17 +21,45 @@
       <p class="meta-line"><strong>Event:</strong> {{ event.title }}</p>
     {% endif %}
 
+    {% if not is_member and request.user.is_authenticated %}
+      <p style="margin-top: 1rem;">
+      {% if has_pending_request %}
+        <span class="status-badge" style="opacity: 0.7;"><span>Request Pending</span></span>
+      {% else %}
+        <a class="oauthButton" href="{% url 'request_join' team.id %}" style="display:inline-block; text-decoration:none;">Request to Join</a>
+      {% endif %}
+      </p>
+    {% elif not request.user.is_authenticated %}
+      <p style="margin-top: 1rem;">
+        <a href="#login-modal" class="oauthButton" style="display:inline-block; text-decoration:none;">
+          Sign in to join
+        </a>
+      </p>
+    {% elif is_captain %}
+      <p style="margin-top: 1rem;">
+        <a class="oauthButton" href="{% url 'team_manage' team.id %}" style="display:inline-block; text-decoration:none;">Manage Team</a>
+      </p>
+    {% endif %}
+
     <section>
       <h2>Members</h2>
-      {% if members %}
-        <ul class="platform-list">
-          {% for roster in members %}
-            <li>{{ roster.user.username }}</li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <div class="empty-state"><p>No members are registered for this team in this event.</p></div>
-      {% endif %}
+      <div class="platform-list">
+        <!-- Captain row -->
+        <div class="member-row" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: var(--border);">
+          <span>{{ team.captain.username }}</span>
+          <span class="status-badge active">
+            Captain
+          </span>
+        </div>
+        <!-- Other members -->
+        {% for membership in memberships %}
+          {% if membership.user != team.captain %}
+          <div class="member-row" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: var(--border);">
+            <span>{{ membership.user.username }}</span>
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
     </section>
 
     <section>

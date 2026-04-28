@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load ui_extras %}
 
 {% block title %}Events{% endblock %}
 
@@ -15,23 +16,52 @@
       {% endif %}
     </div>
 
-    {% if event_data %}
+    <form method="GET" action="" class="search-form" data-no-warn>
+      <div class="search-bar">
+        <input
+          type="text"
+          name="q"
+          value="{{ query }}"
+          placeholder="Search events..."
+          class="search-input"
+        >
+        <button type="submit" class="search-btn">Search</button>
+      </div>
+      <div class="filter-row">
+        <select name="status" class="filter-select">
+          <option value="">All statuses</option>
+          <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+          <option value="upcoming" {% if status_filter == 'upcoming' %}selected{% endif %}>Upcoming</option>
+          <option value="ended" {% if status_filter == 'ended' %}selected{% endif %}>Ended</option>
+        </select>
+        <input
+          type="text"
+          name="org"
+          value="{{ org_filter }}"
+          placeholder="Filter by organization..."
+          class="filter-input"
+        >
+        {% if query or status_filter or org_filter %}
+          <a href="{% url 'event_list' %}" class="clear-filters">Clear filters</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {% if events %}
       <div class="event-card-grid">
-        {% for item in event_data %}
+        {% for event in events %}
           <article class="platform-card">
-            <h2><a href="{% url 'event_dashboard' item.event.id %}">{{ item.event.title }}</a></h2>
-            <p class="meta-line">Organization: {{ item.event.organization.name }}</p>
-            <p class="meta-line">Start: {{ item.event.start_time|date:"M d, Y H:i" }}</p>
-            <p class="meta-line">End: {{ item.event.end_time|date:"M d, Y H:i" }}</p>
+            <h2><a href="{% url 'event_dashboard' event.id %}">{{ event.title }}</a></h2>
+            <p class="meta-line">Organization: {{ event.organization.name }}</p>
+            <p class="meta-line">Start: {{ event.start_time|date:"M d, Y H:i" }}</p>
+            <p class="meta-line">End: {{ event.end_time|date:"M d, Y H:i" }}</p>
             <div class="badge-row">
-              <span class="status-badge {{ item.event.visibility }}">{{ item.event.visibility }}</span>
-              <span class="status-badge {{ item.time_status }}">
-                {% if item.time_status == "upcoming" %}Upcoming
-                {% elif item.time_status == "active" %}Active
-                {% else %}Ended{% endif %}
+              <span class="status-badge {{ event.visibility|lower }}">{{ event.visibility|title }}</span>
+              <span class="status-badge {{ event.time_status|status_badge_class }}">
+                {{ event.time_status|title }}
               </span>
             </div>
-            <a class="btn-secondary" href="{% url 'event_dashboard' item.event.id %}">Open Dashboard</a>
+            <a class="btn-secondary" href="{% url 'event_dashboard' event.id %}">Open Dashboard</a>
           </article>
         {% endfor %}
       </div>

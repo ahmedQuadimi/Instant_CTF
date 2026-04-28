@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load ui_extras %}
 {% block title %}Scoreboard — {{ event.title }}{% endblock %}
 
 {% block extra_css %}
@@ -42,9 +43,9 @@
   <section class="platform-stack content-wide">
     <div class="scoreboard-header">
       <h1 class="gradient-heading">Scoreboard</h1>
-      {% if event_ended %}
-        <span class="ended-badge">Final Results</span>
-      {% endif %}
+      <span class="status-badge {{ event.time_status|status_badge_class }}">
+        {{ event.time_status|title }}
+      </span>
     </div>
 
     {% if ranked_teams %}

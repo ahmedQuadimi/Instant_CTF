@@ -5,7 +5,12 @@ from django.db import models
 
 
 class User(AbstractUser):
-    elo = models.IntegerField(default=0, db_index=True)
+    ROLE_CHOICES = [
+        ("SITE_ADMIN", "Site Admin"),
+        ("PLAYER", "Player"),
+    ]
+
+    site_role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="PLAYER")
 
     def __str__(self):
         return self.username

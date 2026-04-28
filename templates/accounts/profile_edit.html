@@ -82,24 +82,35 @@
 {% block content %}
 <div class="edit-card">
   <h1>Edit Profile</h1>
-  <form method="POST" action="{% url 'profile_edit' %}" class="form">
-    {% csrf_token %}
-    <div style="display:grid;gap:16px;">
-      <div>
-        <label for="id_username">Username</label>
-        <input type="text" id="id_username" name="username" value="{{ profile_user.username }}" required />
-        <p class="hint">This is your public display name on scoreboards.</p>
+    {% if form.non_field_errors %}
+      <div class="message message-error" style="margin-bottom: 1.5rem;">
+        {{ form.non_field_errors|join:", " }}
       </div>
-      <div>
-        <label>Email</label>
-        <input type="text" name="email_display" value="{{ profile_user.email }}" disabled style="opacity:0.6;" />
-        <p class="hint">Email changes are managed via <a href="{% url 'account_email' %}">email settings</a>.</p>
+    {% endif %}
+
+    <form method="POST" action="{% url 'profile_edit' %}" class="form">
+      {% csrf_token %}
+      <div style="display:grid;gap:16px;">
+        <div>
+          <label for="{{ form.username.id_for_label }}">Username</label>
+          {{ form.username }}
+          {% if form.username.errors %}
+            <div class="field-error">
+              {{ form.username.errors|join:", " }}
+            </div>
+          {% endif %}
+          <p class="hint">This is your public display name on scoreboards.</p>
+        </div>
+        <div>
+          <label>Email</label>
+          <input type="text" name="email_display" value="{{ profile_user.email }}" disabled style="opacity:0.6;" />
+          <p class="hint">Email changes are managed via <a href="{% url 'account_email' %}">email settings</a>.</p>
+        </div>
+        <div class="edit-actions">
+          <button type="submit" class="oauthButton">→ SAVE CHANGES</button>
+          <a href="{% url 'profile' user_id=profile_user.id %}" class="cancel-btn">Cancel</a>
+        </div>
       </div>
-      <div class="edit-actions">
-        <button type="submit" class="oauthButton">→ SAVE CHANGES</button>
-        <a href="{% url 'profile' user_id=profile_user.id %}" class="cancel-btn">Cancel</a>
-      </div>
-    </div>
-  </form>
+    </form>
 </div>
 {% endblock %}

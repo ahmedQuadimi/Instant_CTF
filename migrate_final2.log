@@ -1,0 +1,4 @@
+Operations to perform:
+  Apply all migrations: Accounts, Challenges, Events, Organizations, Scoring, Teams, account, admin, auth, contenttypes, sessions, sites, socialaccount
+Running migrations:
+  Applying Events.0005_event_invite_token... OK

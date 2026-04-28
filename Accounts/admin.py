@@ -6,8 +6,8 @@ from .models import User
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
-    list_display = ("username", "email", "elo", "is_staff")
+    list_display = ("username", "email", "site_role", "is_staff")
     search_fields = ("username", "email")
 
     # Adds global_score to the admin edit screen safely
-    fieldsets = UserAdmin.fieldsets + (("CTF Stats", {"fields": ("elo",)}),)
+    fieldsets = UserAdmin.fieldsets + (("CTF Stats", {"fields": ("site_role",)}),)

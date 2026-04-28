@@ -1,63 +1,143 @@
 {% extends "base.html" %}
+{% load ui_extras %}
 {% block title %}Manage Event Dashboard{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="/static/css/platform.css">
+  <style>
+    .challenge-form-wrapper {
+      max-width: 860px;
+      margin: 0 auto 1.5rem;
+      padding: 1.5rem;
+      border: var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-surface);
+    }
+    .challenge-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px 32px;
+    }
+    .challenge-form-grid .full-width {
+      grid-column: 1 / -1;
+    }
+    .challenge-form-grid textarea {
+      max-height: 160px;
+      resize: vertical;
+    }
+    .challenge-helper {
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      margin-top: 8px;
+    }
+    .challenge-submit-row {
+      display: flex;
+      justify-content: center;
+    }
+    .challenge-submit-row .oauthButton {
+      width: 100%;
+      max-width: 260px;
+    }
+    @media (max-width: 768px) {
+      .challenge-form-grid {
+        grid-template-columns: 1fr;
+      }
+      .challenge-form-grid .full-width {
+        grid-column: 1;
+      }
+    }
+  </style>
 {% endblock %}
 {% block content %}
   {% include 'events/_event_nav.html' %}
 
   <section class="platform-stack content-wide">
-    <h1 class="gradient-heading">Manage Event Dashboard</h1>
-    <p class="meta-line">Event: {{ event.title }}</p>
-    <a class="btn-secondary" href="{% url 'create_challenge' event.id %}">Create Challenge</a>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;">
+      <div>
+        <h1 class="gradient-heading">Manage Event Dashboard</h1>
+        <p class="meta-line">Event: {{ event.title }}</p>
+      </div>
+      {% get_event_role request.user event as user_event_role %}
+      {% if user_event_role == 'OWNER' %}
+        <a href="{% url 'edit_event' event.pk %}" class="oauthButton">Edit Event</a>
+      {% endif %}
+    </div>
+    
+    {% if event.visibility == 'PRIVATE' %}
+      <div class="invite-section">
+        <h3>Private Event Invite Link</h3>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.5rem;">
+          Share this link with users to grant them access to this private event.
+        </p>
+        {% if event.invite_token %}
+          <code class="invite-url">
+            {{ request.scheme }}://{{ request.get_host }}{% url 'accept_invite' event.invite_token %}
+          </code>
+        {% endif %}
+        <form method="POST" action="{% url 'generate_invite' event.id %}">
+          {% csrf_token %}
+          <button type="submit" class="oauthButton">
+            {% if event.invite_token %}
+              Regenerate Link
+            {% else %}
+              Generate Invite Link
+            {% endif %}
+          </button>
+        </form>
+      </div>
+    {% endif %}
 
     {% if saved %}
       <div class="message-card success">Challenge saved successfully.</div>
     {% endif %}
 
-    {% if form_errors %}
-      <div class="message-card error">
-        <h2>Validation Errors</h2>
-        <ul>
-          {% for error in form_errors %}
-            <li>{{ error }}</li>
-          {% endfor %}
-        </ul>
+    {% if active_action == "create" and create_form.errors %}
+      <div class="message message-error">
+        Please correct the errors in the challenge creation form below.
       </div>
     {% endif %}
 
-    <div class="dashboard-panels">
-      <section>
-        <h2>Challenges Panel</h2>
-        <table class="platform-table">
-        <thead>
+    {% if active_action == "edit" and edit_form.errors %}
+      <div class="message message-error">
+        Please correct the errors in the challenge edit form below.
+      </div>
+    {% endif %}
+
+    <section>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 style="margin: 0;">Challenges Panel</h2>
+        <button type="button" class="oauthButton oauthButton--small" onclick="toggleCreateChallenge()">Add Challenge</button>
+      </div>
+      <table class="platform-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Release Time</th>
+          <th>Solves</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for challenge in challenges %}
           <tr>
-            <th>Name</th>
-            <th>Release Time</th>
-            <th>Solves</th>
-            <th>Status</th>
-            <th>Toggle</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for challenge in challenges %}
-            <tr>
-              <td>{{ challenge.name }}</td>
-              <td>
-                {% if challenge.release_time %}
-                  {{ challenge.release_time }}
-                {% else %}
-                  -
-                {% endif %}
-              </td>
-              <td>{{ challenge.solves_count }}</td>
-              <td><span class="status-badge"><span>{{ challenge.status|default:challenge.status }}</span></span></td>
-              <td>
-                <form method="post" style="max-width:100%;">
+            <td>{{ challenge.name }}</td>
+            <td>
+              {% if challenge.release_time %}
+                {{ challenge.release_time }}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td>{{ challenge.solves_count }}</td>
+            <td><span class="status-badge"><span>{{ challenge.status|default:challenge.status }}</span></span></td>
+            <td>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="oauthButton oauthButton--small" onclick="showEditForm('{{ challenge.id }}')">Modify</button>
+                <form method="post" style="margin: 0; max-width: 100%;">
                   {% csrf_token %}
                   <input type="hidden" name="action" value="toggle_status" />
                   <input type="hidden" name="challenge_id" value="{{ challenge.id }}" />
-                  {% if challenge.status == "VISIBLE" or challenge.status == "VISIBLE" %}
+                  {% if challenge.status == "VISIBLE" %}
                     <input type="hidden" name="new_status" value="HIDDEN" />
                     <button type="submit" class="oauthButton oauthButton--small">Set Hidden</button>
                   {% else %}
@@ -65,181 +145,322 @@
                     <button type="submit" class="oauthButton oauthButton--small">Set Visible</button>
                   {% endif %}
                 </form>
-              </td>
-            </tr>
-          {% empty %}
-            <tr>
-              <td colspan="5"><div class="empty-state">No challenges yet.</div></td>
-            </tr>
-          {% endfor %}
-        </tbody>
-        </table>
-      </section>
-
-      <section>
-        <h2>Teams Panel (Read-Only)</h2>
-        <table class="platform-table">
-        <thead>
-          <tr>
-            <th>Team</th>
-            <th>Member Count</th>
-            <th>Joined At</th>
+              </div>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          {% for row in team_panel_rows %}
-            <tr>
-              <td>{{ row.team_name }}</td>
-              <td>{{ row.member_count }}</td>
-              <td>{{ row.joined_at }}</td>
-            </tr>
-          {% empty %}
-            <tr>
-              <td colspan="3"><div class="empty-state">No teams are registered yet.</div></td>
-            </tr>
-          {% endfor %}
-        </tbody>
-        </table>
-      </section>
-    </div>
-
-  <section>
-    <h2>Create Challenge</h2>
-    <form method="post" class="form content-form">
-      {% csrf_token %}
-      <input type="hidden" name="action" value="create" />
-
-      <label for="create-name">Name</label>
-      <input id="create-name" name="name" type="text" required />
-
-      <label for="create-category">Category</label>
-      <input id="create-category" name="category" type="text" required />
-
-      <label for="create-description">Description</label>
-      <textarea id="create-description" name="description" required></textarea>
-
-      <label for="create-connection-info">Connection Info</label>
-      <textarea id="create-connection-info" name="connection_info"></textarea>
-
-      <label for="create-status">Status</label>
-      <select id="create-status" name="{{ status_field }}">
-        {% for value, label in challenge_status_choices %}
-          <option value="{{ value }}">{{ label }}</option>
+        {% empty %}
+          <tr>
+            <td colspan="5"><div class="empty-state">No challenges yet.</div></td>
+          </tr>
         {% endfor %}
-      </select>
+      </tbody>
+      </table>
+    </section>
 
-      <label for="create-raw-flag">Flag (plaintext input, hashed server-side)</label>
-      <input id="create-raw-flag" name="raw_flag" type="text" required />
+    <section>
+      <h2>Users Panel (Read-Only)</h2>
+      <table class="platform-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Team</th>
+          <th>Joined At</th>
+          <th>Role</th>
+          {% if requester_role == 'OWNER' %}
+            <th>Actions</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in team_panel_rows %}
+          <tr>
+            <td>{{ row.user.username }}</td>
+            <td>{{ row.team_name }}</td>
+            <td>{{ row.joined_at|date:"M d, Y" }}</td>
+            <td>{{ row.role }}</td>
+            {% if requester_role == 'OWNER' %}
+              <td>
+                <form method="POST" style="display:inline-flex;gap:6px;align-items:center;max-width:100%;">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="assign_role" />
+                  <input type="hidden" name="user_id" value="{{ row.user.id }}" />
+                  <select name="event_role" style="min-height:30px;padding:2px 8px;font-size:0.85rem;border-radius:var(--radius);border:var(--border);background:var(--bg-surface);color:var(--text-primary);">
+                    <option value="PLAYER" {% if row.role == 'PLAYER' %}selected{% endif %}>Player</option>
+                    <option value="ADMIN" {% if row.role == 'ADMIN' %}selected{% endif %}>Admin</option>
+                  </select>
+                  <button type="submit" class="oauthButton oauthButton--small" style="min-height:30px;padding:4px 8px;">Set Role</button>
+                </form>
+              </td>
+            {% endif %}
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="{% if requester_role == 'OWNER' %}5{% else %}4{% endif %}"><div class="empty-state">No users are registered yet.</div></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      </table>
+    </section>
 
-      <label for="create-release-time">Release Time</label>
-      <input id="create-release-time" name="release_time" type="datetime-local" />
-
-      <label for="create-min-points">Min Points</label>
-      <input id="create-min-points" name="min_points" type="number" step="any" placeholder="Must be less than max points" />
-
-      <label for="create-max-points">Max Points</label>
-      <input id="create-max-points" name="max_points" type="number" step="any" placeholder="Must be greater than min points" />
-
-      <label for="create-decay-factor">Decay Factor</label>
-      <input id="create-decay-factor" name="decay_factor" type="number" step="any" min="0.0000001" placeholder="Must be > 0" />
-
-      <button type="submit" class="oauthButton">Create Challenge</button>
-    </form>
-  </section>
-
-  <section>
-    <h2>Edit Existing Challenges</h2>
-    {% for challenge in challenges %}
-      <article>
-        <h3>{{ challenge.name }}</h3>
+    <section id="create-challenge-section" style="{% if active_action == 'create' %}display: block;{% else %}display: none;{% endif %}">
+      <h2>Create Challenge</h2>
+      <div class="challenge-form-wrapper">
         <form method="post" class="form content-form">
           {% csrf_token %}
-          <input type="hidden" name="action" value="edit" />
-          <input type="hidden" name="challenge_id" value="{{ challenge.id }}" />
+          <input type="hidden" name="action" value="create" />
 
-          <label for="edit-name-{{ challenge.id }}">Name</label>
-          <input
-            id="edit-name-{{ challenge.id }}"
-            name="name"
-            type="text"
-            value="{{ challenge.name }}"
-            required
-          />
-
-          <label for="edit-category-{{ challenge.id }}">Category</label>
-          <input
-            id="edit-category-{{ challenge.id }}"
-            name="category"
-            type="text"
-            value="{{ challenge.category }}"
-            required
-          />
-
-          <label for="edit-description-{{ challenge.id }}">Description</label>
-          <textarea id="edit-description-{{ challenge.id }}" name="description" required>{{ challenge.description }}</textarea>
-
-          <label for="edit-connection-info-{{ challenge.id }}">Connection Info</label>
-          <textarea id="edit-connection-info-{{ challenge.id }}" name="connection_info">{{ challenge.connection_info }}</textarea>
-
-          <label for="edit-status-{{ challenge.id }}">Status</label>
-          <select id="edit-status-{{ challenge.id }}" name="{{ status_field }}">
-            {% for value, label in challenge_status_choices %}
-              {% if value == challenge.status or value == challenge.status %}
-                <option value="{{ value }}" selected>{{ label }}</option>
-              {% else %}
-                <option value="{{ value }}">{{ label }}</option>
+          <div class="challenge-form-grid">
+            <div>
+              <label for="{{ create_form.name.id_for_label }}">Name</label>
+              {{ create_form.name }}
+              {% if create_form.name.errors %}
+                <div class="field-error">{{ create_form.name.errors|join:", " }}</div>
               {% endif %}
-            {% endfor %}
-          </select>
+            </div>
 
-          <label for="edit-raw-flag-{{ challenge.id }}">New Flag (optional, plaintext input)</label>
-          <input id="edit-raw-flag-{{ challenge.id }}" name="raw_flag" type="text" />
+            <div>
+              <label for="{{ create_form.category.id_for_label }}">Category</label>
+              {{ create_form.category }}
+              {% if create_form.category.errors %}
+                <div class="field-error">{{ create_form.category.errors|join:", " }}</div>
+              {% endif %}
+            </div>
 
-          <label for="edit-release-time-{{ challenge.id }}">Release Time</label>
-          <input
-            id="edit-release-time-{{ challenge.id }}"
-            name="release_time"
-            type="datetime-local"
-            value="{% if challenge.release_time %}{{ challenge.release_time|date:'Y-m-d\\TH:i' }}{% endif %}"
-          />
+            <div>
+              <label for="{{ create_form.points.id_for_label }}">Points</label>
+              {{ create_form.points }}
+              {% if create_form.points.errors %}
+                <div class="field-error">{{ create_form.points.errors|join:", " }}</div>
+              {% endif %}
+            </div>
 
-          <label for="edit-min-points-{{ challenge.id }}">Min Points</label>
-          <input
-            id="edit-min-points-{{ challenge.id }}"
-            name="min_points"
-            type="number"
-            step="any"
-            placeholder="Must be less than max points"
-            value="{{ challenge.min_points|default:'' }}"
-          />
+            <div>
+              <label for="{{ create_form.status.id_for_label }}">Status</label>
+              {{ create_form.status }}
+              {% if create_form.status.errors %}
+                <div class="field-error">{{ create_form.status.errors|join:", " }}</div>
+              {% endif %}
+            </div>
 
-          <label for="edit-max-points-{{ challenge.id }}">Max Points</label>
-          <input
-            id="edit-max-points-{{ challenge.id }}"
-            name="max_points"
-            type="number"
-            step="any"
-            placeholder="Must be greater than min points"
-            value="{{ challenge.max_points|default:'' }}"
-          />
+            <div>
+              <label for="{{ create_form.release_time.id_for_label }}">Release Time</label>
+              {{ create_form.release_time }}
+              {% if create_form.release_time.errors %}
+                <div class="field-error">{{ create_form.release_time.errors|join:", " }}</div>
+              {% endif %}
+            </div>
 
-          <label for="edit-decay-factor-{{ challenge.id }}">Decay Factor</label>
-          <input
-            id="edit-decay-factor-{{ challenge.id }}"
-            name="decay_factor"
-            type="number"
-            step="any"
-            min="0.0000001"
-            placeholder="Must be > 0"
-            value="{{ challenge.decay_factor|default:'' }}"
-          />
+            <div>
+              <label for="{{ create_form.flag.id_for_label }}">Flag (plaintext input, hashed server-side)</label>
+              {{ create_form.flag }}
+              {% if create_form.flag.errors %}
+                <div class="field-error">{{ create_form.flag.errors|join:", " }}</div>
+              {% endif %}
+            </div>
 
-          <button class="oauthButton" type="submit">Save Challenge</button>
+            <div>
+              <label aria-hidden="true" style="opacity:0;">Helper</label>
+              <div class="challenge-helper">Set VISIBLE + release time to schedule timed publishing.</div>
+            </div>
+
+            <div class="full-width">
+              <label for="{{ create_form.description.id_for_label }}">Description</label>
+              {{ create_form.description }}
+              {% if create_form.description.errors %}
+                <div class="field-error">{{ create_form.description.errors|join:", " }}</div>
+              {% endif %}
+            </div>
+
+            <div class="full-width">
+              <label for="{{ create_form.connection_info.id_for_label }}">Connection Info</label>
+              {{ create_form.connection_info }}
+              {% if create_form.connection_info.errors %}
+                <div class="field-error">{{ create_form.connection_info.errors|join:", " }}</div>
+              {% endif %}
+            </div>
+
+            <div class="full-width challenge-submit-row">
+              <button type="submit" class="oauthButton">Create Challenge</button>
+            </div>
+          </div>
         </form>
+      </div>
+    </section>
+
+  <section>
+    <h2 id="edit-challenges-header" style="{% if active_action == 'edit' %}display: block;{% else %}display: none;{% endif %}">Edit Existing Challenges</h2>
+    {% for challenge in challenges %}
+      <article id="edit-form-{{ challenge.id }}" class="edit-challenge-article" style="{% if active_action == 'edit' and editing_challenge_id|add:0 == challenge.id %}display: block;{% else %}display: none;{% endif %}">
+        <h3 style="color: var(--accent-primary);">{{ challenge.name }}</h3>
+        <div class="challenge-form-wrapper">
+          <form method="post" class="form content-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="edit" />
+            <input type="hidden" name="challenge_id" value="{{ challenge.id }}" />
+
+            <div class="challenge-form-grid">
+              {% with form=edit_form %}
+                {% if editing_challenge_id|add:0 == challenge.id %}
+                  <div>
+                    <label for="{{ form.name.id_for_label }}">Name</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                      <div class="field-error">{{ form.name.errors|join:", " }}</div>
+                    {% endif %}
+                  </div>
+
+                  <div>
+                    <label for="{{ form.category.id_for_label }}">Category</label>
+                    {{ form.category }}
+                    {% if form.category.errors %}
+                      <div class="field-error">{{ form.category.errors|join:", " }}</div>
+                    {% endif %}
+                  </div>
+
+                  <div>
+                    <label for="{{ form.points.id_for_label }}">Points</label>
+                    {{ form.points }}
+                    {% if form.points.errors %}
+                      <div class="field-error">{{ form.points.errors|join:", " }}</div>
+                    {% endif %}
+                  </div>
+
+                  <div>
+                    <label for="{{ form.status.id_for_label }}">Status</label>
+                    {{ form.status }}
+                    {% if form.status.errors %}
+                      <div class="field-error">{{ form.status.errors|join:", " }}</div>
+                    {% endif %}
+                  </div>
+
+                  <div>
+                    <label for="{{ form.release_time.id_for_label }}">Release Time</label>
+                    {{ form.release_time }}
+                    {% if form.release_time.errors %}
+                      <div class="field-error">{{ form.release_time.errors|join:", " }}</div>
+                    {% endif %}
+                  </div>
+
+                  <div>
+                    <label for="{{ form.flag.id_for_label }}">New Flag (optional)</label>
+                    {{ form.flag }}
+                    {% if form.flag.errors %}
+                      <div class="field-error">{{ form.flag.errors|join:", " }}</div>
+                    {% endif %}
+                  </div>
+
+                  <div>
+                    <label aria-hidden="true" style="opacity:0;">Helper</label>
+                    <div class="challenge-helper">Leave flag empty to keep current hash.</div>
+                  </div>
+
+                  <div class="full-width">
+                    <label for="{{ form.description.id_for_label }}">Description</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                      <div class="field-error">{{ form.description.errors|join:", " }}</div>
+                    {% endif %}
+                  </div>
+
+                  <div class="full-width">
+                    <label for="{{ form.connection_info.id_for_label }}">Connection Info</label>
+                    {{ form.connection_info }}
+                    {% if form.connection_info.errors %}
+                      <div class="field-error">{{ form.connection_info.errors|join:", " }}</div>
+                    {% endif %}
+                  </div>
+                {% else %}
+                  {# Default static fields for challenges not currently being edited with errors #}
+                  <div>
+                    <label>Name</label>
+                    <input type="text" name="name" value="{{ challenge.name }}" />
+                  </div>
+                  <div>
+                    <label>Category</label>
+                    <input type="text" name="category" value="{{ challenge.category }}" />
+                  </div>
+                  <div>
+                    <label>Points</label>
+                    <input type="number" name="points" value="{{ challenge.points|default:100 }}" min="1" required />
+                  </div>
+                  <div>
+                    <label>Status</label>
+                    <select name="status">
+                      <option value="HIDDEN" {% if challenge.status == 'HIDDEN' %}selected{% endif %}>Hidden</option>
+                      <option value="VISIBLE" {% if challenge.status == 'VISIBLE' %}selected{% endif %}>Visible</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label>Release Time</label>
+                    <input type="datetime-local" name="release_time" value="{{ challenge.release_time|date:'Y-m-d\\TH:i' }}" />
+                  </div>
+                  <div>
+                    <label>New Flag (optional)</label>
+                    <input type="text" name="flag" />
+                  </div>
+                  <div>
+                    <label aria-hidden="true" style="opacity:0;">Helper</label>
+                    <div class="challenge-helper">Leave flag empty to keep current hash.</div>
+                  </div>
+                  <div class="full-width">
+                    <label>Description</label>
+                    <textarea name="description">{{ challenge.description }}</textarea>
+                  </div>
+                  <div class="full-width">
+                    <label>Connection Info</label>
+                    <textarea name="connection_info">{{ challenge.connection_info }}</textarea>
+                  </div>
+                {% endif %}
+              {% endwith %}
+
+              <div class="full-width challenge-submit-row">
+                <button class="oauthButton" type="submit">Save Challenge</button>
+              </div>
+            </div>
+          </form>
+        </div>
       </article>
     {% empty %}
       <div class="empty-state">No challenges yet.</div>
     {% endfor %}
   </section>
   </section>
+
+  <script>
+    function toggleCreateChallenge() {
+      const section = document.getElementById('create-challenge-section');
+      if (section.style.display === 'none' || section.style.display === '') {
+        section.style.display = 'block';
+        section.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        section.style.display = 'none';
+      }
+    }
+    
+    function showEditForm(challengeId) {
+      const target = document.getElementById('edit-form-' + challengeId);
+      
+      if (target && target.style.display === 'block') {
+        target.style.display = 'none';
+        
+        let anyVisible = false;
+        document.querySelectorAll('.edit-challenge-article').forEach(el => {
+          if (el.style.display === 'block') anyVisible = true;
+        });
+        if (!anyVisible) {
+          document.getElementById('edit-challenges-header').style.display = 'none';
+        }
+        return;
+      }
+
+      document.querySelectorAll('.edit-challenge-article').forEach(el => {
+        el.style.display = 'none';
+      });
+      document.getElementById('edit-challenges-header').style.display = 'block';
+      if (target) {
+        target.style.display = 'block';
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  </script>
 {% endblock %}

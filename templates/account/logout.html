@@ -10,7 +10,7 @@
     <div class="form content-form">
       <h1>Sign Out</h1>
       <p class="meta-line">Are you sure you want to sign out of Instant CTF?</p>
-      <form method="POST" action="{% url 'account_logout' %}">
+      <form method="POST" action="{% url 'account_logout' %}" data-no-warn>
         {% csrf_token %}
         <button type="submit" class="oauthButton">→ SIGN OUT</button>
       </form>

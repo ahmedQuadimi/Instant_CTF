@@ -87,6 +87,7 @@
     <a class="btn-secondary" href="{% url 'team_detail' team.id %}" style="min-height:44px;padding:10px 14px;border-radius:var(--radius);border:var(--border);background:var(--bg-surface);color:var(--text-primary);font-family:var(--font-mono);text-decoration:none;display:inline-flex;align-items:center;">← Back to Team</a>
   </div>
   <p class="meta-line">Captain: {{ team.captain.username }}</p>
+  <p class="meta-line">Processed Requests (Accepted/Rejected): {{ history_count }}</p>
 
   {% if pending_requests %}
   <div style="margin-top:16px;">
@@ -98,13 +99,13 @@
           <small>Requested {{ jr.requested_at|date:"M d, Y H:i" }}</small>
         </div>
         <div class="request-actions">
-          <form method="POST" class="form" style="display:inline;max-width:100%;padding:10px;">
+          <form method="POST" class="form" style="display:inline;max-width:100%;padding:10px;" data-no-warn="true">
             {% csrf_token %}
             <input type="hidden" name="action" value="accept" />
             <input type="hidden" name="join_request_id" value="{{ jr.id }}" />
             <button type="submit" class="oauthButton">✓ Accept</button>
           </form>
-          <form method="POST" class="form" style="display:inline;max-width:100%;padding:10px;">
+          <form method="POST" class="form" style="display:inline;max-width:100%;padding:10px;" data-no-warn="true">
             {% csrf_token %}
             <input type="hidden" name="action" value="reject" />
             <input type="hidden" name="join_request_id" value="{{ jr.id }}" />
@@ -118,28 +119,33 @@
 
   <div style="margin-top:16px;">
     <h2 class="section-title">Members</h2>
-    {% if members %}
     <table class="platform-table">
       <thead>
         <tr>
           <th>User</th>
-          <th>Event</th>
           <th>Joined</th>
         </tr>
       </thead>
       <tbody>
-        {% for roster in members %}
+        <!-- Captain row -->
+        <tr>
+          <td>
+            {{ team.captain.username }}
+            <span class="status-badge active" style="margin-left: 8px;">Captain</span>
+          </td>
+          <td>{{ team.created_at|date:"M d, Y" }}</td>
+        </tr>
+        <!-- Other members -->
+        {% for member in memberships %}
+          {% if member.user != team.captain %}
           <tr>
-            <td>{{ roster.user.username }}</td>
-            <td>{{ roster.event.title }}</td>
-            <td>{{ roster.joined_at|date:"M d, Y" }}</td>
+            <td>{{ member.user.username }}</td>
+            <td>{{ member.joined_at|date:"M d, Y" }}</td>
           </tr>
+          {% endif %}
         {% endfor %}
       </tbody>
     </table>
-    {% else %}
-      <div class="empty-state"><p>No members registered in events yet.</p></div>
-    {% endif %}
   </div>
 </section>
 {% endblock %}

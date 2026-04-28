@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 from Events.models import Event
 
@@ -19,6 +20,7 @@ class Challenge(models.Model):
         db_index=True,
     )
     flag_hash = models.CharField(max_length=128)
+    points = models.IntegerField(default=100)
 
     release_time = models.DateTimeField(
         blank=True,
@@ -32,6 +34,17 @@ class Challenge(models.Model):
         db_index=True,
         help_text="Current points value of this challenge. Updated based on solves.",
     )
+
+    @property
+    def is_released(self):
+        if self.release_time is None:
+            return True
+        return timezone.now() >= self.release_time
+    
+    @property
+    def is_visible_and_released(self):
+        return (self.status == 'VISIBLE' and 
+                self.is_released)
 
     class Meta:
         ordering = ["category", "release_time", "name"]

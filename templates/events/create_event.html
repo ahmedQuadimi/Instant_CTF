@@ -1,67 +1,141 @@
 {% extends "base.html" %}
 
-{% block title %}Create Event{% endblock %}
+{% block title %}Create Event — Instant CTF{% endblock %}
 
 {% block extra_css %}
   <link rel="stylesheet" href="/static/css/platform.css">
+  <style>
+    .form-container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 2rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--accent-primary);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .field-full {
+      grid-column: 1 / -1;
+    }
+    .helper-text {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+  </style>
 {% endblock %}
 
 {% block content %}
-  <section class="platform-stack" aria-labelledby="create-event-title">
-    <h1 id="create-event-title">Create Event</h1>
+  <div class="form-container">
+    <h1 class="gradient-heading" style="font-size: 1.8rem; margin-bottom: 0.5rem;">Initialize Event,</h1>
+    <p style="color:var(--text-secondary); margin-bottom: 2rem;">Configure your competition parameters below.</p>
 
-    {% if saved %}
-      <div class="message-card success">Event created successfully.</div>
-    {% endif %}
-
-    {% if errors %}
-      <div class="message-card error">
-        <strong>Fix the following:</strong>
-        <ul>
-          {% for error in errors %}
-            <li>{{ error }}</li>
-          {% endfor %}
-        </ul>
+    {% if form.non_field_errors %}
+      <div class="message message-error" style="margin-bottom: 2rem;">
+        {{ form.non_field_errors|join:", " }}
       </div>
     {% endif %}
 
-    <form method="post" class="form">
-      {% csrf_token %}
-
-      <label for="title">Title</label>
-      <input id="title" name="title" type="text" required>
-
-      <label for="organization_id">Organization</label>
-      <select id="organization_id" name="organization_id" required>
-        <option value="">Select organization</option>
-        {% for organization in organizations %}
-          <option value="{{ organization.id }}">{{ organization.name }}</option>
-        {% endfor %}
-      </select>
-
-      <label for="visibility">Visibility</label>
-      <select id="visibility" name="visibility" required>
-        <option value="PUBLIC">PUBLIC</option>
-        <option value="CODE">CODE</option>
-        <option value="INVITE">INVITE</option>
-      </select>
-
-      <label for="access_code">Access code (for CODE events)</label>
-      <input id="access_code" name="access_code" type="text">
-
-      <label for="start_time">Start time</label>
-      <input id="start_time" name="start_time" type="datetime-local" required>
-
-      <label for="end_time">End time</label>
-      <input id="end_time" name="end_time" type="datetime-local" required>
-
-      <label for="max_team_size">Max team size (0 = unlimited)</label>
-      <input id="max_team_size" name="max_team_size" type="number" min="0" value="0" required>
-
-      <div class="button-row">
-        <button class="oauthButton" type="submit">Create Event</button>
-        <a class="btn-secondary" href="{% url 'event_list' %}">Back to Events</a>
+    {% if not organizations %}
+      <div class="message-card error" style="margin-bottom: 2rem;">
+        You don't have any organizations where you are an Owner or Admin. 
+        <a href="{% url 'organization_create' %}" style="color:var(--accent-primary); text-decoration: underline;">Create an organization first</a>.
       </div>
-    </form>
-  </section>
+    {% else %}
+      <form method="post" class="platform-form">
+        {% csrf_token %}
+
+        <div class="field-grid">
+          <div class="field-group field-full">
+            <label for="{{ form.title.id_for_label }}">Competition Title</label>
+            {{ form.title }}
+            {% if form.title.errors %}
+              <div class="field-error">
+                {{ form.title.errors|join:", " }}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="field-group">
+            <label for="{{ form.organization.id_for_label }}">Hosting Organization</label>
+            {{ form.organization }}
+            {% if form.organization.errors %}
+              <div class="field-error">
+                {{ form.organization.errors|join:", " }}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="field-group">
+            <label for="{{ form.visibility.id_for_label }}">Visibility</label>
+            {{ form.visibility }}
+            {% if form.visibility.errors %}
+              <div class="field-error">
+                {{ form.visibility.errors|join:", " }}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="field-group">
+            <label for="scoring_strategy">Scoring Strategy</label>
+            <select id="scoring_strategy" name="scoring_strategy">
+              <option value="STATIC" selected>Static (flat points)</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="{{ form.max_team_size.id_for_label }}">Max Team Size</label>
+            {{ form.max_team_size }}
+            <div class="helper-text">0 for unlimited</div>
+            {% if form.max_team_size.errors %}
+              <div class="field-error">
+                {{ form.max_team_size.errors|join:", " }}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="field-group">
+            <label for="{{ form.start_time.id_for_label }}">Start Window</label>
+            {{ form.start_time }}
+            {% if form.start_time.errors %}
+              <div class="field-error">
+                {{ form.start_time.errors|join:", " }}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="field-group">
+            <label for="{{ form.end_time.id_for_label }}">End Window</label>
+            {{ form.end_time }}
+            {% if form.end_time.errors %}
+              <div class="field-error">
+                {{ form.end_time.errors|join:", " }}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="field-group">
+            <label for="{{ form.base_points.id_for_label }}">Base points</label>
+            {{ form.base_points }}
+            {% if form.base_points.errors %}
+              <div class="field-error">
+                {{ form.base_points.errors|join:", " }}
+              </div>
+            {% endif %}
+          </div>
+
+        </div>
+
+        <div class="button-row" style="margin-top: 2rem; display: flex; gap: 1rem;">
+          <button class="oauthButton" type="submit">Launch Event →</button>
+          <a class="btn-secondary" href="{% url 'event_list' %}" style="display: flex; align-items: center; padding: 0 1.5rem; text-decoration: none;">Cancel</a>
+        </div>
+      </form>
+    {% endif %}
+  </div>
 {% endblock %}

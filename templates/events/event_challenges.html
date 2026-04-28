@@ -24,6 +24,7 @@
             {% for challenge in category_challenges %}
               <a href="#challenge-{{ challenge.pk }}" class="challenge-card {% if challenge.is_solved %}solved{% else %}unsolved{% endif %}">
                 <h3>{{ challenge.name }}</h3>
+                <span class="worth-badge">{{ challenge.current_worth }} pts</span>
                 <p class="meta-line">Solves: {{ challenge.solves_count }}</p>
                 {% if challenge.is_solved %}
                   <div class="already-solved-banner">Solved</div>
@@ -39,10 +40,20 @@
                     <span class="category-chip">{{ challenge.category }}</span>
                     <a href="#" class="modal-close-btn" aria-label="Close">✕</a>
                   </div>
-                  <h2 class="modal-title">{{ challenge.name }}</h2>
+                  <h2 class="modal-title">
+                    {{ challenge.name }}
+                    <span class="worth-badge" style="margin-left: 12px; vertical-align: middle;">{{ challenge.current_worth }} pts</span>
+                  </h2>
                   <div class="modal-description">
                     {{ challenge.description|linebreaks }}
                   </div>
+                  {% if messages %}
+                    {% for message in messages %}
+                      <div class="message message-{{ message.tags }}" style="margin-bottom: 1.5rem;">
+                        {{ message }}
+                      </div>
+                    {% endfor %}
+                  {% endif %}
                   {% if challenge.connection_info %}
                   <div class="modal-connection">
                     <span class="connection-label">Connection</span>
@@ -56,7 +67,8 @@
                   {% else %}
                   <form method="POST"
                         action="{% url 'submit_flag' event.pk challenge.pk %}"
-                        class="flag-form">
+                    class="flag-form"
+                    data-no-warn>
                     {% csrf_token %}
                     <input type="text" name="flag"
                            placeholder="CTF{...}"

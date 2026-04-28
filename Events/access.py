@@ -36,3 +36,31 @@ def get_roster_or_403(request, event_id, *, json=False, with_team=True):
             return redirect(reverse("register_for_event", kwargs={"event_id": event_id}))
         except NoReverseMatch:
             return redirect(f"/events/{event_id}/register/")
+
+
+def check_event_access(request, event):
+    if event.visibility != "PRIVATE":
+        return True
+
+    if not request.user.is_authenticated:
+        return False
+
+    # Org owner/admin
+    from Organizations.models import OrganizationMembership
+
+    if OrganizationMembership.objects.filter(
+        user=request.user,
+        organization=event.organization,
+        role__in=("OWNER", "ADMIN"),
+    ).exists():
+        return True
+
+    # Has roster
+    if EventRoster.objects.filter(user=request.user, event=event).exists():
+        return True
+
+    # In session whitelist
+    if event.pk in request.session.get("event_invites", []):
+        return True
+
+    return False

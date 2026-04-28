@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Access Denied - {{ event.title }}{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 60vh;">
+    <div class="challenge-modal-box" style="max-width: 500px; text-align: center; padding: 2.5rem;">
+        <h2 class="modal-title" style="color: var(--accent-magenta); margin-bottom: 1.5rem;">Access Denied</h2>
+        
+        <div class="message message-error" style="margin-bottom: 2.5rem; font-size: 1.1rem; border-left-width: 6px; padding: 1.5rem;">
+            This event is private. You need an invite link to access it.
+        </div>
+        
+        <p style="color: var(--text-secondary); margin-bottom: 2.5rem; line-height: 1.6;">
+            Access to this event is restricted to registered participants or those with a valid invite token.
+        </p>
+        
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <a href="{% url 'event_list' %}" class="oauthButton" style="text-decoration: none;">
+                ← Back to Events
+            </a>
+            <a href="{% url 'home' %}" style="color: var(--text-secondary); font-size: 0.9rem;">
+                Return Home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

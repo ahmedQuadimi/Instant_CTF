@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from Events.models import EventRoster
 from Scoring.models import Solve
 from Teams.models import Team
+from .forms import ProfileForm
 
 User = get_user_model()
 
@@ -13,53 +14,109 @@ User = get_user_model()
 def profile_view(request, user_id):
     profile_user = get_object_or_404(User, pk=user_id)
 
-    # Team memberships (via EventRoster → team)
-    team_ids = (
-        EventRoster.objects.filter(user=profile_user)
-        .values_list("team_id", flat=True)
-        .distinct()
+    # Events — all EventRoster entries
+    event_rosters = EventRoster.objects.filter(
+        user=profile_user
+    ).select_related('event', 'team').order_by(
+        '-event__start_time'
     )
-    teams = Team.objects.filter(pk__in=team_ids)
 
-    # Events participated in
-    event_rosters = (
-        EventRoster.objects.filter(user=profile_user)
-        .select_related("event", "team")
-        .order_by("-joined_at")
+    # Teams — all TeamMembership entries plus teams where user is captain
+    from Teams.models import TeamMembership, Team
+    team_memberships = TeamMembership.objects.filter(
+        user=profile_user
+    ).select_related('team')
+
+    captained_teams = Team.objects.filter(
+        captain=profile_user
     )
+
+    # Orgs — all OrganizationMembership entries
+    from Organizations.models import OrganizationMembership
+    org_memberships = OrganizationMembership.objects.filter(
+        user=profile_user
+    ).select_related('organization')
+
+    # Total unique teams count for the tab label and stat box
+    total_team_count = captained_teams.count() + team_memberships.exclude(
+        team__in=captained_teams
+    ).count()
 
     # Solve count
     solve_count = Solve.objects.filter(
-        team_id__in=team_ids,
+        team_id__in=team_memberships.values_list('team_id', flat=True),
         submission__user=profile_user,
     ).count()
 
     is_own_profile = request.user.is_authenticated and request.user.id == profile_user.id
 
-    return render(
-        request,
-        "accounts/profile.html",
-        {
-            "profile_user": profile_user,
-            "teams": teams,
-            "event_rosters": event_rosters,
-            "solve_count": solve_count,
-            "is_own_profile": is_own_profile,
-        },
-    )
+    context = {
+        "profile_user": profile_user,
+        "event_rosters": event_rosters,
+        "team_memberships": team_memberships,
+        "captained_teams": captained_teams,
+        "total_team_count": total_team_count,
+        "org_memberships": org_memberships,
+        "solve_count": solve_count,
+        "is_own_profile": is_own_profile,
+    }
+
+    return render(request, "accounts/profile.html", context)
 
 
 @login_required
 def profile_edit(request):
     if request.method == "POST":
-        new_username = (request.POST.get("username") or "").strip()
-        if new_username:
-            request.user.username = new_username
-            request.user.save(update_fields=["username"])
+        form = ProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
             return redirect("profile", user_id=request.user.id)
+    else:
+        form = ProfileForm(instance=request.user)
 
     return render(
         request,
         "accounts/profile_edit.html",
-        {"profile_user": request.user},
+        {"profile_user": request.user, "form": form},
     )
+
+
+def players_list(request):
+    query = request.GET.get("q", "").strip()
+    role_filter = request.GET.get("role", "")
+
+    from Accounts.models import User
+
+    players = User.objects.annotate(
+        team_count=Count("team_memberships__team", distinct=True)
+    ).order_by("username")
+
+    if query:
+        players = players.filter(username__icontains=query)
+
+    if role_filter:
+        players = players.filter(site_role=role_filter)
+
+    return render(
+        request,
+        "accounts/players.html",
+        {
+            "players": players,
+            "query": query,
+            "role_filter": role_filter,
+            "role_choices": User.ROLE_CHOICES,
+        },
+    )
+
+from Accounts.utils import site_admin_required
+from django.contrib import messages
+
+@site_admin_required
+def admin_promote(request, user_id):
+    target = get_object_or_404(User, pk=user_id)
+    if request.method == 'POST':
+        target.site_role = 'SITE_ADMIN'
+        target.save(update_fields=['site_role'])
+        messages.success(request, f"{target.username} is now a Site Admin.")
+        return redirect('profile', user_id)
+    return redirect('profile', user_id)

@@ -45,7 +45,6 @@
             <tr>
               <th>Username</th>
               <th>Role</th>
-              <th>ELO</th>
               <th>Teams</th>
             </tr>
           </thead>
@@ -57,9 +56,6 @@
                 </td>
                 <td>
                   <span class="status-badge">{{ player.get_site_role_display }}</span>
-                </td>
-                <td>
-                  <span class="elo-badge">{{ player.elo }}</span>
                 </td>
                 <td>{{ player.team_count }}</td>
               </tr>

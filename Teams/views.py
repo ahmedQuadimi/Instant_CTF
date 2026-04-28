@@ -64,11 +64,17 @@ def team_details(request, team_id, event_id=None):
     has_pending_request = False
     if request.user.is_authenticated:
         is_captain = (team.captain == request.user)
-        is_member = TeamMembership.objects.filter(team=team, user=request.user).exists()
+        is_member = (
+            TeamMembership.objects.filter(
+                user=request.user, team=team
+            ).exists() or team.captain == request.user
+        )
         has_pending_request = TeamJoinRequest.objects.filter(team=team, user=request.user, status="PENDING").exists()
 
+    memberships = TeamMembership.objects.filter(team=team).select_related("user")
+    captain_in_members = memberships.filter(user=team.captain).exists()
+
     if event is None:
-        memberships = TeamMembership.objects.filter(team=team).select_related("user")
         return render(
             request,
             "teams/team_detail.html",
@@ -76,6 +82,8 @@ def team_details(request, team_id, event_id=None):
                 "event": event,
                 "team": team,
                 "memberships": memberships,
+                "captain": team.captain,
+                "captain_in_members": captain_in_members,
                 "solves": [],
                 "is_captain": is_captain,
                 "is_member": is_member,
@@ -87,16 +95,7 @@ def team_details(request, team_id, event_id=None):
     if not is_team_in_event:
         raise Http404("Team is not participating in this event.")
 
-    memberships = TeamMembership.objects.filter(team=team).select_related("user")
     solves = []  # TODO: populate from Scoring app once available
-
-    is_member = False
-    is_captain = False
-    has_pending_request = False
-    if request.user.is_authenticated:
-        is_captain = (team.captain == request.user)
-        is_member = TeamMembership.objects.filter(team=team, user=request.user).exists()
-        has_pending_request = TeamJoinRequest.objects.filter(team=team, user=request.user, status="PENDING").exists()
 
     return render(
         request,
@@ -105,6 +104,8 @@ def team_details(request, team_id, event_id=None):
             "event": event,
             "team": team,
             "memberships": memberships,
+            "captain": team.captain,
+            "captain_in_members": captain_in_members,
             "solves": solves,
             "is_captain": is_captain,
             "is_member": is_member,
@@ -171,6 +172,7 @@ def manage(request, team_id):
 
     # GET: load members and pending requests
     memberships = TeamMembership.objects.filter(team=team).select_related("user")
+    captain_in_members = memberships.filter(user=team.captain).exists()
     pending_requests = TeamJoinRequest.objects.filter(
         team=team, status="PENDING"
     ).select_related("user")
@@ -183,6 +185,8 @@ def manage(request, team_id):
         {
             "team": team,
             "memberships": memberships,
+            "captain": team.captain,
+            "captain_in_members": captain_in_members,
             "pending_requests": pending_requests,
             "history_count": history_count,
         },

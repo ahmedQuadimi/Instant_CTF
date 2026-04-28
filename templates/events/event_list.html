@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load ui_extras %}
+{% load ui_extras %}
 
 {% block title %}Events{% endblock %}
 
@@ -17,6 +18,7 @@
     </div>
 
     <form method="GET" action="" class="search-form" data-no-warn>
+      {% csrf_token %}
       <div class="search-bar">
         <input
           type="text"
@@ -53,8 +55,8 @@
           <article class="platform-card">
             <h2><a href="{% url 'event_dashboard' event.id %}">{{ event.title }}</a></h2>
             <p class="meta-line">Organization: {{ event.organization.name }}</p>
-            <p class="meta-line">Start: {{ event.start_time|date:"M d, Y H:i" }}</p>
-            <p class="meta-line">End: {{ event.end_time|date:"M d, Y H:i" }}</p>
+            <p class="meta-line">Start: {{ event.start_time|display_time }}</p>
+            <p class="meta-line">End: {{ event.end_time|display_time }}</p>
             <div class="badge-row">
               <span class="status-badge {{ event.visibility|lower }}">{{ event.visibility|title }}</span>
               <span class="status-badge {{ event.time_status|status_badge_class }}">

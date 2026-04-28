@@ -55,3 +55,9 @@ def status_badge_class(status):
         'upcoming': 'badge-upcoming', 
         'ended': 'badge-ended',
     }.get(status, '')
+
+@register.filter
+def display_time(dt):
+    if not dt:
+        return ''
+    return dt.strftime('%B %d, %Y %H:%M') + ' UTC'

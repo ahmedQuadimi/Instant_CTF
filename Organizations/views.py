@@ -13,8 +13,31 @@ from Events.models import Event
 
 
 def org_home(request):
-    organizations = Organization.objects.annotate(member_count=Count("members", distinct=True)).order_by("name")
-    return render(request, "organizations/organization_home.html", {"organizations": organizations})
+    query = request.GET.get('q', '').strip()
+    role_filter = request.GET.get('role', '')
+
+    from Organizations.models import Organization, OrganizationMembership
+    
+    orgs = Organization.objects.annotate(
+        member_count=Count('organizationmembership')
+    )
+    
+    if query:
+        orgs = orgs.filter(name__icontains=query)
+    
+    if request.user.is_authenticated and role_filter:
+        orgs = orgs.filter(
+            organizationmembership__user=request.user,
+            organizationmembership__role=role_filter
+        )
+    
+    context = {
+        'orgs': orgs,
+        'organizations': orgs, # Adding organizations as well since the template relies on it
+        'query': query,
+        'role_filter': role_filter,
+    }
+    return render(request, "organizations/organization_home.html", context)
 
 
 def org_details(request, org_id):

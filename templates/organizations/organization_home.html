@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load ui_extras %}
 
 {% block title %}Organizations{% endblock %}
 
@@ -15,9 +16,45 @@
       {% endif %}
     </div>
 
-    {% if organizations %}
+  <form method="GET" class="search-form" 
+        data-no-warn>
+    {% csrf_token %}
+    <div class="search-bar">
+      <input type="text" name="q"
+             value="{{ query }}"
+             placeholder="Search organizations..."
+             class="search-input">
+      <button type="submit" class="search-btn">
+        Search
+      </button>
+    </div>
+    <div class="filter-row">
+      {% if request.user.is_authenticated %}
+      <select name="role" class="filter-select">
+        <option value="">All roles</option>
+        <option value="OWNER"
+          {% if role_filter == 'OWNER' %}
+          selected{% endif %}>Owner</option>
+        <option value="ADMIN"
+          {% if role_filter == 'ADMIN' %}
+          selected{% endif %}>Admin</option>
+        <option value="MEMBER"
+          {% if role_filter == 'MEMBER' %}
+          selected{% endif %}>Member</option>
+      </select>
+      {% endif %}
+      {% if query or role_filter %}
+        <a href="{% url 'organization_home' %}"
+           class="clear-filters">
+          Clear filters
+        </a>
+      {% endif %}
+    </div>
+  </form>
+
+    {% if orgs %}
       <div class="card-grid">
-        {% for organization in organizations %}
+        {% for organization in orgs %}
           <article class="platform-card">
             <h2><a href="{% url 'organization_details' organization.id %}">{{ organization.name }}</a></h2>
             <p>{{ organization.description|default:"No description provided." }}</p>

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load ui_extras %}
 {% block title %}{{ profile_user.username }} — {{ event.title }}{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="/static/css/platform.css">
@@ -29,7 +30,7 @@
           </tr>
           <tr>
             <th>Joined At</th>
-            <td>{{ roster.joined_at }}</td>
+            <td>{{ roster.joined_at|display_time }}</td>
           </tr>
         </tbody>
       </table>

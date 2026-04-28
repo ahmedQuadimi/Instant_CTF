@@ -95,6 +95,7 @@ def event_list(request):
     query = request.GET.get("q", "").strip()
     status_filter = request.GET.get("status", "")
     org_filter = request.GET.get("org", "")
+    registered = request.GET.get("registered", "")
 
     events = (
         Event.objects.filter(visibility="PUBLIC")
@@ -115,6 +116,14 @@ def event_list(request):
 
     if org_filter:
         events = events.filter(organization__name__icontains=org_filter)
+
+    if registered and request.user.is_authenticated:
+        now = timezone.now()
+        events = events.filter(
+            rosters__user=request.user,
+            start_time__lte=now,
+            end_time__gte=now,
+        ).distinct()
 
     context = {
         "events": events,

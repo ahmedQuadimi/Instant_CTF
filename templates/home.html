@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load ui_extras %}
 
 {% block title %}Home — Instant CTF{% endblock %}
 
@@ -185,5 +186,26 @@
         <span class="stat-value stat-number shiny-text">{{ solves_count }}</span>
       </article>
     </section>
+
+    {% if request.user.is_authenticated and active_registrations %}
+      <section class="active-events-section">
+        <h2 class="section-heading">Your Active Events</h2>
+        <div class="active-events-grid">
+          {% for roster in active_registrations|slice:":3" %}
+            <a href="{% url 'event_challenges' roster.event.pk %}" class="active-event-card">
+              <div class="active-event-title">{{ roster.event.title }}</div>
+              <div class="active-event-team">{{ roster.team.name }}</div>
+              <div class="active-event-time">Ends {{ roster.event.end_time|display_time }}</div>
+              <span class="status-badge badge-active">Active</span>
+            </a>
+          {% endfor %}
+        </div>
+        {% if active_registrations|length > 3 %}
+          <div class="see-more-wrap">
+            <a href="/events/?registered=true" class="see-more-link">See all active events →</a>
+          </div>
+        {% endif %}
+      </section>
+    {% endif %}
   </div>
 {% endblock %}

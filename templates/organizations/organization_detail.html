@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load ui_extras %}
 
 {% block title %}{{ organization.name }} — Instant CTF{% endblock %}
 
@@ -30,7 +31,7 @@
             <tr>
               <td>{{ membership.user.username }}</td>
               <td>{{ membership.role }}</td>
-              <td>{{ membership.joined_at|date:"M d, Y" }}</td>
+              <td>{{ membership.joined_at|display_time }}</td>
             </tr>
           {% empty %}
             <tr>
@@ -48,7 +49,7 @@
           {% for event in events %}
             <article class="platform-card">
               <h2><a href="{% url 'event_dashboard' event.id %}">{{ event.title }}</a></h2>
-              <p class="meta-line">{{ event.start_time|date:"M d, Y" }} – {{ event.end_time|date:"M d, Y" }}</p>
+              <p class="meta-line">{{ event.start_time|display_time }} – {{ event.end_time|display_time }}</p>
             </article>
           {% endfor %}
         </div>

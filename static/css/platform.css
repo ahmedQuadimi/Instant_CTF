@@ -116,13 +116,74 @@
   --input-focus: var(--accent-primary);
   display: grid;
   gap: 12px;
-  width: 100%;
-  max-width: 560px;
+  width: min(560px, 100%);
   padding: 32px;
   background: var(--background);
   border: var(--border);
   border-radius: var(--radius);
   font-family: var(--font-mono);
+  box-sizing: border-box;
+}
+
+/* Checkbox Container from Guidelines */
+.container {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  font-size: 18px;
+  user-select: none;
+  min-height: 1.5em;
+  padding-left: 2em;
+  width: auto;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  width: 0;
+  height: 0;
+}
+
+.container .checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 1.5em;
+  width: 1.5em;
+  background-color: var(--bg-elevated);
+  border: 2px solid var(--accent-primary);
+  border-radius: 4px;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
+}
+
+.container:hover .checkmark {
+  transform: scale(1.05);
+}
+
+.container input:checked ~ .checkmark {
+  background-color: var(--accent-primary);
+  transform: scale(1.1);
+}
+
+.container .checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 0.45em;
+  top: 0.15em;
+  width: 0.35em;
+  height: 0.7em;
+  border: solid var(--bg-base);
+  border-width: 0 0.2em 0.2em 0;
+  transform: rotate(45deg);
+}
+
+.container input:checked ~ .checkmark:after {
+  display: block;
 }
 
 .form.compact {
@@ -575,6 +636,15 @@ button.btn-primary:hover::after {
 .platform-form {
   display: grid;
   gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.field-group {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .platform-form input,
@@ -1484,9 +1554,10 @@ tr:hover,
   background: var(--bg-surface);
   border: 1px solid var(--accent-primary);
   border-radius: 8px;
-  padding: 32px;
+  padding: clamp(16px, 5vw, 32px);
   max-width: 560px;
-  width: calc(100% - 32px);
+  width: min(560px, 94vw);
+  box-sizing: border-box;
   box-shadow:
     0 0 40px color-mix(in srgb, var(--accent-primary) 15%, transparent),
     inset 0 0 0 1px color-mix(in srgb, var(--accent-primary) 8%, transparent);
@@ -1648,4 +1719,82 @@ tr:hover,
 #tab-orgs:checked ~ .profile-tabs 
   #content-orgs {
   display: block;
+}
+
+/* ACTIVE EVENTS */
+
+.active-events-section {
+  max-width: 1100px;
+  margin: 48px auto;
+  padding: 0 24px;
+}
+
+.section-heading {
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  font-family: var(--font-mono);
+}
+
+.active-events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.active-event-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--accent-primary);
+  border-radius: 8px;
+  padding: 20px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.active-event-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255, 107, 43, 0.15);
+}
+
+.active-event-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+.active-event-team {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.active-event-time {
+  font-size: 0.75rem;
+  color: var(--accent-secondary);
+  font-family: var(--font-mono);
+  margin-top: auto;
+}
+
+.see-more-wrap {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.see-more-link {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+.see-more-link:hover {
+  color: var(--accent-secondary);
 }

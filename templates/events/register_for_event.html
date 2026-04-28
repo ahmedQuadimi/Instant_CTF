@@ -23,6 +23,12 @@
         <span class="status-badge info">{{ slots_remaining }} slots remaining</span>
       </p>
 
+      {% if form.non_field_errors %}
+        <div class="message message-error" style="margin-bottom: 1.5rem;">
+          {{ form.non_field_errors|join:", " }}
+        </div>
+      {% endif %}
+
       <form method="post" class="form" style="max-width: 600px;">
         {% csrf_token %}
         
@@ -33,25 +39,27 @@
               <span class="checkbox-box" aria-hidden="true"></span>
               <span class="checkbox-label" style="flex: 1; display: flex; align-items: center; justify-content: space-between;">
                 <span>{{ request.user.username }} (Captain)</span>
-                <span class="elo-badge">⚡ {{ request.user.elo }}</span>
               </span>
             </label>
           </div>
 
-          {% for membership in memberships %}
-            {% if membership.user != request.user %}
-              <div style="padding: 10px; background: var(--bg-surface); border-radius: var(--radius); border: var(--border); transition: border-color 0.2s;">
-                <label class="checkbox-wrapper" for="member-{{ membership.user.id }}">
-                  <input type="checkbox" name="member_ids" value="{{ membership.user.id }}" id="member-{{ membership.user.id }}">
-                  <span class="checkbox-box" aria-hidden="true"></span>
-                  <span class="checkbox-label" style="flex: 1; display: flex; align-items: center; justify-content: space-between;">
-                    <span>{{ membership.user.username }}</span>
-                    <span class="elo-badge">⚡ {{ membership.user.elo }}</span>
-                  </span>
-                </label>
-              </div>
-            {% endif %}
+          {% for value, label in form.member_ids.field.choices %}
+            <div style="padding: 10px; background: var(--bg-surface); border-radius: var(--radius); border: var(--border); transition: border-color 0.2s;">
+              <label class="checkbox-wrapper" for="id_member_ids_{{ forloop.counter0 }}">
+                <input type="checkbox" name="member_ids" value="{{ value }}" id="id_member_ids_{{ forloop.counter0 }}" {% if value|stringformat:"s" in form.member_ids.value %}checked{% endif %}>
+                <span class="checkbox-box" aria-hidden="true"></span>
+                <span class="checkbox-label" style="flex: 1; display: flex; align-items: center; justify-content: space-between;">
+                  <span>{{ label }}</span>
+                </span>
+              </label>
+            </div>
           {% endfor %}
+          
+          {% if form.member_ids.errors %}
+            <div class="field-error">
+              {{ form.member_ids.errors|join:", " }}
+            </div>
+          {% endif %}
         </div>
 
         <button class="oauthButton" type="submit">Register Team →</button>

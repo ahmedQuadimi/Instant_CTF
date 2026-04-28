@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load ui_extras %}
 {% block title %}{{ profile_user.username }} — Instant CTF{% endblock %}
 
 {% block extra_css %}
@@ -32,18 +33,6 @@
     flex-wrap: wrap;
   }
   .profile-info h1 { margin: 0; font-size: 1.5rem; }
-  .profile-info .elo-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 2px 10px;
-    background: color-mix(in srgb, var(--accent-gold) 18%, transparent);
-    border: var(--border);
-    border-radius: var(--radius);
-    color: var(--accent-gold);
-    font-size: 0.85rem;
-    width: fit-content;
-  }
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -92,25 +81,28 @@
     <div class="profile-info">
       <div class="profile-title-row">
         <h1>{{ profile_user.username }}</h1>
-        <span class="role-badge {% if profile_user.site_role == 'SITE_ADMIN' %}role-site-admin{% elif profile_user.site_role == 'EVENT_OWNER' %}role-event-owner{% elif profile_user.site_role == 'EVENT_ADMIN' %}role-event-admin{% else %}role-player{% endif %}">
-          {{ profile_user.get_site_role_display }}
-        </span>
+        {% if profile_user.site_role == "SITE_ADMIN" %}
+        <span class="role-badge role-site-admin">Site Admin</span>
+      {% else %}
+        <span class="role-badge role-player">Player</span>
+      {% endif %}
       </div>
-      <div class="elo-badge"><span>⚡ ELO: {{ profile_user.elo }}</span></div>
     </div>
     {% if is_own_profile %}
       <a class="edit-link" href="{% url 'profile_edit' %}">Edit Profile</a>
+    {% endif %}
+    {% if request.user.site_role == "SITE_ADMIN" and profile_user.site_role == "PLAYER" %}
+      <form method="POST" action="{% url 'admin_promote' profile_user.id %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn-primary" style="padding: 8px 16px; min-height: 44px; font-size: 0.9rem;">Promote to Admin</button>
+      </form>
     {% endif %}
   </div>
 
   <div class="stat-row">
     <div class="stat-item">
-      <span class="stat-label">ELO</span>
-      <span class="stat-value">{{ profile_user.elo }}</span>
-    </div>
-    <div class="stat-item">
       <span class="stat-label">Teams</span>
-      <span class="stat-value">{{ teams|length }}</span>
+      <span class="stat-value">{{ total_team_count }}</span>
     </div>
     <div class="stat-item">
       <span class="stat-label">Solves</span>
@@ -118,40 +110,45 @@
     </div>
   </div>
 
-  {% if teams %}
-  <div class="profile-section">
-    <h2>Team Memberships</h2>
-    <table class="platform-table">
-      <thead>
-        <tr>
-          <th>Team</th>
-          <th>Rating</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for team in teams %}
-          <tr>
-            <td><a href="{% url 'team_detail' team.id %}">{{ team.name }}</a></td>
-            <td>{{ team.global_rating }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% endif %}
+  <!-- Hidden radio inputs — must be outside the tab container for sibling selector -->
+  <input type="radio" name="profile-tab" id="tab-events" class="tab-radio" checked>
+  <input type="radio" name="profile-tab" id="tab-teams" class="tab-radio">
+  <input type="radio" name="profile-tab" id="tab-orgs" class="tab-radio">
 
-  <div class="profile-section">
-    <h2 class="gradient-heading">Event History</h2>
-    <table class="platform-table">
-      <thead>
-        <tr>
-          <th>Event</th>
-          <th>Team</th>
-          <th>Start</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
+  <div class="profile-tabs">
+    <div class="tab-headers">
+      <label for="tab-events" class="tab-label">
+        Events
+        <span class="tab-count">
+          {{ event_rosters|length }}
+        </span>
+      </label>
+      <label for="tab-teams" class="tab-label">
+        Teams
+        <span class="tab-count">
+          {{ total_team_count }}
+        </span>
+      </label>
+      <label for="tab-orgs" class="tab-label">
+        Organizations
+        <span class="tab-count">
+          {{ org_memberships|length }}
+        </span>
+      </label>
+    </div>
+
+    <div class="tab-content" id="content-events">
+      <!-- Events table -->
+      <table class="platform-table">
+        <thead>
+          <tr>
+            <th>Event</th>
+            <th>Team</th>
+            <th>Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
         {% for roster in event_rosters %}
           <tr>
             <td>
@@ -160,27 +157,134 @@
               </a>
             </td>
             <td>{{ roster.team.name }}</td>
-            <td>{{ roster.event.start_time|date:"M d, Y" }}</td>
             <td>
-              {% now "U" as now_ts %}
-              {% if roster.event.end_time|date:"U" < now_ts %}
-                <span class="status-badge ended">Ended</span>
-              {% elif roster.event.start_time|date:"U" > now_ts %}
-                <span class="status-badge upcoming">Upcoming</span>
-              {% else %}
-                <span class="status-badge active">Active</span>
-              {% endif %}
+              {{ roster.event.start_time|date:"M d, Y" }}
+            </td>
+            <td>
+              <span class="status-badge {{ roster.event.time_status|status_badge_class }}">
+                {{ roster.event.time_status|title }}
+              </span>
             </td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="4" class="empty-state">
-              No events yet.
+            <td colspan="4">
+              <div class="empty-state">
+                No events yet.
+              </div>
             </td>
           </tr>
         {% endfor %}
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tab-content" id="content-teams">
+      <!-- Teams table -->
+      <table class="platform-table">
+        <thead>
+          <tr>
+            <th>Team</th>
+            <th>Role</th>
+            <th>Members</th>
+          </tr>
+        </thead>
+        <tbody>
+        <!-- Captained teams first -->
+        {% for team in captained_teams %}
+          <tr>
+            <td>
+              <a href="{% url 'team_detail' team.pk %}">
+                {{ team.name }}
+              </a>
+            </td>
+            <td>
+              <span class="status-badge badge-active">
+                Captain
+              </span>
+            </td>
+            <td>
+              {{ team.teammembership_set.count }}
+            </td>
+          </tr>
+        {% endfor %}
+        <!-- Other memberships -->
+        {% for membership in team_memberships %}
+          {% if membership.team not in captained_teams %}
+          <tr>
+            <td>
+              <a href="{% url 'team_detail' membership.team.pk %}">
+                {{ membership.team.name }}
+              </a>
+            </td>
+            <td>
+              <span class="status-badge badge-upcoming">
+                Member
+              </span>
+            </td>
+            <td>
+              {{ membership.team.teammembership_set.count }}
+            </td>
+          </tr>
+          {% endif %}
+        {% endfor %}
+        {% if not team_memberships and not captained_teams %}
+          <tr>
+            <td colspan="3">
+              <div class="empty-state">
+                No teams yet.
+              </div>
+            </td>
+          </tr>
+        {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tab-content" id="content-orgs">
+      <!-- Orgs table -->
+      <table class="platform-table">
+        <thead>
+          <tr>
+            <th>Organization</th>
+            <th>Role</th>
+            <th>Members</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for membership in org_memberships %}
+          <tr>
+            <td>
+              <a href="{% url 'organization_detail' membership.organization.pk %}">
+                {{ membership.organization.name }}
+              </a>
+            </td>
+            <td>
+              <span class="status-badge
+                {% if membership.role == 'OWNER' %}
+                badge-active
+                {% elif membership.role == 'ADMIN' %}
+                badge-upcoming
+                {% else %}badge-ended{% endif %}">
+                {{ membership.role|title }}
+              </span>
+            </td>
+            <td>
+              {{ membership.organization.organizationmembership_set.count }}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="3">
+              <div class="empty-state">
+                No organizations yet.
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </section>
 {% endblock %}

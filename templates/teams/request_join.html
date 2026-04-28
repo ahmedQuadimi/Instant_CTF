@@ -12,6 +12,11 @@
     <p>Send a request to the team captain.</p>
     <form method="post" class="form">
       {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="message message-error" style="margin-bottom: 1.5rem;">
+          {{ form.non_field_errors|join:", " }}
+        </div>
+      {% endif %}
       <button class="oauthButton" type="submit">Send Join Request</button>
       <a class="btn-secondary" href="{% url 'team_details' team.id %}">Back</a>
     </form>

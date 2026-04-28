@@ -201,10 +201,18 @@ SOCIALACCOUNT_AUTO_SIGNUP = True
 
 # After login / signup, redirect to the dashboard root
 LOGIN_REDIRECT_URL = "/"
-ACCOUNT_LOGOUT_REDIRECT_URL = "/accounts/login/"
+ACCOUNT_LOGOUT_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
+SOCIALACCOUNT_LOGOUT_ON_GET = False
+SOCIALACCOUNT_LOGIN_ON_GET = True
 
 # Prevent allauth from hijacking session on every request (performance)
 ACCOUNT_SESSION_REMEMBER = True
+
+ACCOUNT_FORMS = {
+    'login': 'Accounts.forms.StandardLoginForm',
+    'signup': 'Accounts.forms.StandardSignupForm',
+}
 
 # ---------------------------------------------------------------------------
 # Google OAuth2 Provider

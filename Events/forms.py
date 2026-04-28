@@ -7,9 +7,8 @@ class EventForm(forms.ModelForm):
     class Meta:
         model = Event
         fields = [
-            'title', 'organization', 'visibility', 'scoring_strategy',
-            'start_time', 'end_time', 'max_team_size', 'base_points',
-            'minimum_points', 'decay_parameter'
+            'title', 'organization', 'visibility',
+            'start_time', 'end_time', 'max_team_size', 'base_points'
         ]
         widgets = {
             'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
@@ -46,7 +45,6 @@ class EventForm(forms.ModelForm):
         start_time = cleaned_data.get('start_time')
         end_time = cleaned_data.get('end_time')
         base_points = cleaned_data.get('base_points')
-        minimum_points = cleaned_data.get('minimum_points')
         max_team_size = cleaned_data.get('max_team_size')
 
         if start_time and end_time and end_time <= start_time:
@@ -54,12 +52,6 @@ class EventForm(forms.ModelForm):
 
         if base_points is not None and base_points <= 0:
             self.add_error('base_points', "Base points must be a positive integer.")
-
-        if minimum_points is not None:
-            if minimum_points <= 0:
-                self.add_error('minimum_points', "Minimum points must be a positive integer.")
-            elif base_points is not None and minimum_points >= base_points:
-                self.add_error('minimum_points', "Minimum points must be less than base points.")
 
         if max_team_size is not None and max_team_size < 0:
             self.add_error('max_team_size', "Max team size must be 0 or a positive integer.")

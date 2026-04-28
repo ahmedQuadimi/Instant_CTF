@@ -328,7 +328,7 @@ def event_challenges(request, event_id):
                     * math.exp(-(event.decay_parameter or 0) * challenge.solves_count)
                 ),
             )
-        return event.base_points or 0
+        return getattr(challenge, "points", 0)
 
     challenges = list(Challenge.objects.filter(
         event=event,
@@ -510,6 +510,7 @@ def create_event(request):
         if form.is_valid():
             new_event = form.save(commit=False)
             new_event.creator = request.user
+            new_event.scoring_strategy = "STATIC"
             new_event.save()
             
             EventRole.objects.create(
@@ -529,6 +530,59 @@ def create_event(request):
             "organizations": manageable_orgs,
             "form": form,
         },
+    )
+
+
+@login_required
+def edit_event(request, event_id):
+    event = get_object_or_404(Event, pk=event_id)
+
+    from Events.models import EventRole
+    role = EventRole.objects.filter(user=request.user, event=event).first()
+    if not role or role.role != "OWNER":
+        messages.error(request, "Only the event owner can edit event details.")
+        return redirect("event_dashboard", event_id)
+
+    if request.method == "POST":
+        title = request.POST.get("title", "").strip()
+        description = request.POST.get("description", "").strip()
+        visibility = request.POST.get("visibility", "")
+        max_team_size = request.POST.get("max_team_size", 0)
+
+        errors = []
+        if not title:
+            errors.append("Title is required.")
+        if visibility not in ["PUBLIC", "PRIVATE"]:
+            errors.append("Invalid visibility.")
+        try:
+            max_team_size = int(max_team_size)
+            if max_team_size < 0:
+                raise ValueError
+        except (ValueError, TypeError):
+            errors.append("Max team size must be 0 or a positive integer.")
+
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            return redirect("edit_event", event_id)
+
+        event.title = title
+        event.description = description
+        event.visibility = visibility
+        event.max_team_size = max_team_size
+        event.save(update_fields=[
+            "title",
+            "description",
+            "visibility",
+            "max_team_size",
+        ])
+        messages.success(request, "Event updated successfully.")
+        return redirect("event_dashboard", event_id)
+
+    return render(
+        request,
+        "events/edit_event.html",
+        {"event": event},
     )
 @login_required
 def generate_invite(request, event_id):

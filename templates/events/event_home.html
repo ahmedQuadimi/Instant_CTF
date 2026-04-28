@@ -72,9 +72,15 @@
 
     {% if request.user.is_authenticated %}
       {% get_org_role request.user event.organization as user_org_role %}
-      {% if user_org_role == 'OWNER' or user_org_role == 'ADMIN' %}
+      {% get_event_role request.user event as user_event_role %}
+      {% if user_org_role == 'OWNER' or user_org_role == 'ADMIN' or user_event_role == 'OWNER' %}
         <div class="action-grid">
-          <a href="{% url 'manage_event_dashboard' event.pk %}">Manage</a>
+          {% if user_org_role == 'OWNER' or user_org_role == 'ADMIN' %}
+            <a href="{% url 'manage_event_dashboard' event.pk %}">Manage</a>
+          {% endif %}
+          {% if user_event_role == 'OWNER' %}
+            <a href="{% url 'edit_event' event.pk %}" class="oauthButton">Edit Event</a>
+          {% endif %}
         </div>
       {% endif %}
     {% endif %}

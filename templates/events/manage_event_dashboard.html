@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load ui_extras %}
 {% block title %}Manage Event Dashboard{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="/static/css/platform.css">
@@ -50,8 +51,16 @@
   {% include 'events/_event_nav.html' %}
 
   <section class="platform-stack content-wide">
-    <h1 class="gradient-heading">Manage Event Dashboard</h1>
-    <p class="meta-line">Event: {{ event.title }}</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;">
+      <div>
+        <h1 class="gradient-heading">Manage Event Dashboard</h1>
+        <p class="meta-line">Event: {{ event.title }}</p>
+      </div>
+      {% get_event_role request.user event as user_event_role %}
+      {% if user_event_role == 'OWNER' %}
+        <a href="{% url 'edit_event' event.pk %}" class="oauthButton">Edit Event</a>
+      {% endif %}
+    </div>
     
     {% if event.visibility == 'PRIVATE' %}
       <div class="invite-section">
@@ -218,6 +227,14 @@
             </div>
 
             <div>
+              <label for="{{ create_form.points.id_for_label }}">Points</label>
+              {{ create_form.points }}
+              {% if create_form.points.errors %}
+                <div class="field-error">{{ create_form.points.errors|join:", " }}</div>
+              {% endif %}
+            </div>
+
+            <div>
               <label for="{{ create_form.status.id_for_label }}">Status</label>
               {{ create_form.status }}
               {% if create_form.status.errors %}
@@ -301,6 +318,14 @@
                   </div>
 
                   <div>
+                    <label for="{{ form.points.id_for_label }}">Points</label>
+                    {{ form.points }}
+                    {% if form.points.errors %}
+                      <div class="field-error">{{ form.points.errors|join:", " }}</div>
+                    {% endif %}
+                  </div>
+
+                  <div>
                     <label for="{{ form.status.id_for_label }}">Status</label>
                     {{ form.status }}
                     {% if form.status.errors %}
@@ -353,6 +378,10 @@
                   <div>
                     <label>Category</label>
                     <input type="text" name="category" value="{{ challenge.category }}" />
+                  </div>
+                  <div>
+                    <label>Points</label>
+                    <input type="number" name="points" value="{{ challenge.points|default:100 }}" min="1" required />
                   </div>
                   <div>
                     <label>Status</label>

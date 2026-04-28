@@ -16,6 +16,7 @@ class Event(models.Model):
         ("EXPONENTIAL", "Exponential"),
     ]
     title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
     organization = models.ForeignKey(
         Organization, on_delete=models.CASCADE, related_name="events"
     )

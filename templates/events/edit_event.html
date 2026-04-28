@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Event — {{ event.title }}{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="/static/css/platform.css">
+  <style>
+    .form-container {
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 2rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--accent-primary);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .field-full {
+      grid-column: 1 / -1;
+    }
+    .helper-text {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    @media (max-width: 768px) {
+      .field-grid {
+        grid-template-columns: 1fr;
+      }
+      .field-full {
+        grid-column: 1;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="form-container">
+    <h1 class="gradient-heading" style="font-size: 1.8rem; margin-bottom: 0.5rem;">Edit Event</h1>
+    <p style="color:var(--text-secondary); margin-bottom: 2rem;">Update title, description, visibility, or team size limits.</p>
+
+    <form method="post" class="platform-form">
+      {% csrf_token %}
+
+      <div class="field-grid">
+        <div class="field-group field-full">
+          <label for="title">Title</label>
+          <input type="text" id="title" name="title" value="{{ event.title }}" required>
+        </div>
+
+        <div class="field-group">
+          <label for="visibility">Visibility</label>
+          <select id="visibility" name="visibility" required>
+            <option value="PUBLIC" {% if event.visibility == 'PUBLIC' %}selected{% endif %}>Public</option>
+            <option value="PRIVATE" {% if event.visibility == 'PRIVATE' %}selected{% endif %}>Private</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label for="max_team_size">Max Team Size</label>
+          <input type="number" id="max_team_size" name="max_team_size" value="{{ event.max_team_size }}" min="0" required>
+          <div class="helper-text">0 for unlimited</div>
+        </div>
+
+        <div class="field-group field-full">
+          <label for="description">Description</label>
+          <textarea id="description" name="description" rows="6">{{ event.description }}</textarea>
+        </div>
+      </div>
+
+      <div class="button-row" style="margin-top: 2rem; display: flex; gap: 1rem;">
+        <button class="oauthButton" type="submit">Save Changes</button>
+        <a class="btn-secondary" href="{% url 'event_dashboard' event.id %}" style="display: flex; align-items: center; padding: 0 1.5rem; text-decoration: none;">Cancel</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

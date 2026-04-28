@@ -7,9 +7,10 @@ class ChallengeForm(forms.ModelForm):
 
     class Meta:
         model = Challenge
-        fields = ['name', 'category', 'description', 'connection_info', 'status', 'release_time']
+        fields = ['name', 'category', 'points', 'description', 'connection_info', 'status', 'release_time']
         widgets = {
             'release_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+            'points': forms.NumberInput(attrs={'min': 1}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -33,6 +34,12 @@ class ChallengeForm(forms.ModelForm):
         if not flag and not self.instance.pk:
             raise forms.ValidationError("Flag is required on create.")
         return flag
+
+    def clean_points(self):
+        points = self.cleaned_data.get('points')
+        if points is None or points < 1:
+            raise forms.ValidationError("Points must be a positive integer.")
+        return points
 
     def clean(self):
         cleaned_data = super().clean()

@@ -20,6 +20,7 @@ class Challenge(models.Model):
         db_index=True,
     )
     flag_hash = models.CharField(max_length=128)
+    points = models.IntegerField(default=100)
 
     release_time = models.DateTimeField(
         blank=True,

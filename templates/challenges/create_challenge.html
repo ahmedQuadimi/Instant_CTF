@@ -90,6 +90,16 @@
         </div>
 
         <div class="field-group">
+          <label for="{{ form.points.id_for_label }}">Points</label>
+          {{ form.points }}
+          {% if form.points.errors %}
+            <div class="field-error">
+              {{ form.points.errors|join:", " }}
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="field-group">
           <label for="{{ form.status.id_for_label }}">Initial Status</label>
           {{ form.status }}
           {% if form.status.errors %}

@@ -44,7 +44,10 @@ def create_challenge(request, event_id):
     if request.method == 'POST':
         form = ChallengeForm(request.POST, event=event)
         if form.is_valid():
-            form.save()
+            challenge = form.save(commit=False)
+            points = int(request.POST.get('points', form.cleaned_data.get('points', 100)))
+            challenge.points = points
+            challenge.save()
             messages.success(request, f"Challenge created.")
             return redirect('manage_event_dashboard', event_id=event.id)
     else:

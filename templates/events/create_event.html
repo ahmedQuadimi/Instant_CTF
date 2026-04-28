@@ -82,13 +82,10 @@
           </div>
 
           <div class="field-group">
-            <label for="{{ form.scoring_strategy.id_for_label }}">Scoring Strategy</label>
-            {{ form.scoring_strategy }}
-            {% if form.scoring_strategy.errors %}
-              <div class="field-error">
-                {{ form.scoring_strategy.errors|join:", " }}
-              </div>
-            {% endif %}
+            <label for="scoring_strategy">Scoring Strategy</label>
+            <select id="scoring_strategy" name="scoring_strategy">
+              <option value="STATIC" selected>Static (flat points)</option>
+            </select>
           </div>
 
           <div class="field-group">
@@ -132,26 +129,6 @@
             {% endif %}
           </div>
 
-          <div class="field-group">
-            <label for="{{ form.minimum_points.id_for_label }}">Minimum points</label>
-            {{ form.minimum_points }}
-            {% if form.minimum_points.errors %}
-              <div class="field-error">
-                {{ form.minimum_points.errors|join:", " }}
-              </div>
-            {% endif %}
-          </div>
-
-          <div class="field-group field-full">
-            <label for="{{ form.decay_parameter.id_for_label }}">Decay Parameter</label>
-            {{ form.decay_parameter }}
-            <div class="helper-text">Only applies if scoring strategy is DYNAMIC. Higher = faster decay.</div>
-            {% if form.decay_parameter.errors %}
-              <div class="field-error">
-                {{ form.decay_parameter.errors|join:", " }}
-              </div>
-            {% endif %}
-          </div>
         </div>
 
         <div class="button-row" style="margin-top: 2rem; display: flex; gap: 1rem;">

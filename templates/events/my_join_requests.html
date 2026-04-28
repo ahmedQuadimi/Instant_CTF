@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load ui_extras %}
 {% block title %}My Join Requests{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="/static/css/platform.css">
@@ -23,7 +24,7 @@
             <tr>
               <td>{{ join_request.team.name }}</td>
               <td><span class="status-badge"><span>{{ join_request.status }}</span></span></td>
-              <td>{{ join_request.requested_at }}</td>
+              <td>{{ join_request.requested_at|display_time }}</td>
             </tr>
           {% endfor %}
         </tbody>

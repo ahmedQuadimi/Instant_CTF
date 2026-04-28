@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load ui_extras %}
+{% load ui_extras %}
 {% block title %}Scoreboard — {{ event.title }}{% endblock %}
 
 {% block extra_css %}
@@ -72,7 +73,7 @@
               <td>{{ team.team_name }}</td>
               <td class="score-col"><span class="score-value">{{ team.score }}</span></td>
               <td>{{ team.solve_count }}</td>
-              <td class="last-solve-col">{% if team.last_solve_at %}{{ team.last_solve_at|date:"M d, H:i" }}{% else %}—{% endif %}</td>
+              <td class="last-solve-col">{% if team.last_solve_at %}{{ team.last_solve_at|display_time }}{% else %}—{% endif %}</td>
             </tr>
           {% endfor %}
         </tbody>

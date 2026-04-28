@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load ui_extras %}
 {% block title %}Manage {{ team.name }} — Instant CTF{% endblock %}
 
 {% block extra_css %}
@@ -96,7 +97,7 @@
       <div class="request-card">
         <div class="request-user">
           <strong>{{ jr.user.username }}</strong>
-          <small>Requested {{ jr.requested_at|date:"M d, Y H:i" }}</small>
+          <small>Requested {{ jr.requested_at|display_time }}</small>
         </div>
         <div class="request-actions">
           <form method="POST" class="form" style="display:inline;max-width:100%;padding:10px;" data-no-warn="true">
@@ -133,14 +134,14 @@
             {{ team.captain.username }}
             <span class="status-badge active" style="margin-left: 8px;">Captain</span>
           </td>
-          <td>{{ team.created_at|date:"M d, Y" }}</td>
+          <td>{{ team.created_at|display_time }}</td>
         </tr>
         <!-- Other members -->
         {% for member in memberships %}
           {% if member.user != team.captain %}
           <tr>
             <td>{{ member.user.username }}</td>
-            <td>{{ member.joined_at|date:"M d, Y" }}</td>
+            <td>{{ member.joined_at|display_time }}</td>
           </tr>
           {% endif %}
         {% endfor %}

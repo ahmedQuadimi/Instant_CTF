@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load ui_extras %}
 {% block title %}Event Users{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="/static/css/platform.css">
@@ -25,7 +26,7 @@
                 <a href="{% url 'event_user_details' event.id roster.user.id %}">{{ roster.user.username }}</a>
               </td>
               <td>{{ roster.team.name }}</td>
-              <td>{{ roster.joined_at }}</td>
+              <td>{{ roster.joined_at|display_time }}</td>
             </tr>
           {% endfor %}
         </tbody>

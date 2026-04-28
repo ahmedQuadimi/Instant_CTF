@@ -1,58 +1,106 @@
 {% extends "base.html" %}
+{% load ui_extras %}
 
 {% block title %}Edit Event — {{ event.title }}{% endblock %}
 
 {% block extra_css %}
   <link rel="stylesheet" href="/static/css/platform.css">
   <style>
-    .form-container {
-      max-width: 700px;
-      margin: 40px auto;
-      padding: 2rem;
-      background: var(--bg-secondary);
-      border: 1px solid var(--accent-primary);
-      border-radius: var(--radius);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    .edit-event-wrap {
+      max-width: 720px;
+      margin: 32px auto 56px;
+      padding: 0 20px;
     }
-    .field-grid {
+
+    .edit-event-form {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .edit-event-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px 20px;
     }
-    .field-full {
+
+    .edit-event-grid .full-width {
       grid-column: 1 / -1;
     }
-    .helper-text {
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-      margin-top: 4px;
+
+    .rules-textarea {
+      max-height: 200px;
+      resize: vertical;
     }
-    @media (max-width: 768px) {
-      .field-grid {
+
+    .locked-field {
+      background: var(--bg-base);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      cursor: not-allowed;
+      display: grid;
+      gap: 6px;
+    }
+
+    .locked-label {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      opacity: 0.6;
+    }
+
+    .edit-event-actions {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .edit-event-actions .oauthButton {
+      max-width: 220px;
+    }
+
+    .edit-event-actions .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 18px;
+      text-decoration: none;
+    }
+
+    @media (max-width: 720px) {
+      .edit-event-grid {
         grid-template-columns: 1fr;
-      }
-      .field-full {
-        grid-column: 1;
       }
     }
   </style>
 {% endblock %}
 
 {% block content %}
-  <div class="form-container">
-    <h1 class="gradient-heading" style="font-size: 1.8rem; margin-bottom: 0.5rem;">Edit Event</h1>
-    <p style="color:var(--text-secondary); margin-bottom: 2rem;">Update title, description, visibility, or team size limits.</p>
+  <section class="edit-event-wrap">
+    {% include "events/_event_nav.html" %}
 
-    <form method="post" class="platform-form">
+    <h1 class="gradient-heading">Edit Event — {{ event.title }}</h1>
+
+    <form method="post" class="form edit-event-form">
       {% csrf_token %}
 
-      <div class="field-grid">
-        <div class="field-group field-full">
+      <div class="edit-event-grid">
+        <div class="full-width">
           <label for="title">Title</label>
           <input type="text" id="title" name="title" value="{{ event.title }}" required>
         </div>
 
-        <div class="field-group">
+        <div class="full-width">
+          <label for="description">Rules / Description</label>
+          <textarea id="description" name="description" rows="6" class="rules-textarea">{{ event.description }}</textarea>
+        </div>
+
+        <div>
           <label for="visibility">Visibility</label>
           <select id="visibility" name="visibility" required>
             <option value="PUBLIC" {% if event.visibility == 'PUBLIC' %}selected{% endif %}>Public</option>
@@ -60,22 +108,49 @@
           </select>
         </div>
 
-        <div class="field-group">
-          <label for="max_team_size">Max Team Size</label>
+        <div>
+          <label for="max_team_size">Max Team Size (0 = unlimited)</label>
           <input type="number" id="max_team_size" name="max_team_size" value="{{ event.max_team_size }}" min="0" required>
-          <div class="helper-text">0 for unlimited</div>
         </div>
 
-        <div class="field-group field-full">
-          <label for="description">Description</label>
-          <textarea id="description" name="description" rows="6">{{ event.description }}</textarea>
+        <div>
+          <label class="locked-label">Start Time (UTC)</label>
+          <div class="locked-field">
+            <div>{{ event.start_time|display_time }} UTC</div>
+            <div class="locked-label">(cannot be changed once set)</div>
+          </div>
+        </div>
+
+        <div>
+          <label class="locked-label">End Time (UTC)</label>
+          <div class="locked-field">
+            <div>{{ event.end_time|display_time }} UTC</div>
+            <div class="locked-label">(cannot be changed once set)</div>
+          </div>
+        </div>
+
+        <div>
+          <label class="locked-label">Scoring Strategy</label>
+          <div class="locked-field">
+            <span class="status-badge info">{{ event.scoring_strategy }}</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="locked-label">Base Points</label>
+          <div class="locked-field">{{ event.base_points }}</div>
+        </div>
+
+        <div class="full-width">
+          <label class="locked-label">Organization</label>
+          <div class="locked-field">{{ event.organization.name }}</div>
         </div>
       </div>
 
-      <div class="button-row" style="margin-top: 2rem; display: flex; gap: 1rem;">
-        <button class="oauthButton" type="submit">Save Changes</button>
-        <a class="btn-secondary" href="{% url 'event_dashboard' event.id %}" style="display: flex; align-items: center; padding: 0 1.5rem; text-decoration: none;">Cancel</a>
+      <div class="edit-event-actions">
+        <button class="oauthButton" type="submit">Save Changes →</button>
+        <a class="btn-secondary" href="{% url 'event_dashboard' event.id %}">Cancel</a>
       </div>
     </form>
-  </div>
+  </section>
 {% endblock %}

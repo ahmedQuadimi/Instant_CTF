@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load ui_extras %}
+{% load ui_extras %}
 {% block title %}{{ profile_user.username }} — Instant CTF{% endblock %}
 
 {% block extra_css %}
@@ -158,7 +159,7 @@
             </td>
             <td>{{ roster.team.name }}</td>
             <td>
-              {{ roster.event.start_time|date:"M d, Y" }}
+              {{ roster.event.start_time|display_time }}
             </td>
             <td>
               <span class="status-badge {{ roster.event.time_status|status_badge_class }}">
